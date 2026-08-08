@@ -11,6 +11,7 @@ import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.BonemealSource;
 import net.minecraft.world.level.block.BushBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
@@ -59,7 +60,13 @@ public class PottableCropBlock extends BushBlock {
     }
 
     @Override
-    public void performBonemeal(ServerLevel level, RandomSource random, BlockPos pos, BlockState state) {
+    public void performBonemeal(
+            ServerLevel level,
+            RandomSource random,
+            BlockPos pos,
+            BlockState state,
+            BonemealSource bonemealSource
+    ) {
         int age = state.getValue(AGE);
         if (age < 3) {
             BlocksHelper.setWithUpdate(level, pos, state.setValue(AGE, age + 1));
@@ -67,20 +74,33 @@ public class PottableCropBlock extends BushBlock {
     }
 
     @Override
-    public boolean isValidBonemealTarget(LevelReader world, BlockPos pos, BlockState state) {
+    public boolean isValidBonemealTarget(
+            LevelReader world,
+            BlockPos pos,
+            BlockState state,
+            BonemealSource bonemealSource
+    ) {
         return state.getValue(AGE) < 3;
     }
 
     @Override
-    public boolean isBonemealSuccess(Level level, RandomSource random, BlockPos pos, BlockState state) {
+    public boolean isBonemealSuccess(
+            Level level,
+            RandomSource random,
+            BlockPos pos,
+            BlockState state,
+            BonemealSource bonemealSource
+    ) {
         return state.getValue(AGE) < 3;
     }
 
     @Override
     protected void randomTick(BlockState state, ServerLevel world, BlockPos pos, RandomSource random) {
         super.randomTick(state, world, pos, random);
-        if (isBonemealSuccess(world, random, pos, state) && random.nextInt(8) == 0) {
-            performBonemeal(world, random, pos, state);
+        // A random growth tick is neither a player interaction nor a mob, but INTERACTION is the
+        // closest of the two constants 26.3 offers.
+        if (isBonemealSuccess(world, random, pos, state, BonemealSource.INTERACTION) && random.nextInt(8) == 0) {
+            performBonemeal(world, random, pos, state, BonemealSource.INTERACTION);
         }
     }
 

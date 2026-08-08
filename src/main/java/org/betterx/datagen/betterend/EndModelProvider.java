@@ -131,7 +131,7 @@ public class EndModelProvider extends WoverModelProvider {
                              )
                              // Aurora crystal keeps its hand-authored blockstate/model, so the override is what
                              // registers its item model at all. The tint itself comes from the block's
-                             // ClientBlockTraits.ITEM_TINT trait, which delegateItemModel applies; registering
+                             // ClientBlockTraits.TINT trait, which delegateItemModel applies; registering
                              // this as an override makes BlockModelTrait.bootstrapModels skip the block's
                              // EXTERNAL_MODEL item delegation, so there is exactly one item model, not a
                              // duplicate.

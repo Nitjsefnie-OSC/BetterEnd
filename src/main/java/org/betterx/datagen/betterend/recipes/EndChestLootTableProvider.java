@@ -28,13 +28,17 @@ import de.ambertation.wover.core.api.ModCore;
 import de.ambertation.wover.datagen.api.provider.WoverLootTableProvider;
 import de.ambertation.wover.sets.api.blocks.SlotType;
 
+// 26.3 split net.minecraft.advancements.criterion into .predicates (LocationPredicate, ...) and
+// .triggers (every *Trigger).
 import net.minecraft.advancements.predicates.LocationPredicate;
 import net.minecraft.core.Holder;
+import net.minecraft.core.HolderGetter;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.storage.loot.LootPool;
@@ -157,7 +161,17 @@ public class EndChestLootTableProvider extends WoverLootTableProvider {
         return builder;
     }
 
+    /**
+     * 26.3 narrowed {@code enchantWithLevels} (and the other looting/enchantment loot helpers) from a
+     * whole {@link HolderLookup.Provider} to just the enchantment {@link HolderGetter} they actually
+     * need. Same registry, same result.
+     */
+    private static HolderGetter<Enchantment> enchantments(HolderLookup.@NotNull Provider lookup) {
+        return lookup.lookupOrThrow(Registries.ENCHANTMENT);
+    }
+
     private LootPool.Builder fishingTreasure(HolderLookup.@NotNull Provider lookup) {
+        final HolderGetter<Enchantment> enchantments = enchantments(lookup);
         return LootPool
                 .lootPool()
                 .setRolls(ConstantValue.exactly(1))
@@ -166,12 +180,12 @@ public class EndChestLootTableProvider extends WoverLootTableProvider {
                 .add(LootItem.lootTableItem(EndDecorBlocks.MENGER_SPONGE))
                 .add(LootItem.lootTableItem(Items.BOW)
                              .apply(SetItemDamageFunction.setDamage(UniformGenerator.between(0.0F, 0.25F)))
-                             .apply(EnchantWithLevelsFunction.enchantWithLevels(lookup, ConstantValue.exactly(30.0F))))
+                             .apply(EnchantWithLevelsFunction.enchantWithLevels(enchantments, ConstantValue.exactly(30.0F))))
                 .add(LootItem.lootTableItem(Items.FISHING_ROD)
                              .apply(SetItemDamageFunction.setDamage(UniformGenerator.between(0.0F, 0.25F)))
-                             .apply(EnchantWithLevelsFunction.enchantWithLevels(lookup, ConstantValue.exactly(30.0F))))
+                             .apply(EnchantWithLevelsFunction.enchantWithLevels(enchantments, ConstantValue.exactly(30.0F))))
                 .add(LootItem.lootTableItem(Items.BOOK)
-                             .apply(EnchantWithLevelsFunction.enchantWithLevels(lookup, ConstantValue.exactly(30.0F))));
+                             .apply(EnchantWithLevelsFunction.enchantWithLevels(enchantments, ConstantValue.exactly(30.0F))));
     }
 
     private LootPool.Builder foggyMushroomland() {

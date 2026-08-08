@@ -1,0 +1,19 @@
+{
+  "type": "betterend:end_round_cave",
+  "probability": 0.4,
+  "radius": {
+    "type": "minecraft:uniform",
+    "max_inclusive": 30,
+    "min_inclusive": 10
+  },
+  "vertical_squash": 1.6,
+  "y": {
+    "type": "minecraft:uniform",
+    "max_inclusive": {
+      "absolute": 56
+    },
+    "min_inclusive": {
+      "absolute": 8
+    }
+  }
+}

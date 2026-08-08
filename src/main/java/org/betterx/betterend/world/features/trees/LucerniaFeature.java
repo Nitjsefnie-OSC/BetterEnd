@@ -18,6 +18,8 @@ import org.betterx.betterend.registry.EndBlocks;
 import de.ambertation.wover.feature.api.WriteZone;
 import de.ambertation.wover.tag.api.predefined.CommonBlockTags;
 
+import com.mojang.serialization.MapCodec;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.BlockPos.MutableBlockPos;
 import net.minecraft.core.Direction;
@@ -26,8 +28,7 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.LeavesBlock;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.levelgen.feature.FeaturePlaceContext;
-import net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConfiguration;
+import net.minecraft.world.level.chunk.ChunkGenerator;
 
 import com.google.common.collect.Lists;
 import org.joml.Vector3f;
@@ -36,6 +37,13 @@ import java.util.List;
 import java.util.function.Function;
 
 public class LucerniaFeature extends DefaultFeature {
+    public static final MapCodec<LucerniaFeature> CODEC = MapCodec.unit(LucerniaFeature::new);
+
+    @Override
+    public MapCodec<LucerniaFeature> codec() {
+        return CODEC;
+    }
+
     private static final Direction[] DIRECTIONS = Direction.values();
     private static final Function<BlockState, Boolean> REPLACE;
     private static final Function<BlockState, Boolean> IGNORE;
@@ -50,11 +58,12 @@ public class LucerniaFeature extends DefaultFeature {
     private static final float LEAF_BALL_BULGE = 3.5F;
 
     @Override
-    public boolean place(FeaturePlaceContext<NoneFeatureConfiguration> featureConfig) {
-        final RandomSource random = featureConfig.random();
-        final BlockPos pos = featureConfig.origin();
-        final WorldGenLevel world = featureConfig.level();
-        final NoneFeatureConfiguration config = featureConfig.config();
+    public boolean place(
+            WorldGenLevel world,
+            ChunkGenerator generator,
+            RandomSource random,
+            BlockPos pos
+    ) {
         if (!world.getBlockState(pos.below()).is(BlockTags.NYLIUM)) return false;
 
         // Branch splines are scaled by up to `size` (up to 20) and rotated to any angle, so the fillSpline
@@ -90,7 +99,9 @@ public class LucerniaFeature extends DefaultFeature {
                     leavesRadius,
                     random,
                     noise,
-                    config != null,
+                    // Was `config != null`: the 26.1 configuration was NoneFeatureConfiguration, which
+                    // FeaturePlaceContext never handed out as null, so this was always true.
+                    true,
                     zone,
                     outerLeaves
             );

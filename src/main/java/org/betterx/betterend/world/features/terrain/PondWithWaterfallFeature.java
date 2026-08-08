@@ -8,6 +8,8 @@ import org.betterx.bclib.util.BlocksHelper;
 import org.betterx.bclib.util.MHelper;
 import org.betterx.betterend.noise.OpenSimplexNoise;
 
+import com.mojang.serialization.MapCodec;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.BlockPos.MutableBlockPos;
 import net.minecraft.core.Direction;
@@ -17,9 +19,8 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.levelgen.Heightmap;
-import net.minecraft.world.level.levelgen.feature.FeaturePlaceContext;
-import net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConfiguration;
 import net.minecraft.world.level.material.Fluids;
+import net.minecraft.world.level.chunk.ChunkGenerator;
 
 /**
  * Carves a shallow rim pond into the top of a small void-ring island and lets it spill one or
@@ -45,6 +46,13 @@ import net.minecraft.world.level.material.Fluids;
  * marked via {@link ChunkAccess#markPosForPostProcessing(BlockPos)} so the fluid state settles.
  */
 public class PondWithWaterfallFeature extends DefaultFeature {
+    public static final MapCodec<PondWithWaterfallFeature> CODEC = MapCodec.unit(PondWithWaterfallFeature::new);
+
+    @Override
+    public MapCodec<PondWithWaterfallFeature> codec() {
+        return CODEC;
+    }
+
     private static final BlockState END_STONE = Blocks.END_STONE.defaultBlockState();
     private static final BlockState END_MOSS = EndTerrainBlocks.END_MOSS.defaultBlockState();
     private static final OpenSimplexNoise NOISE = new OpenSimplexNoise(6114);
@@ -71,10 +79,12 @@ public class PondWithWaterfallFeature extends DefaultFeature {
     private static final int MAX_THICKNESS_PROBE = 24;
 
     @Override
-    public boolean place(FeaturePlaceContext<NoneFeatureConfiguration> ctx) {
-        final WorldGenLevel world = ctx.level();
-        final RandomSource random = ctx.random();
-        final BlockPos origin = ctx.origin();
+    public boolean place(
+            WorldGenLevel world,
+            ChunkGenerator generator,
+            RandomSource random,
+            BlockPos origin
+    ) {
 
         // Centre on the chunk (origin + 8). The pond is island-aware and cross-chunk safe, so the old
         // chunk-bound clamps (minX/maxX/minZ/maxZ) are gone.

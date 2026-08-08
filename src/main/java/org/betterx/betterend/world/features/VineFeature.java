@@ -5,6 +5,8 @@ import org.betterx.bclib.util.BlocksHelper;
 import de.ambertation.wover.block.api.BlockProperties;
 import de.ambertation.wover.block.api.BlockProperties.TripleShape;
 
+import com.mojang.serialization.MapCodec;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.WorldGenLevel;
@@ -14,8 +16,15 @@ public class VineFeature extends InvertedScatterFeature<VineFeatureConfig> {
     private BlockState plant;
     boolean vine;
 
-    public VineFeature() {
-        super(VineFeatureConfig.CODEC);
+    public static final MapCodec<VineFeature> CODEC = VineFeatureConfig.CODEC.xmap(VineFeature::new, f -> f.config);
+
+    public VineFeature(VineFeatureConfig config) {
+        super(config);
+    }
+
+    @Override
+    public MapCodec<VineFeature> codec() {
+        return CODEC;
     }
 
     @Override

@@ -152,7 +152,7 @@ public class EndFunctionalBlocks {
             .mapColor(EndMetalBlocks.AETERNIUM_BLOCK.defaultMapColor())
             .strength(5.0F, 1200.0F)
             .sound(SoundType.ANVIL)
-            .pushReaction(PushReaction.BLOCK)
+            .pushReaction(PushReaction.IMMOVEABLE)
             .addTrait(ModCore.isDatagen() ? LeveledAnvilBlock.buildModel(null, null) : null)
             .withBlockItem((def, block) -> new BlockItemDefinition<>(def, id -> new BaseAnvilItem(block, id.getProperties().fireResistant())))
             // Not a full cube, so no sulfur cube archetype - vanilla tags no block of this shape.

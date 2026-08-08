@@ -12,106 +12,129 @@ import org.betterx.betterend.world.features.terrain.caves.CaveSurfaceCoatFeature
 import org.betterx.betterend.world.features.terrain.caves.StalactiteClusterFeature;
 import org.betterx.betterend.world.features.trees.*;
 import de.ambertation.wover.feature.api.FeatureManager;
-import de.ambertation.wover.state.api.WorldState;
 
-import net.minecraft.core.Holder;
-import net.minecraft.core.Registry;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.core.registries.Registries;
+import com.mojang.serialization.MapCodec;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.levelgen.feature.Feature;
-import net.minecraft.world.level.levelgen.feature.configurations.FeatureConfiguration;
 
+/**
+ * Registers BetterEnd's {@link Feature} <em>types</em> and hands out the instances that are usable as-is.
+ * <p>
+ * 26.3 collapsed {@code ConfiguredFeature} into {@link Feature}, which splits this class in two:
+ * <ul>
+ *     <li>{@code BuiltInRegistries.FEATURE} (a registry of stateless {@code Feature<FC>} singletons) became
+ *     {@code BuiltInRegistries.FEATURE_TYPE}, a registry of {@code MapCodec<? extends Feature>} - so what
+ *     gets registered is always a codec.</li>
+ *     <li>A {@link Feature} instance <em>is</em> a configured feature. Features that never had a
+ *     configuration therefore still have a singleton here, and it is what gets handed to
+ *     {@code FeatureContentManager.withFeature(id, feature)}. Features that do carry a configuration have no
+ *     meaningful singleton any more: every use site builds its own instance (see the datagen providers), so
+ *     only the type is registered and the constant is the {@link MapCodec} itself.</li>
+ * </ul>
+ * The old {@code inlineBuild} guard against double registration is gone with the registry it queried:
+ * {@code FEATURE_TYPE} is a plain built-in registry that is populated exactly once, at class-init.
+ */
 public class EndFeatures {
-    public static final StalactiteFeature STALACTITE_FEATURE = inlineBuild("stalactite_feature", new StalactiteFeature());
-    public static final BuildingListFeature BUILDING_LIST_FEATURE = inlineBuild("building_list_feature", new BuildingListFeature());
-    public static final VineFeature VINE_FEATURE = inlineBuild("vine_feature", new VineFeature());
-    public static final WallPlantFeature WALL_PLANT_FEATURE = inlineBuild("wall_plant_feature", new WallPlantFeature());
-    public static final WallPlantOnLogFeature WALL_PLANT_ON_LOG_FEATURE = inlineBuild("wall_plant_on_log_feature", new WallPlantOnLogFeature());
-    public static final GlowPillarFeature GLOW_PILLAR_FEATURE = inlineBuild("glow_pillar_feature", new GlowPillarFeature());
-    public static final HydraluxFeature HYDRALUX_FEATURE = inlineBuild("hydralux_feature", new HydraluxFeature());
-    public static final LanceleafFeature LANCELEAF_FEATURE = inlineBuild("lanceleaf_feature", new LanceleafFeature());
-    public static final MengerSpongeFeature MENGER_SPONGE_FEATURE = inlineBuild("menger_sponge_feature", new MengerSpongeFeature());
-    public static final SinglePlantFeature SINGLE_PLANT_FEATURE = inlineBuild("single_plant_feature", new SinglePlantFeature());
-    public static final SingleInvertedScatterFeature SINGLE_INVERTED_SCATTER_FEATURE = inlineBuild("single_inverted_scatter_feature", new SingleInvertedScatterFeature());
-    public static final DoublePlantFeature DOUBLE_PLANT_FEATURE = inlineBuild("double_plant_feature", new DoublePlantFeature());
-    public static final UnderwaterPlantFeature UNDERWATER_PLANT_FEATURE = inlineBuild("underwater_plant_feature", new UnderwaterPlantFeature());
-    public static final ArchFeature ARCH_FEATURE = inlineBuild("arch_feature", new ArchFeature());
-    public static final ThinArchFeature THIN_ARCH_FEATURE = inlineBuild("thin_arch_feature", new ThinArchFeature());
-    public static final CharniaFeature CHARNIA_FEATURE = inlineBuild("charnia_feature", new CharniaFeature());
-    public static final BlueVineFeature BLUE_VINE_FEATURE = inlineBuild("blue_vine_feature", new BlueVineFeature());
-    public static final FilaluxFeature FILALUX_FEATURE = inlineBuild("filalux_feature", new FilaluxFeature());
-    public static final EndLilyFeature END_LILY_FEATURE = inlineBuild("end_lily_feature", new EndLilyFeature());
-    public static final EndLotusFeature END_LOTUS_FEATURE = inlineBuild("end_lotus_feature", new EndLotusFeature());
-    public static final EndLotusLeafFeature END_LOTUS_LEAF_FEATURE = inlineBuild("end_lotus_leaf_feature", new EndLotusLeafFeature());
-    public static final BushFeature BUSH_FEATURE = inlineBuild("bush_feature", new BushFeature());
-    public static final SingleBlockFeature SINGLE_BLOCK_FEATURE = inlineBuild("single_block_feature", new SingleBlockFeature());
-    public static final BushWithOuterFeature BUSH_WITH_OUTER_FEATURE = inlineBuild("bush_with_outer_feature", new BushWithOuterFeature());
-    public static final MossyGlowshroomFeature MOSSY_GLOWSHROOM_FEATURE = inlineBuild("mossy_glowshroom", new MossyGlowshroomFeature());
-    public static final PythadendronTreeFeature PYTHADENDRON_TREE_FEATURE = inlineBuild("pythadendron_tree", new PythadendronTreeFeature());
-    public static final LacugroveFeature LACUGROVE_FEATURE = inlineBuild("lacugrove", new LacugroveFeature());
-    public static final DragonTreeFeature DRAGON_TREE_FEATURE = inlineBuild("dragon_tree", new DragonTreeFeature());
-    public static final TenaneaFeature TENANEA_FEATURE = inlineBuild("tenanea", new TenaneaFeature());
-    public static final HelixTreeFeature HELIX_TREE_FEATURE = inlineBuild("helix_tree", new HelixTreeFeature());
-    public static final DragonHelixTreeFeature DRAGON_HELIX_TREE_FEATURE = inlineBuild("dragon_helix_tree", new DragonHelixTreeFeature());
-    public static final UmbrellaTreeFeature UMBRELLA_TREE_FEATURE = inlineBuild("umbrella_tree", new UmbrellaTreeFeature());
-    public static final JellyshroomFeature JELLYSHROOM_FEATURE = inlineBuild("jellyshroom", new JellyshroomFeature());
-    public static final GiganticAmaranitaFeature GIGANTIC_AMARANITA_FEATURE = inlineBuild("gigantic_amaranita", new GiganticAmaranitaFeature());
-    public static final LucerniaFeature LUCERNIA_FEATURE = inlineBuild("lucernia", new LucerniaFeature());
-    public static final TenaneaBushFeature TENANEA_BUSH_FEATURE = inlineBuild("tenanea_bush", new TenaneaBushFeature());
-    public static final Lumecorn LUMECORN_FEATURE = inlineBuild("lumecorn", new Lumecorn());
-    public static final LargeAmaranitaFeature LARGE_AMARANITA_FEATURE = inlineBuild("large_amaranita", new LargeAmaranitaFeature());
-    public static final AmaranitaPatchFeature AMARANITA_PATCH_FEATURE = inlineBuild("amaranita_patch", new AmaranitaPatchFeature());
-    public static final NeonCactusFeature NEON_CACTUS_FEATURE = inlineBuild("neon_cactus", new NeonCactusFeature());
+    // --- Features that carry a configuration: only the type is registered. -------------------------------
+    public static final MapCodec<StalactiteFeature> STALACTITE_FEATURE = registerType("stalactite_feature", StalactiteFeature.CODEC);
+    public static final MapCodec<BuildingListFeature> BUILDING_LIST_FEATURE = registerType("building_list_feature", BuildingListFeature.CODEC);
+    public static final MapCodec<VineFeature> VINE_FEATURE = registerType("vine_feature", VineFeature.CODEC);
+    public static final MapCodec<WallPlantFeature> WALL_PLANT_FEATURE = registerType("wall_plant_feature", WallPlantFeature.CODEC);
+    public static final MapCodec<WallPlantOnLogFeature> WALL_PLANT_ON_LOG_FEATURE = registerType("wall_plant_on_log_feature", WallPlantOnLogFeature.CODEC);
+    public static final MapCodec<GlowPillarFeature> GLOW_PILLAR_FEATURE = registerType("glow_pillar_feature", GlowPillarFeature.CODEC);
+    public static final MapCodec<HydraluxFeature> HYDRALUX_FEATURE = registerType("hydralux_feature", HydraluxFeature.CODEC);
+    public static final MapCodec<LanceleafFeature> LANCELEAF_FEATURE = registerType("lanceleaf_feature", LanceleafFeature.CODEC);
+    public static final MapCodec<MengerSpongeFeature> MENGER_SPONGE_FEATURE = registerType("menger_sponge_feature", MengerSpongeFeature.CODEC);
+    public static final MapCodec<SinglePlantFeature> SINGLE_PLANT_FEATURE = registerType("single_plant_feature", SinglePlantFeature.CODEC);
+    public static final MapCodec<SingleInvertedScatterFeature> SINGLE_INVERTED_SCATTER_FEATURE = registerType("single_inverted_scatter_feature", SingleInvertedScatterFeature.CODEC);
+    public static final MapCodec<DoublePlantFeature> DOUBLE_PLANT_FEATURE = registerType("double_plant_feature", DoublePlantFeature.CODEC);
+    public static final MapCodec<UnderwaterPlantFeature> UNDERWATER_PLANT_FEATURE = registerType("underwater_plant_feature", UnderwaterPlantFeature.CODEC);
+    public static final MapCodec<ArchFeature> ARCH_FEATURE = registerType("arch_feature", ArchFeature.CODEC);
+    public static final MapCodec<ThinArchFeature> THIN_ARCH_FEATURE = registerType("thin_arch_feature", ThinArchFeature.CODEC);
+    public static final MapCodec<CharniaFeature> CHARNIA_FEATURE = registerType("charnia_feature", CharniaFeature.CODEC);
+    public static final MapCodec<BlueVineFeature> BLUE_VINE_FEATURE = registerType("blue_vine_feature", BlueVineFeature.CODEC);
+    public static final MapCodec<FilaluxFeature> FILALUX_FEATURE = registerType("filalux_feature", FilaluxFeature.CODEC);
+    public static final MapCodec<EndLilyFeature> END_LILY_FEATURE = registerType("end_lily_feature", EndLilyFeature.CODEC);
+    public static final MapCodec<EndLotusFeature> END_LOTUS_FEATURE = registerType("end_lotus_feature", EndLotusFeature.CODEC);
+    public static final MapCodec<EndLotusLeafFeature> END_LOTUS_LEAF_FEATURE = registerType("end_lotus_leaf_feature", EndLotusLeafFeature.CODEC);
+    public static final MapCodec<BushFeature> BUSH_FEATURE = registerType("bush_feature", BushFeature.CODEC);
+    public static final MapCodec<SingleBlockFeature> SINGLE_BLOCK_FEATURE = registerType("single_block_feature", SingleBlockFeature.CODEC);
+    public static final MapCodec<BushWithOuterFeature> BUSH_WITH_OUTER_FEATURE = registerType("bush_with_outer_feature", BushWithOuterFeature.CODEC);
+    public static final MapCodec<StalactiteClusterFeature> STALACTITE_CLUSTER = registerType("stalactite_cluster", StalactiteClusterFeature.CODEC);
+    public static final MapCodec<CaveSurfaceCoatFeature> CAVE_SURFACE_COAT = registerType("cave_surface_coat", CaveSurfaceCoatFeature.CODEC);
+    public static final MapCodec<OreLayerFeature> LAYERED_ORE_FEATURE = registerType("ore_layer", OreLayerFeature.CODEC);
+    public static final MapCodec<IceStarFeature> ICE_STAR_FEATURE = registerType("ice_star", IceStarFeature.CODEC);
+    public static final MapCodec<CrashedShipFeature> CRASHED_SHIP_FEATURE = registerType("crashed_ship", CrashedShipFeature.CODEC);
 
-    //Ores
-    public static final OreLayerFeature LAYERED_ORE_FEATURE = inlineBuild("ore_layer", new OreLayerFeature());
+    // --- Features without a configuration: the singleton is the configured feature. ----------------------
+    public static final MossyGlowshroomFeature MOSSY_GLOWSHROOM_FEATURE = register("mossy_glowshroom", MossyGlowshroomFeature.CODEC, new MossyGlowshroomFeature());
+    public static final PythadendronTreeFeature PYTHADENDRON_TREE_FEATURE = register("pythadendron_tree", PythadendronTreeFeature.CODEC, new PythadendronTreeFeature());
+    public static final LacugroveFeature LACUGROVE_FEATURE = register("lacugrove", LacugroveFeature.CODEC, new LacugroveFeature());
+    public static final DragonTreeFeature DRAGON_TREE_FEATURE = register("dragon_tree", DragonTreeFeature.CODEC, new DragonTreeFeature());
+    public static final TenaneaFeature TENANEA_FEATURE = register("tenanea", TenaneaFeature.CODEC, new TenaneaFeature());
+    public static final HelixTreeFeature HELIX_TREE_FEATURE = register("helix_tree", HelixTreeFeature.CODEC, new HelixTreeFeature());
+    public static final DragonHelixTreeFeature DRAGON_HELIX_TREE_FEATURE = register("dragon_helix_tree", DragonHelixTreeFeature.CODEC, new DragonHelixTreeFeature());
+    public static final UmbrellaTreeFeature UMBRELLA_TREE_FEATURE = register("umbrella_tree", UmbrellaTreeFeature.CODEC, new UmbrellaTreeFeature());
+    public static final JellyshroomFeature JELLYSHROOM_FEATURE = register("jellyshroom", JellyshroomFeature.CODEC, new JellyshroomFeature());
+    public static final GiganticAmaranitaFeature GIGANTIC_AMARANITA_FEATURE = register("gigantic_amaranita", GiganticAmaranitaFeature.CODEC, new GiganticAmaranitaFeature());
+    public static final LucerniaFeature LUCERNIA_FEATURE = register("lucernia", LucerniaFeature.CODEC, new LucerniaFeature());
+    public static final TenaneaBushFeature TENANEA_BUSH_FEATURE = register("tenanea_bush", TenaneaBushFeature.CODEC, new TenaneaBushFeature());
+    public static final Lumecorn LUMECORN_FEATURE = register("lumecorn", Lumecorn.CODEC, new Lumecorn());
+    public static final LargeAmaranitaFeature LARGE_AMARANITA_FEATURE = register("large_amaranita", LargeAmaranitaFeature.CODEC, new LargeAmaranitaFeature());
+    public static final AmaranitaPatchFeature AMARANITA_PATCH_FEATURE = register("amaranita_patch", AmaranitaPatchFeature.CODEC, new AmaranitaPatchFeature());
+    public static final NeonCactusFeature NEON_CACTUS_FEATURE = register("neon_cactus", NeonCactusFeature.CODEC, new NeonCactusFeature());
 
     //Lakes
     // The old EndLakeFeature is gone: End lakes are now the EndLakeStructure family (see
     // EndStructures.END_LAKE*), which carves per-chunk during the LAKES step and no longer strands
     // trees over the water.
-    public static final DesertLakeFeature DESERT_LAKE_FEATURE = inlineBuild("desert_lake", new DesertLakeFeature());
-    public static final SulphuricLakeFeature SULPHURIC_LAKE_FEATURE = inlineBuild("sulphuric_lake", new SulphuricLakeFeature());
+    public static final DesertLakeFeature DESERT_LAKE_FEATURE = register("desert_lake", DesertLakeFeature.CODEC, new DesertLakeFeature());
+    public static final SulphuricLakeFeature SULPHURIC_LAKE_FEATURE = register("sulphuric_lake", SulphuricLakeFeature.CODEC, new SulphuricLakeFeature());
 
     //Terrain
-    public static final SurfaceVentFeature SURFACE_VENT_FEATURE = inlineBuild("surface_vent", new SurfaceVentFeature());
-    public static final SulphurHillFeature SULPHUR_HILL_FEATURE = inlineBuild("sulphur_hill", new SulphurHillFeature());
-    public static final ObsidianPillarBasementFeature OBSIDIAN_PILLAR_FEATURE = inlineBuild("obsidian_pillar_basement", new ObsidianPillarBasementFeature());
-    public static final ObsidianBoulderFeature OBSIDIAN_BOULDER_FEATURE = inlineBuild("obsidian_boulder", new ObsidianBoulderFeature());
-    public static final FallenPillarFeature FALLEN_PILLAR_FEATURE = inlineBuild("fallen_pillar", new FallenPillarFeature());
-    public static final CrashedShipFeature CRASHED_SHIP_FEATURE = inlineBuild("crashed_ship", new CrashedShipFeature());
-    public static final SilkMothNestFeature SILK_MOTH_NEST_FEATURE = inlineBuild("silk_moth_nest", new SilkMothNestFeature());
-    public static final IceStarFeature ICE_STAR_FEATURE = inlineBuild("ice_star", new IceStarFeature());
-    public static final SpireFeature SPIRE_FEATURE = inlineBuild("spire", new SpireFeature());
-    public static final FloatingSpireFeature FLOATING_SPIRE_FEATURE = inlineBuild("floating_spire", new FloatingSpireFeature());
-    public static final GeyserFeature GEYSER_FEATURE = inlineBuild("geyser", new GeyserFeature());
-    public static final PondWithWaterfallFeature POND_WITH_WATERFALL_FEATURE = inlineBuild("pond_with_waterfall", new PondWithWaterfallFeature());
-    public static final BiomeIslandFeature OVERWORLD_ISLAND = inlineBuild("overworld_island", new BiomeIslandFeature());
+    public static final SurfaceVentFeature SURFACE_VENT_FEATURE = register("surface_vent", SurfaceVentFeature.CODEC, new SurfaceVentFeature());
+    public static final SulphurHillFeature SULPHUR_HILL_FEATURE = register("sulphur_hill", SulphurHillFeature.CODEC, new SulphurHillFeature());
+    public static final ObsidianPillarBasementFeature OBSIDIAN_PILLAR_FEATURE = register("obsidian_pillar_basement", ObsidianPillarBasementFeature.CODEC, new ObsidianPillarBasementFeature());
+    public static final ObsidianBoulderFeature OBSIDIAN_BOULDER_FEATURE = register("obsidian_boulder", ObsidianBoulderFeature.CODEC, new ObsidianBoulderFeature());
+    public static final FallenPillarFeature FALLEN_PILLAR_FEATURE = register("fallen_pillar", FallenPillarFeature.CODEC, new FallenPillarFeature());
+    public static final SilkMothNestFeature SILK_MOTH_NEST_FEATURE = register("silk_moth_nest", SilkMothNestFeature.CODEC, new SilkMothNestFeature());
+    public static final SpireFeature SPIRE_FEATURE = register("spire", SpireFeature.CODEC, new SpireFeature());
+    public static final FloatingSpireFeature FLOATING_SPIRE_FEATURE = register("floating_spire", FloatingSpireFeature.CODEC, new FloatingSpireFeature());
+    public static final GeyserFeature GEYSER_FEATURE = register("geyser", GeyserFeature.CODEC, new GeyserFeature());
+    public static final PondWithWaterfallFeature POND_WITH_WATERFALL_FEATURE = register("pond_with_waterfall", PondWithWaterfallFeature.CODEC, new PondWithWaterfallFeature());
+    public static final BiomeIslandFeature OVERWORLD_ISLAND = register("overworld_island", BiomeIslandFeature.CODEC, new BiomeIslandFeature());
 
     // Caves
-    public static final SmaragdantCrystalFeature SMARAGDANT_CRYSTAL_FEATURE = inlineBuild("smaragdant_crystal", new SmaragdantCrystalFeature());
-    public static final BigAuroraCrystalFeature BIG_AURORA_CRYSTAL_FEATURE = inlineBuild("big_aurora_crystal", new BigAuroraCrystalFeature());
-    public static final CavePumpkinFeature CAVE_PUMPKIN_FEATURE = inlineBuild("cave_pumpkin", new CavePumpkinFeature());
-    public static final StalactiteClusterFeature STALACTITE_CLUSTER = inlineBuild("stalactite_cluster", new StalactiteClusterFeature());
-    public static final CaveSurfaceCoatFeature CAVE_SURFACE_COAT = inlineBuild("cave_surface_coat", new CaveSurfaceCoatFeature());
+    public static final SmaragdantCrystalFeature SMARAGDANT_CRYSTAL_FEATURE = register("smaragdant_crystal", SmaragdantCrystalFeature.CODEC, new SmaragdantCrystalFeature());
+    public static final BigAuroraCrystalFeature BIG_AURORA_CRYSTAL_FEATURE = register("big_aurora_crystal", BigAuroraCrystalFeature.CODEC, new BigAuroraCrystalFeature());
+    public static final CavePumpkinFeature CAVE_PUMPKIN_FEATURE = register("cave_pumpkin", CavePumpkinFeature.CODEC, new CavePumpkinFeature());
 
-    public static <F extends Feature<FC>, FC extends FeatureConfiguration> F inlineBuild(String name, F feature) {
-        Identifier l = BetterEnd.C.mk(name);
+    /**
+     * Registers a feature type (its {@link MapCodec}) in {@code BuiltInRegistries.FEATURE_TYPE}.
+     *
+     * @param name  the path of the feature type's id
+     * @param codec the codec for the feature type
+     * @param <F>   the feature type
+     * @return the same codec that was passed in
+     */
+    public static <F extends Feature> MapCodec<F> registerType(String name, MapCodec<F> codec) {
+        final Identifier l = BetterEnd.C.mk(name);
+        return FeatureManager.register(l, codec);
+    }
 
-        final Registry<Feature<?>> features;
-        if (WorldState.registryAccess() != null) {
-            features = WorldState.allStageRegistryAccess().lookupOrThrow(Registries.FEATURE);
-        } else {
-            features = BuiltInRegistries.FEATURE;
-        }
-
-        if (features.containsKey(l)) {
-            return (F) features.get(l).map(Holder::value).orElseThrow();
-        }
-
-
-        return FeatureManager.register(l, feature);
+    /**
+     * Registers a feature type and returns a configured instance of it, so that touching any constant
+     * guarantees the corresponding type is registered.
+     *
+     * @param name    the path of the feature type's id
+     * @param codec   the codec for the feature type
+     * @param feature the configured instance to hand out
+     * @param <F>     the feature type
+     * @return {@code feature}
+     */
+    public static <F extends Feature> F register(String name, MapCodec<F> codec, F feature) {
+        registerType(name, codec);
+        return feature;
     }
 
     // NOTE: hasCaves no longer selects any feature-based cave carving here (the legacy
@@ -131,8 +154,9 @@ public class EndFeatures {
         // RUN in every chunk that holds part of the cave band - and a placed feature only runs where the
         // biome at the rolled position declared it. Declaring it on the cave biomes alone left that to
         // chance: in a chunk that is part cave-biome and part land, the roll lands in a land column often
-        // enough that whole chunks of cave went uncoated. Declaring it everywhere makes the roll always
-        // succeed; in a chunk with no cave columns the pass costs 324 biome lookups and stops.
+        // enough that whole chunks of cave went uncoated (a census found one such chunk in 25, with 142
+        // uncoated cave-surface blocks). Declaring it everywhere makes the roll always succeed; in a chunk
+        // with no cave columns the pass costs 324 biome lookups and stops.
         builder.feature(EndPlacedCaveFeatures.CAVE_SURFACE_COAT);
     }
 

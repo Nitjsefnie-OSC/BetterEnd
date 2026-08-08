@@ -43,7 +43,7 @@ public class EmeraldIceBlock extends HalfTransparentBlock {
             }
 
             BlockState belowState = world.getBlockState(pos.below());
-            if (belowState.blocksMotion() || belowState.liquid()) {
+            if (belowState.isSolid() || belowState.liquid()) {
                 world.setBlockAndUpdate(pos, Blocks.WATER.defaultBlockState());
             }
         }

@@ -134,14 +134,12 @@
       }
     },
     {
-      "conditions": [
-        {
-          "condition": "minecraft:location_check",
-          "predicate": {
-            "biomes": "betterend:umbrella_jungle"
-          }
+      "condition": {
+        "type": "minecraft:location_check",
+        "predicate": {
+          "biomes": "betterend:umbrella_jungle"
         }
-      ],
+      },
       "entries": [
         {
           "type": "minecraft:item",
@@ -163,14 +161,12 @@
       }
     },
     {
-      "conditions": [
-        {
-          "condition": "minecraft:location_check",
-          "predicate": {
-            "biomes": "betterend:lantern_woods"
-          }
+      "condition": {
+        "type": "minecraft:location_check",
+        "predicate": {
+          "biomes": "betterend:lantern_woods"
         }
-      ],
+      },
       "entries": [
         {
           "type": "minecraft:item",
@@ -192,14 +188,12 @@
       }
     },
     {
-      "conditions": [
-        {
-          "condition": "minecraft:location_check",
-          "predicate": {
-            "biomes": "betterend:shadow_forest"
-          }
+      "condition": {
+        "type": "minecraft:location_check",
+        "predicate": {
+          "biomes": "betterend:shadow_forest"
         }
-      ],
+      },
       "entries": [
         {
           "type": "minecraft:item",
@@ -225,14 +219,12 @@
       }
     },
     {
-      "conditions": [
-        {
-          "condition": "minecraft:location_check",
-          "predicate": {
-            "biomes": "betterend:chorus_forest"
-          }
+      "condition": {
+        "type": "minecraft:location_check",
+        "predicate": {
+          "biomes": "betterend:chorus_forest"
         }
-      ],
+      },
       "entries": [
         {
           "type": "minecraft:item",
@@ -258,14 +250,12 @@
       }
     },
     {
-      "conditions": [
-        {
-          "condition": "minecraft:location_check",
-          "predicate": {
-            "biomes": "betterend:foggy_mushroomland"
-          }
+      "condition": {
+        "type": "minecraft:location_check",
+        "predicate": {
+          "biomes": "betterend:foggy_mushroomland"
         }
-      ],
+      },
       "entries": [
         {
           "type": "minecraft:item",

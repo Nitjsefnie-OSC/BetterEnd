@@ -12,15 +12,18 @@ import org.betterx.betterend.registry.EndBlocks;
 import de.ambertation.wover.feature.api.WriteZone;
 import de.ambertation.wover.tag.api.predefined.CommonBlockTags;
 
+import com.mojang.serialization.MapCodec;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.WorldGenLevel;
-import net.minecraft.world.level.levelgen.feature.FeaturePlaceContext;
-import net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConfiguration;
+import net.minecraft.world.level.chunk.ChunkGenerator;
 
 import org.joml.Vector3f;
 
 public class BigAuroraCrystalFeature extends DefaultFeature {
+    public static final MapCodec<BigAuroraCrystalFeature> CODEC = MapCodec.unit(BigAuroraCrystalFeature::new);
+
     /**
      * 1-in-N chance of actually growing a formation once every other check has passed. This feature is
      * invoked from two places - CaveFeatureProvider's dedicated floorScatter AND, more frequently, as the
@@ -34,10 +37,17 @@ public class BigAuroraCrystalFeature extends DefaultFeature {
     private static final int RARITY_DIVISOR = 10;
 
     @Override
-    public boolean place(FeaturePlaceContext<NoneFeatureConfiguration> featureConfig) {
-        final RandomSource random = featureConfig.random();
-        BlockPos pos = featureConfig.origin();
-        final WorldGenLevel world = featureConfig.level();
+    public MapCodec<BigAuroraCrystalFeature> codec() {
+        return CODEC;
+    }
+
+    @Override
+    public boolean place(
+            WorldGenLevel world,
+            ChunkGenerator generator,
+            RandomSource random,
+            BlockPos pos
+    ) {
         if (random.nextInt(RARITY_DIVISOR) != 0) {
             return false;
         }

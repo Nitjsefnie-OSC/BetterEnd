@@ -28,9 +28,9 @@ import net.minecraft.world.level.storage.loot.LootPool;
 import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.entries.LootItem;
 import net.minecraft.world.level.storage.loot.functions.SetItemCountFunction;
-import net.minecraft.world.level.storage.loot.predicates.LootItemBlockStatePropertyCondition;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 import net.minecraft.world.level.storage.loot.predicates.LootItemRandomChanceCondition;
+import net.minecraft.world.level.storage.loot.predicates.MatchBlock;
 import net.minecraft.world.level.storage.loot.providers.number.ConstantValue;
 import net.minecraft.world.level.storage.loot.providers.number.UniformGenerator;
 import net.minecraft.world.phys.shapes.CollisionContext;
@@ -128,9 +128,11 @@ public class LumecornBlock extends Block {
             Block block,
             EndBlockProperties.LumecornShape shape
     ) {
-        return LootItemBlockStatePropertyCondition
-                .hasBlockStateProperties(block)
-                .setProperties(StatePropertiesPredicate.Builder.properties().hasProperty(SHAPE, shape));
+        return MatchBlock.blockMatches(
+                provider.blockLookup(),
+                block,
+                StatePropertiesPredicate.Builder.properties().hasProperty(SHAPE, shape)
+        );
     }
 
     @Override

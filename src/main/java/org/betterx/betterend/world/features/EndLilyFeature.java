@@ -5,13 +5,22 @@ import org.betterx.betterend.registry.block.EndWaterPlantBlocks;
 import org.betterx.betterend.blocks.EndLilySeedBlock;
 import org.betterx.betterend.registry.EndBlocks;
 
+import com.mojang.serialization.MapCodec;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.WorldGenLevel;
 
 public class EndLilyFeature extends UnderwaterPlantScatter<ScatterFeatureConfig> {
-    public EndLilyFeature() {
-        super(ScatterFeatureConfig.CODEC);
+    public static final MapCodec<EndLilyFeature> CODEC = ScatterFeatureConfig.CODEC.xmap(EndLilyFeature::new, f -> f.config);
+
+    public EndLilyFeature(ScatterFeatureConfig config) {
+        super(config);
+    }
+
+    @Override
+    public MapCodec<EndLilyFeature> codec() {
+        return CODEC;
     }
 
     @Override

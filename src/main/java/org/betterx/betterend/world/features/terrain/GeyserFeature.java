@@ -24,6 +24,8 @@ import de.ambertation.wover.feature.api.WriteZone;
 import de.ambertation.wover.tag.api.predefined.CommonBlockTags;
 
 import com.mojang.math.Axis;
+import com.mojang.serialization.MapCodec;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.BlockPos.MutableBlockPos;
 import net.minecraft.core.Direction;
@@ -34,28 +36,36 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.HorizontalDirectionalBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.ChunkGenerator;
-import net.minecraft.world.level.levelgen.feature.FeaturePlaceContext;
-import net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConfiguration;
 
 import java.util.function.Function;
 
 public class GeyserFeature extends DefaultFeature {
+    public static final MapCodec<GeyserFeature> CODEC = MapCodec.unit(GeyserFeature::new);
+
+    @Override
+    public MapCodec<GeyserFeature> codec() {
+        return CODEC;
+    }
+
     protected static final Function<BlockState, Boolean> REPLACE1;
     protected static final Function<BlockState, Boolean> REPLACE2;
     private static final Function<BlockState, Boolean> IGNORE;
     private static final Direction[] HORIZONTAL = BlocksHelper.makeHorizontal();
 
     @Override
-    public boolean place(FeaturePlaceContext<NoneFeatureConfiguration> featureConfig) {
-        final RandomSource random = featureConfig.random();
-        final WorldGenLevel world = featureConfig.level();
-        final BlockPos pos = getPosOnSurfaceWG(world, featureConfig.origin());
-        final ChunkGenerator chunkGenerator = featureConfig.chunkGenerator();
+    public boolean place(
+            WorldGenLevel world,
+            ChunkGenerator generator,
+            RandomSource random,
+            BlockPos origin
+    ) {
+        final BlockPos pos = getPosOnSurfaceWG(world, origin);
+        final ChunkGenerator chunkGenerator = generator;
         // The SDF sculpting below (cones/bowls/caves up to radius1 ~= halfHeight * 0.5, halfHeight up to 20)
         // and the closing BlockFixer box are otherwise bounded only by their own shapes/radii, not by the
         // chunks a feature may touch. Clipping both to the write zone is behaviour-neutral (writes out there
-        // were already dropped by WorldGenRegion) and removes reads from chunks that have not been carved -
-        // or even filled - yet. See WriteZone.
+        // were already dropped by WorldGenRegion) and removes the "Detected unsafe terrain read during
+        // worldgen" spam this feature produced. See WriteZone.
         final WriteZone zone = WriteZone.of(world);
 
         if (pos.getY() < 10) {

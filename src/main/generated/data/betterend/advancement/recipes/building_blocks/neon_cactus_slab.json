@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "betterend:neon_cactus_slab"
+        "recipes": "betterend:neon_cactus_slab"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

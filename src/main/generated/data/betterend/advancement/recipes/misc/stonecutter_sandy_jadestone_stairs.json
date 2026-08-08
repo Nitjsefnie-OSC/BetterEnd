@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "betterend:stonecutter_sandy_jadestone_stairs"
+        "recipes": "betterend:stonecutter_sandy_jadestone_stairs"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

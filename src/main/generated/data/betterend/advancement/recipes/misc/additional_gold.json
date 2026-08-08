@@ -3,7 +3,7 @@
   "criteria": {
     "has_the_recipe": {
       "conditions": {
-        "recipe": "betterend:additional_gold"
+        "recipes": "betterend:additional_gold"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

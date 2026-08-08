@@ -1,14 +1,13 @@
 package org.betterx.betterend.world.features.terrain;
 
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.levelgen.feature.configurations.FeatureConfiguration;
 import net.minecraft.world.level.levelgen.feature.stateproviders.BlockStateProvider;
-import net.minecraft.world.level.levelgen.feature.stateproviders.SimpleStateProvider;
 
-public class ThinArchFeatureConfig implements FeatureConfiguration {
-    public static final Codec<ThinArchFeatureConfig> CODEC = RecordCodecBuilder.create(instance -> instance
+public class ThinArchFeatureConfig {
+    public static final MapCodec<ThinArchFeatureConfig> CODEC = RecordCodecBuilder.mapCodec(instance -> instance
             .group(
                     BlockStateProvider.CODEC.fieldOf("states").forGetter(o -> o.block)
             )
@@ -18,7 +17,7 @@ public class ThinArchFeatureConfig implements FeatureConfiguration {
     public final BlockStateProvider block;
 
     public ThinArchFeatureConfig(Block block) {
-        this(SimpleStateProvider.simple(block));
+        this(BlockStateProvider.simple(block));
     }
 
     public ThinArchFeatureConfig(BlockStateProvider block) {

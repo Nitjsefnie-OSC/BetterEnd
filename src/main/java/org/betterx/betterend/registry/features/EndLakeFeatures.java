@@ -1,7 +1,7 @@
 package org.betterx.betterend.registry.features;
 
 import org.betterx.betterend.BetterEnd;
-import de.ambertation.wover.feature.api.placed.PlacedConfiguredFeatureKey;
+import de.ambertation.wover.feature.api.placed.BoundPlacedFeatureKey;
 import de.ambertation.wover.feature.api.placed.PlacedFeatureKey;
 import de.ambertation.wover.feature.api.placed.PlacedFeatureManager;
 
@@ -16,7 +16,7 @@ public class EndLakeFeatures {
             .createKey(BetterEnd.C.mk("desert_lake"))
             .setDecoration(Decoration.LAKES);
 
-    public static final PlacedConfiguredFeatureKey SULPHURIC_LAKE = PlacedFeatureManager
+    public static final BoundPlacedFeatureKey SULPHURIC_LAKE = PlacedFeatureManager
             .createKey(EndConfiguredLakeFeature.SULPHURIC_LAKE)
             .setDecoration(Decoration.LAKES);
 }

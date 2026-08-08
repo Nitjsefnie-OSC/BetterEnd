@@ -14,15 +14,16 @@ import org.betterx.betterend.integration.Integrations;
 import org.betterx.betterend.noise.OpenSimplexNoise;
 import de.ambertation.wover.tag.api.predefined.CommonBlockTags;
 
+import com.mojang.serialization.MapCodec;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.levelgen.feature.FeaturePlaceContext;
-import net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConfiguration;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.level.chunk.ChunkGenerator;
 
 import com.google.common.collect.Lists;
 import org.joml.Vector3f;
@@ -31,16 +32,25 @@ import java.util.List;
 import java.util.function.Function;
 
 public class OldBulbisTreeFeature extends DefaultFeature {
+    public static final MapCodec<OldBulbisTreeFeature> CODEC = MapCodec.unit(OldBulbisTreeFeature::new);
+
+    @Override
+    public MapCodec<OldBulbisTreeFeature> codec() {
+        return CODEC;
+    }
+
     private static final List<Vector3f> SPLINE;
     private static final List<Vector3f> ROOT;
     private static final List<Vector3f> LEAF;
     private static final List<Vector3f> SIDE;
 
     @Override
-    public boolean place(FeaturePlaceContext<NoneFeatureConfiguration> featureConfig) {
-        final RandomSource random = featureConfig.random();
-        final BlockPos pos = featureConfig.origin();
-        final WorldGenLevel world = featureConfig.level();
+    public boolean place(
+            WorldGenLevel world,
+            ChunkGenerator generator,
+            RandomSource random,
+            BlockPos pos
+    ) {
         if (!world.getBlockState(pos.below()).is(CommonBlockTags.END_STONES)) return false;
         if (!world.getBlockState(pos.below(4)).is(CommonBlockTags.END_STONES)) return false;
 

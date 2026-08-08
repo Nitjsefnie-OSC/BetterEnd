@@ -10,6 +10,8 @@ import org.betterx.betterend.blocks.SmaragdantCrystalShardBlock;
 import org.betterx.betterend.registry.EndBlocks;
 import de.ambertation.wover.tag.api.predefined.CommonBlockTags;
 
+import com.mojang.serialization.MapCodec;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.BlockPos.MutableBlockPos;
 import net.minecraft.util.RandomSource;
@@ -17,12 +19,13 @@ import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.levelgen.Heightmap;
-import net.minecraft.world.level.levelgen.feature.FeaturePlaceContext;
-import net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConfiguration;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.material.Fluids;
+import net.minecraft.world.level.chunk.ChunkGenerator;
 
 public class SmaragdantCrystalFeature extends DefaultFeature {
+    public static final MapCodec<SmaragdantCrystalFeature> CODEC = MapCodec.unit(SmaragdantCrystalFeature::new);
+
     /**
      * When the surface-exposure guard below is enabled, the percent chance (0-100) that a column attempt
      * landing on a spot open to the sky is rejected outright. Not 100 so a few columns can still punch
@@ -31,10 +34,17 @@ public class SmaragdantCrystalFeature extends DefaultFeature {
     private static final int SURFACE_REJECT_CHANCE = 80;
 
     @Override
-    public boolean place(FeaturePlaceContext<NoneFeatureConfiguration> featureConfig) {
-        final RandomSource random = featureConfig.random();
-        final BlockPos pos = featureConfig.origin();
-        final WorldGenLevel world = featureConfig.level();
+    public MapCodec<SmaragdantCrystalFeature> codec() {
+        return CODEC;
+    }
+
+    @Override
+    public boolean place(
+            WorldGenLevel world,
+            ChunkGenerator generator,
+            RandomSource random,
+            BlockPos pos
+    ) {
         if (!world.getBlockState(pos.below()).is(CommonBlockTags.END_STONES)) {
             return false;
         }

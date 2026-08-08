@@ -18,6 +18,8 @@ import org.betterx.betterend.noise.OpenSimplexNoise;
 import org.betterx.betterend.registry.EndBlocks;
 import de.ambertation.wover.feature.api.WriteZone;
 
+import com.mojang.serialization.MapCodec;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.BlockPos.MutableBlockPos;
 import net.minecraft.core.Direction;
@@ -25,8 +27,7 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.LeavesBlock;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.levelgen.feature.FeaturePlaceContext;
-import net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConfiguration;
+import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 
 import org.joml.Vector3f;
@@ -35,6 +36,13 @@ import java.util.List;
 import java.util.function.Function;
 
 public class PythadendronTreeFeature extends DefaultFeature {
+    public static final MapCodec<PythadendronTreeFeature> CODEC = MapCodec.unit(PythadendronTreeFeature::new);
+
+    @Override
+    public MapCodec<PythadendronTreeFeature> codec() {
+        return CODEC;
+    }
+
     private static final Function<BlockState, Boolean> REPLACE;
     private static final Function<BlockState, Boolean> IGNORE;
     private static final Function<PosInfo, BlockState> POST;
@@ -47,10 +55,12 @@ public class PythadendronTreeFeature extends DefaultFeature {
     private static final float LEAF_BALL_BULGE = 4.5F;
 
     @Override
-    public boolean place(FeaturePlaceContext<NoneFeatureConfiguration> featureConfig) {
-        final RandomSource random = featureConfig.random();
-        final BlockPos pos = featureConfig.origin();
-        final WorldGenLevel world = featureConfig.level();
+    public boolean place(
+            WorldGenLevel world,
+            ChunkGenerator generator,
+            RandomSource random,
+            BlockPos pos
+    ) {
         if (world.getBlockState(pos.below()).getBlock() != EndTerrainBlocks.CHORUS_NYLIUM) {
             return false;
         }

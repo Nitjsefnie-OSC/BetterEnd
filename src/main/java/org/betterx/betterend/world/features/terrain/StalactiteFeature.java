@@ -4,6 +4,8 @@ import org.betterx.bclib.blocks.StalactiteBlock;
 import org.betterx.bclib.util.BlocksHelper;
 import de.ambertation.wover.tag.api.predefined.CommonBlockTags;
 
+import com.mojang.serialization.MapCodec;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.BlockPos.MutableBlockPos;
 import net.minecraft.util.Mth;
@@ -12,20 +14,31 @@ import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.levelgen.feature.Feature;
-import net.minecraft.world.level.levelgen.feature.FeaturePlaceContext;
+import net.minecraft.world.level.chunk.ChunkGenerator;
 
-public class StalactiteFeature extends Feature<StalactiteFeatureConfig> {
+public class StalactiteFeature implements Feature {
+    public static final MapCodec<StalactiteFeature> CODEC = StalactiteFeatureConfig.CODEC.xmap(StalactiteFeature::new, f -> f.config);
 
-    public StalactiteFeature() {
-        super(StalactiteFeatureConfig.CODEC);
+    public final StalactiteFeatureConfig config;
+
+
+    public StalactiteFeature(StalactiteFeatureConfig config) {
+        this.config = config;
     }
 
     @Override
-    public boolean place(FeaturePlaceContext<StalactiteFeatureConfig> featureConfig) {
-        final RandomSource random = featureConfig.random();
-        final BlockPos pos = featureConfig.origin();
-        final WorldGenLevel world = featureConfig.level();
-        final StalactiteFeatureConfig cfg = featureConfig.config();
+    public MapCodec<StalactiteFeature> codec() {
+        return CODEC;
+    }
+
+    @Override
+    public boolean place(
+            WorldGenLevel world,
+            ChunkGenerator generator,
+            RandomSource random,
+            BlockPos pos
+    ) {
+        final StalactiteFeatureConfig cfg = config;
         if (!cfg.allowedGround.test(world, cfg.ceiling ? pos.above() : pos.below())) {
             return false;
         }

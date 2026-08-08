@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "betterend:stonecutter_violecite_stairs"
+        "recipes": "betterend:stonecutter_violecite_stairs"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

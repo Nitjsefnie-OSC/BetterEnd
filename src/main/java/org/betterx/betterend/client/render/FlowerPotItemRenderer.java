@@ -54,7 +54,7 @@ public class FlowerPotItemRenderer implements BlockEntityRenderer<FlowerPotBlock
     private static final float FALLBACK_PLANT_SCALE = 0.7F;
 
     /**
-     * 26.2 removed the public {@code Minecraft#blockModelResolver} field; the resolver is handed to block
+     * 26.3 removed the public {@code Minecraft#blockModelResolver} field; the resolver is handed to block
      * entity renderers through their provider context instead, so it is captured once here.
      */
     private final BlockModelResolver blockModelResolver;

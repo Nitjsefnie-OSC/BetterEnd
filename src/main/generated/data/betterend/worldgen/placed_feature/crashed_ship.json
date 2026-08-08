@@ -1,10 +1,8 @@
 {
   "feature": {
     "type": "betterend:crashed_ship",
-    "config": {
-      "default": {
-        "Name": "minecraft:end_stone"
-      }
+    "default": {
+      "Name": "minecraft:end_stone"
     }
   },
   "placement": [

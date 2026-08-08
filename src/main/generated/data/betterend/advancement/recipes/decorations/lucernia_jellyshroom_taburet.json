@@ -23,7 +23,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "betterend:lucernia_jellyshroom_taburet"
+        "recipes": "betterend:lucernia_jellyshroom_taburet"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

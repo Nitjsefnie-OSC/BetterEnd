@@ -3,7 +3,7 @@
   "criteria": {
     "has_the_recipe": {
       "conditions": {
-        "recipe": "betterend:additional_iron"
+        "recipes": "betterend:additional_iron"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

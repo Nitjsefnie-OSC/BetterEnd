@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "betterend:_stonecuttingsulphuric_rock_pillar"
+        "recipes": "betterend:_stonecuttingsulphuric_rock_pillar"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

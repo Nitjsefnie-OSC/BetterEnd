@@ -115,7 +115,6 @@ public class EndPortalBlock extends NetherPortalBlock implements Portal {
         return !entity.isPassenger() && !entity.isVehicle() && entity.canUsePortal(false);
     }
 
-
     @Override
     public TeleportTransition getPortalDestination(ServerLevel serverLevel, Entity entity, BlockPos blockPos) {
         final ResourceKey<Level> destination = serverLevel.dimension() == Level.END ? Level.OVERWORLD : Level.END;

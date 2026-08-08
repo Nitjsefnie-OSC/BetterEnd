@@ -120,7 +120,7 @@ public class EndEntities {
     ) {
         Identifier id = BetterEnd.C.mk(name);
         ResourceKey<EntityType<?>> key = ResourceKey.create(Registries.ENTITY_TYPE, id);
-        // Fabric dropped FabricEntityTypeBuilder in 26.2; vanilla's EntityType.Builder is the
+        // Fabric dropped FabricEntityTypeBuilder in 26.3; vanilla's EntityType.Builder is the
         // replacement. `.create(group, factory)` -> `.of(factory, group)`, `.dimensions(...)` ->
         // `.sized(w, h)`. See the note on the other register() overload about fixed dimensions.
         EntityType<T> type = EntityType.Builder
@@ -144,7 +144,7 @@ public class EndEntities {
     ) {
         Identifier id = BetterEnd.C.mk(name);
         ResourceKey<EntityType<?>> key = ResourceKey.create(Registries.ENTITY_TYPE, id);
-        // 26.2: EntityType.Builder#sized always produces EntityDimensions.scalable and there is no
+        // 26.3: EntityType.Builder#sized always produces EntityDimensions.scalable and there is no
         // public setter for fixed dimensions any more (the `dimensions` field is private and vanilla's
         // own EntityTypes never calls EntityDimensions.fixed). `fixedSize` is therefore no longer
         // honoured; it is kept so the per-entity intent stays recorded. The only observable difference

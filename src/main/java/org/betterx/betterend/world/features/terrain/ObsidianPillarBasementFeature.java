@@ -17,22 +17,32 @@ import org.betterx.betterend.registry.EndBlocks;
 import de.ambertation.wover.feature.api.WriteZone;
 import de.ambertation.wover.tag.api.predefined.CommonBlockTags;
 
+import com.mojang.serialization.MapCodec;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.levelgen.feature.FeaturePlaceContext;
-import net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConfiguration;
+import net.minecraft.world.level.chunk.ChunkGenerator;
 
 import org.joml.Vector3f;
 
 public class ObsidianPillarBasementFeature extends DefaultFeature {
+    public static final MapCodec<ObsidianPillarBasementFeature> CODEC = MapCodec.unit(ObsidianPillarBasementFeature::new);
+
     @Override
-    public boolean place(FeaturePlaceContext<NoneFeatureConfiguration> featureConfig) {
-        final RandomSource random = featureConfig.random();
-        BlockPos pos = featureConfig.origin();
-        final WorldGenLevel world = featureConfig.level();
+    public MapCodec<ObsidianPillarBasementFeature> codec() {
+        return CODEC;
+    }
+
+    @Override
+    public boolean place(
+            WorldGenLevel world,
+            ChunkGenerator generator,
+            RandomSource random,
+            BlockPos pos
+    ) {
         pos = getPosOnSurface(
                 world,
                 new BlockPos(pos.getX() + random.nextInt(16), pos.getY(), pos.getZ() + random.nextInt(16))

@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "betterend:stonecutter_dragon_bone_slab"
+        "recipes": "betterend:stonecutter_dragon_bone_slab"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

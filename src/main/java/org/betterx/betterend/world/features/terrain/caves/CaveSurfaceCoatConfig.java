@@ -1,12 +1,12 @@
 package org.betterx.betterend.world.features.terrain.caves;
 
 import net.minecraft.core.HolderSet;
-import net.minecraft.core.RegistryCodecs;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.core.registries.codec.RegistryCodecs;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.levelgen.feature.configurations.FeatureConfiguration;
 
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
 /**
@@ -47,13 +47,13 @@ public record CaveSurfaceCoatConfig(
         int minY,
         int maxY,
         int shellDepth
-) implements FeatureConfiguration {
-    public static final Codec<CaveSurfaceCoatConfig> CODEC = RecordCodecBuilder.create(instance -> instance
+) {
+    public static final MapCodec<CaveSurfaceCoatConfig> CODEC = RecordCodecBuilder.mapCodec(instance -> instance
             .group(
-                    RegistryCodecs.homogeneousList(Registries.BLOCK)
+                    RegistryCodecs.<Block>holderSet(Registries.BLOCK)
                                   .fieldOf("replaceable")
                                   .forGetter(o -> o.replaceable),
-                    RegistryCodecs.homogeneousList(Registries.BLOCK)
+                    RegistryCodecs.<Block>holderSet(Registries.BLOCK)
                                   .fieldOf("protected")
                                   .forGetter(o -> o.protect),
                     Codec.intRange(-64, 320).fieldOf("min_y").forGetter(o -> o.minY),

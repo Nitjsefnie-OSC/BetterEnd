@@ -1,13 +1,8 @@
 package org.betterx.betterend.blocks;
 
-import org.betterx.bclib.util.BlocksHelper;
 import org.betterx.ui.ColorUtil;
 
-import net.minecraft.client.color.block.BlockTintSource;
 import net.minecraft.world.level.block.state.BlockBehaviour;
-
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
 
 public class BulbVineLanternColoredBlock extends BulbVineLanternBlock {
     /**
@@ -26,8 +21,6 @@ public class BulbVineLanternColoredBlock extends BulbVineLanternBlock {
     public BulbVineLanternColoredBlock(BlockBehaviour.Properties settings) {
         super(settings);
     }
-
-
 
     @Override
     protected String getGlowTexture() {

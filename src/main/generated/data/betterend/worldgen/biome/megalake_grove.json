@@ -16,6 +16,62 @@
         "sound": "betterend:betterend.music.water"
       }
     },
+    "minecraft:gameplay/natural_mob_spawns": {
+      "spawn_costs": {},
+      "spawns_by_category": {
+        "ambient": [
+          {
+            "type": "betterend:dragonfly",
+            "count": {
+              "type": "minecraft:uniform",
+              "max_inclusive": 3,
+              "min_inclusive": 1
+            },
+            "weight": 20
+          }
+        ],
+        "monster": [
+          {
+            "type": "betterend:end_slime",
+            "count": {
+              "type": "minecraft:uniform",
+              "max_inclusive": 2,
+              "min_inclusive": 1
+            },
+            "weight": 5
+          },
+          {
+            "type": "minecraft:enderman",
+            "count": {
+              "type": "minecraft:uniform",
+              "max_inclusive": 2,
+              "min_inclusive": 1
+            },
+            "weight": 3
+          }
+        ],
+        "water_ambient": [
+          {
+            "type": "betterend:end_fish",
+            "count": {
+              "type": "minecraft:uniform",
+              "max_inclusive": 8,
+              "min_inclusive": 3
+            },
+            "weight": 20
+          },
+          {
+            "type": "betterend:cubozoa",
+            "count": {
+              "type": "minecraft:uniform",
+              "max_inclusive": 8,
+              "min_inclusive": 3
+            },
+            "weight": 50
+          }
+        ]
+      }
+    },
     "minecraft:visual/ambient_particles": [
       {
         "particle": {
@@ -68,49 +124,5 @@
     ]
   ],
   "has_precipitation": false,
-  "spawn_costs": {},
-  "spawners": {
-    "ambient": [
-      {
-        "type": "betterend:dragonfly",
-        "maxCount": 3,
-        "minCount": 1,
-        "weight": 20
-      }
-    ],
-    "axolotls": [],
-    "creature": [],
-    "misc": [],
-    "monster": [
-      {
-        "type": "betterend:end_slime",
-        "maxCount": 2,
-        "minCount": 1,
-        "weight": 5
-      },
-      {
-        "type": "minecraft:enderman",
-        "maxCount": 2,
-        "minCount": 1,
-        "weight": 3
-      }
-    ],
-    "underground_water_creature": [],
-    "water_ambient": [
-      {
-        "type": "betterend:end_fish",
-        "maxCount": 8,
-        "minCount": 3,
-        "weight": 20
-      },
-      {
-        "type": "betterend:cubozoa",
-        "maxCount": 8,
-        "minCount": 3,
-        "weight": 50
-      }
-    ],
-    "water_creature": []
-  },
   "temperature": 0.5
 }

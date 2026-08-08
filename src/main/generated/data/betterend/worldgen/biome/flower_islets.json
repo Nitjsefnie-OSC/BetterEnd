@@ -15,6 +15,22 @@
         "sound": "betterend:betterend.music.openspace"
       }
     },
+    "minecraft:gameplay/natural_mob_spawns": {
+      "spawn_costs": {},
+      "spawns_by_category": {
+        "monster": [
+          {
+            "type": "minecraft:enderman",
+            "count": {
+              "type": "minecraft:uniform",
+              "max_inclusive": 2,
+              "min_inclusive": 1
+            },
+            "weight": 3
+          }
+        ]
+      }
+    },
     "minecraft:visual/ambient_particles": [
       {
         "particle": {
@@ -68,23 +84,5 @@
     ]
   ],
   "has_precipitation": false,
-  "spawn_costs": {},
-  "spawners": {
-    "ambient": [],
-    "axolotls": [],
-    "creature": [],
-    "misc": [],
-    "monster": [
-      {
-        "type": "minecraft:enderman",
-        "maxCount": 2,
-        "minCount": 1,
-        "weight": 3
-      }
-    ],
-    "underground_water_creature": [],
-    "water_ambient": [],
-    "water_creature": []
-  },
   "temperature": 0.5
 }

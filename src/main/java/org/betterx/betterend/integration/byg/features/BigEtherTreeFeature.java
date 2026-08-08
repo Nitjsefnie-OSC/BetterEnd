@@ -9,12 +9,13 @@ import org.betterx.betterend.integration.Integrations;
 import de.ambertation.wover.feature.api.WriteZone;
 import de.ambertation.wover.tag.api.predefined.CommonBlockTags;
 
+import com.mojang.serialization.MapCodec;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.levelgen.feature.FeaturePlaceContext;
-import net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConfiguration;
+import net.minecraft.world.level.chunk.ChunkGenerator;
 
 import com.google.common.base.Function;
 import org.joml.Vector3f;
@@ -22,11 +23,20 @@ import org.joml.Vector3f;
 import java.util.List;
 
 public class BigEtherTreeFeature extends DefaultFeature {
+    public static final MapCodec<BigEtherTreeFeature> CODEC = MapCodec.unit(BigEtherTreeFeature::new);
+
     @Override
-    public boolean place(FeaturePlaceContext<NoneFeatureConfiguration> featureConfig) {
-        final RandomSource random = featureConfig.random();
-        final BlockPos pos = featureConfig.origin();
-        final WorldGenLevel world = featureConfig.level();
+    public MapCodec<BigEtherTreeFeature> codec() {
+        return CODEC;
+    }
+
+    @Override
+    public boolean place(
+            WorldGenLevel world,
+            ChunkGenerator generator,
+            RandomSource random,
+            BlockPos pos
+    ) {
         if (!world.getBlockState(pos.below()).is(CommonBlockTags.END_STONES)) return false;
 
         // height reaches 60 and branches fan out radially to ~0.4*height (~24 blocks) - well past the 3x3

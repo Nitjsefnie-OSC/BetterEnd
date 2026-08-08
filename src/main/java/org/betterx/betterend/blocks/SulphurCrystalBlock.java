@@ -7,6 +7,8 @@ import org.betterx.bclib.trait.block.SurvivesOnBlockTrait;
 import org.betterx.betterend.registry.EndItems;
 import de.ambertation.wover.loot.api.LootLookupProvider;
 
+// 26.3 split net.minecraft.advancements.criterion into .predicates (StatePropertiesPredicate,
+// ...) and .triggers (every *Trigger).
 import net.minecraft.advancements.predicates.StatePropertiesPredicate;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -36,7 +38,8 @@ import net.minecraft.world.level.storage.loot.functions.LootItemConditionalFunct
 import net.minecraft.world.level.storage.loot.functions.SetItemCountFunction;
 import net.minecraft.world.level.storage.loot.predicates.AllOfCondition;
 import net.minecraft.world.level.storage.loot.predicates.InvertedLootItemCondition;
-import net.minecraft.world.level.storage.loot.predicates.LootItemBlockStatePropertyCondition;
+import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
+import net.minecraft.world.level.storage.loot.predicates.MatchBlock;
 import net.minecraft.world.level.storage.loot.providers.number.ConstantValue;
 import net.minecraft.world.level.storage.loot.providers.number.UniformGenerator;
 import net.minecraft.world.phys.shapes.CollisionContext;
@@ -73,15 +76,29 @@ public class SulphurCrystalBlock extends BaseAttachedBlock.Glass implements Simp
     ) {
         return ApplyBonusCount
                 .addUniformBonusCount(provider.fortune(), i)
-                .when(ageCondition(block, i));
+                .when(ageCondition(block, provider, i));
     }
 
-    private static LootItemBlockStatePropertyCondition.@NotNull Builder ageCondition(Block block, int i) {
-        return LootItemBlockStatePropertyCondition
-                .hasBlockStateProperties(block)
-                .setProperties(StatePropertiesPredicate.Builder
+    /**
+     * 26.3 removed {@code LootItemBlockStatePropertyCondition} and folded block matching into
+     * {@link MatchBlock}, which wraps an advancements {@code BlockPredicate} and therefore resolves the
+     * block into a {@code HolderSet} eagerly - hence the block lookup taken from the provider.
+     * Semantically identical, but it serializes as
+     * {@code {"type": "minecraft:match_block", "blocks": ..., "state": {...}}} instead of
+     * {@code {"condition": "minecraft:block_state_property", "block": ..., "properties": {...}}}.
+     */
+    private static LootItemCondition.@NotNull Builder ageCondition(
+            Block block,
+            @NotNull LootLookupProvider provider,
+            int i
+    ) {
+        return MatchBlock.blockMatches(
+                provider.blockLookup(),
+                block,
+                StatePropertiesPredicate.Builder
                         .properties()
-                        .hasProperty(AGE, i));
+                        .hasProperty(AGE, i)
+        );
     }
 
     public static LootTable.Builder buildLoot(Block block, @NotNull LootLookupProvider provider) {
@@ -94,15 +111,15 @@ public class SulphurCrystalBlock extends BaseAttachedBlock.Glass implements Simp
                                 .add(LootItem.lootTableItem(block)
                                              .apply(SetItemCountFunction
                                                      .setCount(UniformGenerator.between(1, 3))
-                                                     .when(ageCondition(block, 3))
+                                                     .when(ageCondition(block, provider, 3))
                                              )
                                              .apply(SetItemCountFunction
                                                      .setCount(ConstantValue.exactly(1))
-                                                     .when(InvertedLootItemCondition.invert(ageCondition(block, 3)))
+                                                     .when(InvertedLootItemCondition.invert(ageCondition(block, provider, 3)))
                                              )
                                              .apply(ApplyBonusCount
                                                      .addOreBonusCount(provider.fortune())
-                                                     .when(ageCondition(block, 3))
+                                                     .when(ageCondition(block, provider, 3))
                                              )
                                              .apply(applyAgeBonus(block, provider, 2))
                                              .apply(applyAgeBonus(block, provider, 1))
@@ -113,7 +130,7 @@ public class SulphurCrystalBlock extends BaseAttachedBlock.Glass implements Simp
                         LootPool.lootPool()
                                 .when(AllOfCondition.allOf(
                                         InvertedLootItemCondition.invert(provider.hasSilkTouch()),
-                                        ageCondition(block, 3)
+                                        ageCondition(block, provider, 3)
                                 ))
                                 .setRolls(ConstantValue.exactly(1))
                                 .add(LootItem.lootTableItem(EndResourceItems.CRYSTALLINE_SULPHUR)

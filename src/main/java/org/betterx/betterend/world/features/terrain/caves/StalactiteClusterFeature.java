@@ -2,6 +2,8 @@ package org.betterx.betterend.world.features.terrain.caves;
 
 import de.ambertation.wover.tag.api.predefined.CommonBlockTags;
 
+import com.mojang.serialization.MapCodec;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.BlockPos.MutableBlockPos;
 import net.minecraft.util.RandomSource;
@@ -9,7 +11,6 @@ import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.levelgen.feature.Feature;
-import net.minecraft.world.level.levelgen.feature.FeaturePlaceContext;
 
 import org.jetbrains.annotations.Nullable;
 
@@ -20,20 +21,30 @@ import org.jetbrains.annotations.Nullable;
  * {@code DripstoneClusterFeature}. Columns outside the origin chunk are skipped so the feature stays
  * chunk-safe, consistent with the End cave carver conventions.
  */
-public class StalactiteClusterFeature extends Feature<StalactiteClusterConfig> {
+public class StalactiteClusterFeature implements Feature {
+    public static final MapCodec<StalactiteClusterFeature> CODEC = StalactiteClusterConfig.CODEC.xmap(StalactiteClusterFeature::new, f -> f.config);
+
+    public final StalactiteClusterConfig config;
+
     private static final int SEARCH_RANGE = 32;
 
-    public StalactiteClusterFeature() {
-        super(StalactiteClusterConfig.CODEC);
+    public StalactiteClusterFeature(StalactiteClusterConfig config) {
+        this.config = config;
     }
 
     @Override
-    public boolean place(FeaturePlaceContext<StalactiteClusterConfig> ctx) {
-        final StalactiteClusterConfig cfg = ctx.config();
-        final RandomSource random = ctx.random();
-        final BlockPos origin = ctx.origin();
-        final WorldGenLevel world = ctx.level();
-        final ChunkGenerator generator = ctx.chunkGenerator();
+    public MapCodec<StalactiteClusterFeature> codec() {
+        return CODEC;
+    }
+
+    @Override
+    public boolean place(
+            WorldGenLevel world,
+            ChunkGenerator generator,
+            RandomSource random,
+            BlockPos origin
+    ) {
+        final StalactiteClusterConfig cfg = config;
 
         final int r = Math.max(1, cfg.radius().sample(random));
         final float density = cfg.density().sample(random);

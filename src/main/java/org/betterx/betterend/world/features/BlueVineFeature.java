@@ -7,6 +7,8 @@ import org.betterx.bclib.util.MHelper;
 import org.betterx.bclib.blocks.BasePlantWithAgeBlock;
 import org.betterx.betterend.registry.EndBlocks;
 
+import com.mojang.serialization.MapCodec;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.WorldGenLevel;
@@ -14,8 +16,15 @@ import net.minecraft.world.level.WorldGenLevel;
 public class BlueVineFeature extends ScatterFeature<ScatterFeatureConfig> {
     private boolean small;
 
-    public BlueVineFeature() {
-        super(ScatterFeatureConfig.CODEC);
+    public static final MapCodec<BlueVineFeature> CODEC = ScatterFeatureConfig.CODEC.xmap(BlueVineFeature::new, f -> f.config);
+
+    public BlueVineFeature(ScatterFeatureConfig config) {
+        super(config);
+    }
+
+    @Override
+    public MapCodec<BlueVineFeature> codec() {
+        return CODEC;
     }
 
     @Override

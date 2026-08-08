@@ -86,14 +86,14 @@ public abstract class LivingEntityMixin extends Entity {
     /**
      * Adds the attacker's {@code ATTACK_KNOCKBACK} main-hand modifier to the knockback strength of a hit.
      * <p>
-     * 26.2 moved the knockback out of {@code hurtServer} and changed the {@code knockback} descriptor. Verified
+     * 26.3 moved the knockback out of {@code hurtServer} and changed the {@code knockback} descriptor. Verified
      * with {@code javap -p -c net.minecraft.world.entity.LivingEntity}:
      * <pre>
      * 26.1.2  hurtServer:            453: ldc2_w 0.4d ... 460: invokevirtual knockback:(DDD)V
-     * 26.2    hurtServer:            367: invokevirtual dealDefaultKnockback:(Lnet/minecraft/world/damagesource/DamageSource;FZ)V
+     * 26.3    hurtServer:            367: invokevirtual dealDefaultKnockback:(Lnet/minecraft/world/damagesource/DamageSource;FZ)V
      *         dealDefaultKnockback:   91: ldc2_w 0.4d ... 100: invokevirtual knockback:(DDDLnet/minecraft/world/damagesource/DamageSource;F)V
      * </pre>
-     * So the old injector was doubly stale: {@code knockback(DDD)V} no longer exists at all (26.2 only has the
+     * So the old injector was doubly stale: {@code knockback(DDD)V} no longer exists at all (26.3 only has the
      * {@code (DDDLDamageSource;F)V} and {@code (DDDLDamageSource;FZ)V} overloads), and {@code hurtServer} no
      * longer contains any {@code knockback} call to match. Zero matched instructions with {@code require = 1}
      * is an apply-time failure, and this build has no refmap and no mixin annotation processor, so it compiled

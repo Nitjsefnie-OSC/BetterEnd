@@ -14,6 +14,8 @@ import de.ambertation.wover.feature.api.WriteZone;
 import org.betterx.betterend.world.features.trees.EndTreeHelper;
 import de.ambertation.wover.tag.api.predefined.CommonBlockTags;
 
+import com.mojang.serialization.MapCodec;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.RandomSource;
@@ -23,27 +25,38 @@ import net.minecraft.world.level.block.LeavesBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.levelgen.feature.Feature;
-import net.minecraft.world.level.levelgen.feature.FeaturePlaceContext;
+import net.minecraft.world.level.chunk.ChunkGenerator;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 
-public class BushWithOuterFeature extends Feature<BushWithOuterFeatureConfig> {
+public class BushWithOuterFeature implements Feature {
+    public static final MapCodec<BushWithOuterFeature> CODEC = BushWithOuterFeatureConfig.CODEC.xmap(BushWithOuterFeature::new, f -> f.config);
+
+    public final BushWithOuterFeatureConfig config;
+
     private static final Direction[] DIRECTIONS = Direction.values();
     private static final Function<BlockState, Boolean> REPLACE;
 
 
-    public BushWithOuterFeature() {
-        super(BushWithOuterFeatureConfig.CODEC);
+    public BushWithOuterFeature(BushWithOuterFeatureConfig config) {
+        this.config = config;
     }
 
     @Override
-    public boolean place(FeaturePlaceContext<BushWithOuterFeatureConfig> featureConfig) {
-        final RandomSource random = featureConfig.random();
-        final BlockPos pos = featureConfig.origin();
-        BushWithOuterFeatureConfig cfg = featureConfig.config();
-        final WorldGenLevel world = featureConfig.level();
+    public MapCodec<BushWithOuterFeature> codec() {
+        return CODEC;
+    }
+
+    @Override
+    public boolean place(
+            WorldGenLevel world,
+            ChunkGenerator generator,
+            RandomSource random,
+            BlockPos pos
+    ) {
+        BushWithOuterFeatureConfig cfg = config;
         BlockState outer_leaves = cfg.outer_leaves.getState(world, random, pos);
         Block leaves = cfg.leaves.getState(world, random, pos).getBlock();
         BlockState stem = cfg.stem.getState(world, random, pos);

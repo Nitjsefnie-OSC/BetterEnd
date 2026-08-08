@@ -1,32 +1,30 @@
 package org.betterx.betterend.registry.features;
 
 import org.betterx.betterend.BetterEnd;
-import de.ambertation.wover.feature.api.placed.PlacedConfiguredFeatureKey;
+import de.ambertation.wover.feature.api.placed.BoundPlacedFeatureKey;
 import de.ambertation.wover.feature.api.placed.PlacedFeatureKey;
 import de.ambertation.wover.feature.api.placed.PlacedFeatureManager;
 
 import net.minecraft.world.level.levelgen.GenerationStep;
-import net.minecraft.world.level.levelgen.feature.Feature;
-import net.minecraft.world.level.levelgen.feature.configurations.FeatureConfiguration;
 
 public class EndVegetationFeatures {
     //Trees
-    public static final PlacedConfiguredFeatureKey MOSSY_GLOWSHROOM = PlacedFeatureManager.createKey(EndConfiguredVegetation.MOSSY_GLOWSHROOM);
-    public static final PlacedConfiguredFeatureKey PYTHADENDRON_TREE = PlacedFeatureManager.createKey(EndConfiguredVegetation.PYTHADENDRON_TREE);
-    public static final PlacedConfiguredFeatureKey LACUGROVE = PlacedFeatureManager.createKey(EndConfiguredVegetation.LACUGROVE);
-    public static final PlacedConfiguredFeatureKey DRAGON_TREE = PlacedFeatureManager.createKey(EndConfiguredVegetation.DRAGON_TREE);
-    public static final PlacedConfiguredFeatureKey TENANEA = PlacedFeatureManager.createKey(EndConfiguredVegetation.TENANEA);
-    public static final PlacedConfiguredFeatureKey HELIX_TREE = PlacedFeatureManager.createKey(EndConfiguredVegetation.HELIX_TREE);
-    public static final PlacedConfiguredFeatureKey DRAGON_HELIX_TREE = PlacedFeatureManager.createKey(EndConfiguredVegetation.DRAGON_HELIX_TREE);
-    public static final PlacedConfiguredFeatureKey UMBRELLA_TREE = PlacedFeatureManager.createKey(EndConfiguredVegetation.UMBRELLA_TREE);
-    public static final PlacedConfiguredFeatureKey JELLYSHROOM = PlacedFeatureManager.createKey(EndConfiguredVegetation.JELLYSHROOM);
-    public static final PlacedConfiguredFeatureKey GIGANTIC_AMARANITA = PlacedFeatureManager.createKey(EndConfiguredVegetation.GIGANTIC_AMARANITA);
-    public static final PlacedConfiguredFeatureKey LUCERNIA = PlacedFeatureManager.createKey(EndConfiguredVegetation.LUCERNIA);
+    public static final BoundPlacedFeatureKey MOSSY_GLOWSHROOM = PlacedFeatureManager.createKey(EndConfiguredVegetation.MOSSY_GLOWSHROOM);
+    public static final BoundPlacedFeatureKey PYTHADENDRON_TREE = PlacedFeatureManager.createKey(EndConfiguredVegetation.PYTHADENDRON_TREE);
+    public static final BoundPlacedFeatureKey LACUGROVE = PlacedFeatureManager.createKey(EndConfiguredVegetation.LACUGROVE);
+    public static final BoundPlacedFeatureKey DRAGON_TREE = PlacedFeatureManager.createKey(EndConfiguredVegetation.DRAGON_TREE);
+    public static final BoundPlacedFeatureKey TENANEA = PlacedFeatureManager.createKey(EndConfiguredVegetation.TENANEA);
+    public static final BoundPlacedFeatureKey HELIX_TREE = PlacedFeatureManager.createKey(EndConfiguredVegetation.HELIX_TREE);
+    public static final BoundPlacedFeatureKey DRAGON_HELIX_TREE = PlacedFeatureManager.createKey(EndConfiguredVegetation.DRAGON_HELIX_TREE);
+    public static final BoundPlacedFeatureKey UMBRELLA_TREE = PlacedFeatureManager.createKey(EndConfiguredVegetation.UMBRELLA_TREE);
+    public static final BoundPlacedFeatureKey JELLYSHROOM = PlacedFeatureManager.createKey(EndConfiguredVegetation.JELLYSHROOM);
+    public static final BoundPlacedFeatureKey GIGANTIC_AMARANITA = PlacedFeatureManager.createKey(EndConfiguredVegetation.GIGANTIC_AMARANITA);
+    public static final BoundPlacedFeatureKey LUCERNIA = PlacedFeatureManager.createKey(EndConfiguredVegetation.LUCERNIA);
 
     //Bushes
-    public static final PlacedConfiguredFeatureKey TENANEA_BUSH = PlacedFeatureManager.createKey(EndConfiguredVegetation.TENANEA_BUSH);
-    public static final PlacedConfiguredFeatureKey LUMECORN = PlacedFeatureManager.createKey(EndConfiguredVegetation.LUMECORN);
-    public static final PlacedConfiguredFeatureKey LARGE_AMARANITA = PlacedFeatureManager.createKey(EndConfiguredVegetation.LARGE_AMARANITA);
+    public static final BoundPlacedFeatureKey TENANEA_BUSH = PlacedFeatureManager.createKey(EndConfiguredVegetation.TENANEA_BUSH);
+    public static final BoundPlacedFeatureKey LUMECORN = PlacedFeatureManager.createKey(EndConfiguredVegetation.LUMECORN);
+    public static final BoundPlacedFeatureKey LARGE_AMARANITA = PlacedFeatureManager.createKey(EndConfiguredVegetation.LARGE_AMARANITA);
     public static final PlacedFeatureKey NEON_CACTUS = createVegetationKey("neon_cactus");
     public static final PlacedFeatureKey PYTHADENDRON_BUSH = createVegetationKey("pythadendron_bush");
     public static final PlacedFeatureKey DRAGON_TREE_BUSH = createVegetationKey("dragon_tree_bush");
@@ -123,7 +121,9 @@ public class EndVegetationFeatures {
     public static final PlacedFeatureKey GLOW_PILLAR = createVegetationKey("glow_pillar");
 
 
-    private static <F extends Feature<FC>, FC extends FeatureConfiguration> PlacedFeatureKey createVegetationKey(
+    // The type parameters were never used (and no longer exist: 26.3 made Feature non-generic and deleted
+    // FeatureConfiguration), so this is a plain helper now.
+    private static PlacedFeatureKey createVegetationKey(
             String name
     ) {
         return PlacedFeatureManager

@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "betterend:_stonecuttingthallasium_tile"
+        "recipes": "betterend:_stonecuttingthallasium_tile"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

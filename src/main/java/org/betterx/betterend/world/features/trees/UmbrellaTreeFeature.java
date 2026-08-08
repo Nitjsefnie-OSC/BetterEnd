@@ -15,6 +15,8 @@ import org.betterx.betterend.registry.EndBlocks;
 import de.ambertation.wover.feature.api.WriteZone;
 import de.ambertation.wover.tag.api.predefined.CommonBlockTags;
 
+import com.mojang.serialization.MapCodec;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.BlockPos.MutableBlockPos;
 import net.minecraft.core.Direction;
@@ -23,8 +25,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.levelgen.feature.FeaturePlaceContext;
-import net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConfiguration;
+import net.minecraft.world.level.chunk.ChunkGenerator;
 
 import com.google.common.collect.Lists;
 import org.joml.Vector3f;
@@ -33,6 +34,13 @@ import java.util.List;
 import java.util.function.Function;
 
 public class UmbrellaTreeFeature extends DefaultFeature {
+    public static final MapCodec<UmbrellaTreeFeature> CODEC = MapCodec.unit(UmbrellaTreeFeature::new);
+
+    @Override
+    public MapCodec<UmbrellaTreeFeature> codec() {
+        return CODEC;
+    }
+
     private static final Function<BlockState, Boolean> REPLACE;
     private static final List<Vector3f> SPLINE;
     private static final List<Vector3f> ROOT;
@@ -46,11 +54,12 @@ public class UmbrellaTreeFeature extends DefaultFeature {
     private static final float MEMBRANE_BULGE = 1.1F;
 
     @Override
-    public boolean place(FeaturePlaceContext<NoneFeatureConfiguration> featureConfig) {
-        final RandomSource random = featureConfig.random();
-        final BlockPos pos = featureConfig.origin();
-        final WorldGenLevel world = featureConfig.level();
-        final NoneFeatureConfiguration config = featureConfig.config();
+    public boolean place(
+            WorldGenLevel world,
+            ChunkGenerator generator,
+            RandomSource random,
+            BlockPos pos
+    ) {
         if (!world.getBlockState(pos.below()).is(BlockTags.NYLIUM)) return false;
 
         // Branches are scaled by up to `size * 1.5 * 0.7` (~21) and rotated to any angle, so both the
@@ -73,10 +82,9 @@ public class UmbrellaTreeFeature extends DefaultFeature {
         SDF sdf = null;
         List<Center> centers = Lists.newArrayList();
 
-        float scale = 1;
-        if (config != null) {
-            scale = MHelper.randRange(1F, 1.7F, random);
-        }
+        // Was `if (config != null)`: the 26.1 configuration was NoneFeatureConfiguration, which
+        // FeaturePlaceContext never handed out as null, so the branch was always taken.
+        float scale = MHelper.randRange(1F, 1.7F, random);
 
         for (int i = 0; i < count; i++) {
             float angle = (float) i / (float) count * MHelper.PI2 + MHelper.randRange(0, var, random) + start;

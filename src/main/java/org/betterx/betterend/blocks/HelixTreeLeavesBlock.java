@@ -30,5 +30,4 @@ public class HelixTreeLeavesBlock extends Block {
         double pz = ctx.getClickedPos().getZ() * 0.1;
         return this.defaultBlockState().setValue(COLOR, MHelper.floor(NOISE.eval(px, py, pz) * 3.5 + 4));
     }
-
 }

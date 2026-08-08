@@ -12,6 +12,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
@@ -37,10 +38,17 @@ import net.minecraft.world.level.block.AbstractFurnaceBlock;
 import static net.minecraft.world.level.block.Block.UPDATE_ALL;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BaseContainerBlockEntity;
-import net.minecraft.world.level.block.entity.FuelValues;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.item.component.CookingFuel;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.level.storage.loot.LootContext;
+import net.minecraft.world.level.storage.loot.LootParams;
+import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
+import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
+import net.minecraft.world.level.storage.loot.providers.number.NumberProvider;
+import net.minecraft.world.level.storage.loot.providers.number.NumberProviders;
+import net.minecraft.world.level.storage.loot.providers.number.ResolvableNumber;
 import net.minecraft.world.phys.Vec3;
 
 import com.google.common.collect.Lists;
@@ -50,6 +58,8 @@ import it.unimi.dsi.fastutil.objects.Reference2IntOpenHashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import org.jetbrains.annotations.NotNull;
 
 // This smelter can handle different kinds of recipes. It is made for Alloying recipes,
@@ -422,7 +432,7 @@ public class EndStoneSmelterBlockEntity extends BaseContainerBlockEntity impleme
         }
 
         final ItemStack fuelStack = smelterEntity.inventory.get(EndStoneSmelterMenu.FUEL_SLOT);
-        final boolean hasFuel = !fuelStack.isEmpty() && canUseAsFuel(tickLevel, fuelStack);
+        final boolean hasFuel = !fuelStack.isEmpty() && canUseAsFuel(fuelStack);
 
         final InputState inputState = new InputState(
                 smelterEntity.inventory.get(EndStoneSmelterMenu.INGREDIENT_SLOT_A),
@@ -449,7 +459,7 @@ public class EndStoneSmelterBlockEntity extends BaseContainerBlockEntity impleme
             if (!smelterEntity.isLit()
                     && canBurn(tickLevel.registryAccess(), recipeInfo, smelterEntity.inventory, maxStackSize)
             ) {
-                smelterEntity.litTimeRemaining = getBurnDuration(tickLevel.fuelValues(), fuelStack, recipeInfo);
+                smelterEntity.litTimeRemaining = smelterEntity.getBurnDuration(tickLevel, fuelStack, recipeInfo);
                 smelterEntity.litTotalTime = smelterEntity.litTimeRemaining;
                 if (smelterEntity.isLit()) {
                     didChange = true;
@@ -706,22 +716,74 @@ public class EndStoneSmelterBlockEntity extends BaseContainerBlockEntity impleme
             return true;
         }
         ItemStack itemStack = this.inventory.get(EndStoneSmelterMenu.FUEL_SLOT);
-        return canUseAsFuel(this.level, stack)
+        return canUseAsFuel(stack)
                 || stack.is(Items.BUCKET) && !itemStack.is(Items.BUCKET);
     }
 
-    public static boolean canUseAsFuel(Level level, ItemStack fuelStack) {
-        return AVAILABLE_FUELS.containsKey(fuelStack.getItem())
-                || level.fuelValues().burnDuration(fuelStack) > 2000;
+    /**
+     * The vanilla cooking-fuel providers that used to resolve to a burn duration above the smelter's
+     * {@code > 2000} threshold: blaze rod (2400), dried kelp block (4001), coal block (16000) and lava bucket
+     * (20000). Everything else vanilla ships stays at or below 1600.
+     * <p>
+     * 26.3 deleted {@code FuelValues} (and {@code Level#fuelValues()}): burn duration is now the
+     * {@code minecraft:cooking_fuel} item component, whose value is a {@link NumberProvider} key that can only
+     * be resolved against a {@link ServerLevel}'s registries and a loot context. {@link #canUseAsFuel} is asked
+     * on both sides (the menu's {@code isFuel}, hopper insertion, {@code canPlaceItem}), so it cannot resolve
+     * anything - it compares the component's provider key against this set instead, which reproduces exactly
+     * the vanilla items that passed the old threshold. Modded fuels that want in should register through
+     * {@link #registerFuel}, as they always could.
+     */
+    private static final Set<ResourceKey<NumberProvider>> LONG_BURNING_FUELS = Set.of(
+            NumberProviders.COOKING_TIME_BLAZE_ROD,
+            NumberProviders.COOKING_TIME_DRIED_KELP_BLOCK,
+            NumberProviders.COOKING_TIME_COAL_BLOCK,
+            NumberProviders.COOKING_TIME_LAVA_BUCKET
+    );
+
+    public static boolean canUseAsFuel(ItemStack fuelStack) {
+        if (AVAILABLE_FUELS.containsKey(fuelStack.getItem())) return true;
+        final CookingFuel fuel = fuelStack.get(DataComponents.COOKING_FUEL);
+        // 26.3 turned CookingFuel#burnTime() into a ResolvableNumber - LONG_BURNING_FUELS only ever matches
+        // the vanilla tiers, which are all Reference-backed.
+        return fuel != null
+                && fuel.burnTime() instanceof ResolvableNumber.Reference reference
+                && LONG_BURNING_FUELS.contains(reference.key());
     }
 
-    static int getBurnDuration(FuelValues fuelValues, ItemStack fuelStack, MultiRecipeInfo recipeInfo) {
+    /**
+     * Burn duration for one fuel item, multiplied by the recipe kind's factor. Explicitly registered fuels
+     * ({@link #registerFuel}) keep their fixed tick count; everything else is resolved the way vanilla's
+     * furnace does it in 26.3 - through the {@code minecraft:cooking_fuel} component's {@link NumberProvider},
+     * evaluated against this block entity's loot context (which is what makes the datapack-side
+     * {@code minecraft:block/fast_cooking} condition able to halve the duration).
+     */
+    int getBurnDuration(ServerLevel level, ItemStack fuelStack, MultiRecipeInfo recipeInfo) {
         if (fuelStack.isEmpty()) return 0;
 
-        return AVAILABLE_FUELS.getOrDefault(
-                fuelStack.getItem(),
-                fuelValues.burnDuration(fuelStack)
-        ) * recipeInfo.burnTimeMultiplicator();
+        final Integer registered = AVAILABLE_FUELS.get(fuelStack.getItem());
+        final int base = registered != null ? registered : resolveVanillaBurnDuration(level, fuelStack);
+        return base * recipeInfo.burnTimeMultiplicator();
+    }
+
+    private int resolveVanillaBurnDuration(ServerLevel level, ItemStack fuelStack) {
+        return ResolvableNumber.getIntFromItem(
+                fuelStack, DataComponents.COOKING_FUEL, CookingFuel::burnTime, lootContext(level), 0
+        );
+    }
+
+    /**
+     * The same loot context {@code AbstractFurnaceBlockEntity#getLootContext} builds. This block entity does
+     * not extend that class, so the parameter set is reproduced here rather than inherited.
+     */
+    private LootContext lootContext(ServerLevel level) {
+        return new LootContext.Builder(
+                new LootParams.Builder(level)
+                        .withParameter(LootContextParams.BLOCK_STATE, getBlockState())
+                        .withParameter(LootContextParams.BLOCK_ENTITY, this)
+                        .withParameter(LootContextParams.ORIGIN, Vec3.atCenterOf(getBlockPos()))
+                        .withParameter(LootContextParams.CONTAINER, this)
+                        .create(LootContextParamSets.CONTAINER_PROCESS)
+        ).create(Optional.empty());
     }
 
     public static void registerFuel(ItemLike fuel, int time) {

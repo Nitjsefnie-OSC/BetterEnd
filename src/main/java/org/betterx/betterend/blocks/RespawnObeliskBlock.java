@@ -14,7 +14,6 @@ import de.ambertation.wover.block.api.BlockProperties.TripleShape;
 import de.ambertation.wover.loot.api.LootLookupProvider;
 
 import net.minecraft.advancements.predicates.StatePropertiesPredicate;
-import net.minecraft.client.color.block.BlockTintSource;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
@@ -44,15 +43,19 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
+import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.LootPool;
 import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.entries.LootItem;
-import net.minecraft.world.level.storage.loot.predicates.LootItemBlockStatePropertyCondition;
+import net.minecraft.world.level.storage.loot.predicates.MatchBlock;
 import net.minecraft.world.level.storage.loot.providers.number.ConstantValue;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
+import com.google.common.collect.Lists;
+
+import java.util.List;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -164,14 +167,15 @@ public class RespawnObeliskBlock extends Block {
                 .withPool(LootPool
                         .lootPool()
                         .setRolls(ConstantValue.exactly(1.0F))
-                        .when(LootItemBlockStatePropertyCondition
-                                .hasBlockStateProperties(block)
-                                .setProperties(StatePropertiesPredicate.Builder
+                        .when(MatchBlock.blockMatches(
+                                provider.blockLookup(),
+                                block,
+                                StatePropertiesPredicate.Builder
                                         .properties()
-                                        .hasProperty(SHAPE, TripleShape.BOTTOM)))
+                                        .hasProperty(SHAPE, TripleShape.BOTTOM)
+                        ))
                         .add(LootItem.lootTableItem(block)));
     }
-
 
     @Override
     protected @NotNull InteractionResult useItemOn(

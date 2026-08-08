@@ -45,8 +45,9 @@ public class EndBiomeModificationProvider extends WoverRegistryContentProvider<B
         // feature only runs where the biome at the rolled position declared it, and the roll is one random
         // column of the chunk. EndFeatures#addDefaultFeatures covers BetterEnd's own biomes; this covers the
         // rest, above all vanilla's minecraft:the_end, which owns the void columns between the islands and
-        // made up more than half of some cave chunks. The pass itself paints cave columns only, so declaring
-        // it here changes nothing about where the coat appears; it only decides where the sweep gets to look.
+        // made up more than half of some cave chunks - a census found two chunks of 25 skipped entirely for
+        // that reason. The pass itself paints cave columns only, so declaring it here changes nothing about
+        // where the coat appears; it only decides where the sweep gets to look.
         BiomeModification
                 .build(context, BetterEnd.C.id("cave_surface_coat"))
                 .allOf(

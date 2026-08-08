@@ -9,6 +9,8 @@ import org.betterx.bclib.util.BlocksHelper;
 import org.betterx.betterend.registry.EndBlocks;
 import org.betterx.betterend.util.GlobalState;
 
+import com.mojang.serialization.MapCodec;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.BlockPos.MutableBlockPos;
 import net.minecraft.core.Direction;
@@ -18,10 +20,16 @@ import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.levelgen.Heightmap;
-import net.minecraft.world.level.levelgen.feature.FeaturePlaceContext;
-import net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConfiguration;
+import net.minecraft.world.level.chunk.ChunkGenerator;
 
 public class SilkMothNestFeature extends DefaultFeature {
+    public static final MapCodec<SilkMothNestFeature> CODEC = MapCodec.unit(SilkMothNestFeature::new);
+
+    @Override
+    public MapCodec<SilkMothNestFeature> codec() {
+        return CODEC;
+    }
+
     private boolean canGenerate(WorldGenLevel world, BlockPos pos) {
         BlockState state = world.getBlockState(pos.above());
         // Cube leaves or logs only: a tenanea_outer_leaves above fills just the half of its block nearest
@@ -30,7 +38,7 @@ public class SilkMothNestFeature extends DefaultFeature {
             state = world.getBlockState(pos);
             if ((state.isAir() || state.is(EndWoodBlocks.TENANEA_OUTER_LEAVES)) && world.isEmptyBlock(pos.below())) {
                 for (Direction dir : BlocksHelper.HORIZONTAL) {
-                    return !world.getBlockState(pos.below().relative(dir)).blocksMotion();
+                    return !world.getBlockState(pos.below().relative(dir)).isSolid();
                 }
             }
         }
@@ -38,11 +46,13 @@ public class SilkMothNestFeature extends DefaultFeature {
     }
 
     @Override
-    public boolean place(FeaturePlaceContext<NoneFeatureConfiguration> featureConfig) {
+    public boolean place(
+            WorldGenLevel world,
+            ChunkGenerator generator,
+            RandomSource random,
+            BlockPos center
+    ) {
         final MutableBlockPos POS = GlobalState.stateForThread().POS;
-        final RandomSource random = featureConfig.random();
-        final BlockPos center = featureConfig.origin();
-        final WorldGenLevel world = featureConfig.level();
         int maxY = world.getHeight(Heightmap.Types.WORLD_SURFACE, center.getX(), center.getZ());
         int minY = BlocksHelper.upRay(world, new BlockPos(center.getX(), 0, center.getZ()), maxY);
         POS.set(center);

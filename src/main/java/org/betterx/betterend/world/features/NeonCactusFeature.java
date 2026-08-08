@@ -7,19 +7,29 @@ import org.betterx.bclib.api.v2.levelgen.features.features.DefaultFeature;
 import org.betterx.betterend.blocks.NeonCactusPlantBlock;
 import org.betterx.betterend.registry.EndBlocks;
 
+import com.mojang.serialization.MapCodec;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.levelgen.feature.FeaturePlaceContext;
-import net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConfiguration;
+import net.minecraft.world.level.chunk.ChunkGenerator;
 
 public class NeonCactusFeature extends DefaultFeature {
+    public static final MapCodec<NeonCactusFeature> CODEC = MapCodec.unit(NeonCactusFeature::new);
+
     @Override
-    public boolean place(FeaturePlaceContext<NoneFeatureConfiguration> featureConfig) {
-        final RandomSource random = featureConfig.random();
-        final BlockPos pos = featureConfig.origin();
-        final WorldGenLevel world = featureConfig.level();
+    public MapCodec<NeonCactusFeature> codec() {
+        return CODEC;
+    }
+
+    @Override
+    public boolean place(
+            WorldGenLevel world,
+            ChunkGenerator generator,
+            RandomSource random,
+            BlockPos pos
+    ) {
         BlockState ground = world.getBlockState(pos.below());
         if (!ground.is(EndTerrainBlocks.ENDSTONE_DUST) && !ground.is(EndTerrainBlocks.END_MOSS)) {
             return false;

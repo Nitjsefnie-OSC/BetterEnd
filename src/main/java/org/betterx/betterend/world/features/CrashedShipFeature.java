@@ -19,10 +19,10 @@ import net.minecraft.world.level.block.Mirror;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.levelgen.feature.FeaturePlaceContext;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.level.levelgen.structure.templatesystem.*;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate.StructureBlockInfo;
+import net.minecraft.world.level.chunk.ChunkGenerator;
 
 
 public class CrashedShipFeature extends NBTFeature<NBTFeatureConfig> {
@@ -30,8 +30,15 @@ public class CrashedShipFeature extends NBTFeature<NBTFeatureConfig> {
     private static final String STRUCTURE_PATH = "/data/minecraft/structure/end_city/ship.nbt";
     private StructureTemplate structure;
 
-    public CrashedShipFeature() {
-        super(NBTFeatureConfig.CODEC);
+    public static final MapCodec<CrashedShipFeature> CODEC = NBTFeatureConfig.CODEC.xmap(CrashedShipFeature::new, f -> f.config);
+
+    public CrashedShipFeature(NBTFeatureConfig config) {
+        super(config);
+    }
+
+    @Override
+    public MapCodec<CrashedShipFeature> codec() {
+        return CODEC;
     }
 
     @Override
@@ -86,10 +93,12 @@ public class CrashedShipFeature extends NBTFeature<NBTFeatureConfig> {
     }
 
     @Override
-    public boolean place(FeaturePlaceContext<NBTFeatureConfig> featureConfig) {
-        final RandomSource random = featureConfig.random();
-        BlockPos center = featureConfig.origin();
-        final WorldGenLevel world = featureConfig.level();
+    public boolean place(
+            WorldGenLevel world,
+            ChunkGenerator generator,
+            RandomSource random,
+            BlockPos center
+    ) {
         center = new BlockPos(((center.getX() >> 4) << 4) | 8, 128, ((center.getZ() >> 4) << 4) | 8);
         center = getGround(world, center);
         BoundingBox bounds = makeBox(center);
@@ -98,11 +107,11 @@ public class CrashedShipFeature extends NBTFeature<NBTFeatureConfig> {
             return false;
         }
 
-        StructureTemplate structure = getStructure(featureConfig.config(), world, center, random);
+        StructureTemplate structure = getStructure(config, world, center, random);
         Rotation rotation = getRotation(world, center, random);
         Mirror mirror = getMirror(world, center, random);
         BlockPos offset = StructureTemplate.transform(
-                new BlockPos(structure.getSize()),
+                asBlockPos(structure.getSize()),
                 mirror,
                 rotation,
                 BlockPos.ZERO
@@ -135,7 +144,7 @@ public class CrashedShipFeature extends NBTFeature<NBTFeatureConfig> {
     /**
      * The codec {@link #REPLACER} hands back from {@code codec()}.
      * <p>
-     * 26.2 removed {@code KeyDispatchDataCodec} and turned {@link StructureProcessor} into an interface
+     * 26.3 removed {@code KeyDispatchDataCodec} and turned {@link StructureProcessor} into an interface
      * whose only abstract method is {@code codec()}, returning a plain {@link MapCodec}. Up to 26.1 this
      * processor returned {@code StructureProcessorType.NOP}, which was only ever a placeholder - it is
      * built here in Java, is never serialized and is not registered in
@@ -157,7 +166,7 @@ public class CrashedShipFeature extends NBTFeature<NBTFeatureConfig> {
     static {
         REPLACER = new StructureProcessor() {
             /**
-             * 26.2 replaced the original {@code StructureBlockInfo} parameter with just its position.
+             * 26.3 replaced the original {@code StructureBlockInfo} parameter with just its position.
              * Nothing is lost here: this processor only ever read {@code structureBlockInfo2}, the
              * already-processed info.
              */

@@ -120,8 +120,17 @@ dependencies {
     // https://mvnrepository.com/artifact/javax.annotation/jsr305
     compileOnly group: 'com.google.code.findbugs', name: 'jsr305', version: '3.0.2'
 
-    // run against the full jar
-    runtimeOnly "mcp.mobius.waila:wthit:fabric-${project.wthit_version}"
+    // Optional-integration mods are published against older Minecraft versions than we target, so each of
+    // them drags in an older fabric-api. Loom applies the class tweakers of every mod on the classpath to the
+    // Minecraft jar, and an older fabric-api's tweakers reference signatures that no longer exist (e.g. the
+    // 26.1 datagen module injects FabricTagAppender<E,T> into what is now TagAppender<T>, failing the build
+    // with "Failed to setup Minecraft"). We declare the matching fabric-api ourselves above, so strip theirs.
+    def noFabricApi = { exclude group: "net.fabricmc.fabric-api" }
+
+    // WTHIT is disabled for 26.3: no compatible build has been published (it tops out at fabric-19.0.1,
+    // targeting 26.1.x). Re-enable once it ships a 26.3 build (also un-comment wthit_version in
+    // gradle.properties and re-add "wthit" to optional_dependencies there).
+//    runtimeOnly("mcp.mobius.waila:wthit:fabric-${project.wthit_version}", noFabricApi) // run against the full jar
 
     //1.19.3 modApi "vazkii.patchouli:Patchouli:${project.patchouli_version}"
     // alsoInclude=false: BetterEnd doesn't bundle BCLib into its own jar.
@@ -138,10 +147,14 @@ dependencies {
 //    compileOnly "dev.emi:emi-fabric:${emi_version}:api"
 //    localRuntime "dev.emi:emi-fabric:${emi_version}"
 
-    compileOnly "mezz.jei:jei-${project.minecraft_version}-fabric-api:${project.jei_version}" // compile against the API
-    localRuntime "mezz.jei:jei-${project.minecraft_version}-fabric:${project.jei_version}" // run against the full jar
+    // JEI is disabled for 26.3: no compatible build has been published, and JEI's artifact id embeds the
+    // Minecraft version, so there is no `jei-26.3-snapshot-5-fabric*` to resolve at all. Re-enable once JEI
+    // ships a 26.3 build (also un-comment jei_version in gradle.properties and re-add "jei" to
+    // optional_dependencies there).
+//    compileOnly("mezz.jei:jei-${project.minecraft_version}-fabric-api:${project.jei_version}", noFabricApi) // compile against the API
+//    localRuntime("mezz.jei:jei-${project.minecraft_version}-fabric:${project.jei_version}", noFabricApi) // run against the full jar
 
-    localRuntime "com.terraformersmc:modmenu:${project.modmenu_version}"
+    localRuntime("com.terraformersmc:modmenu:${project.modmenu_version}", noFabricApi)
 
     // alsoInclude=false: BetterEnd doesn't bundle wunderlib into its own jar.
     gradle.modApiOrLocal(dependencies, ':wunderlib', "de.ambertation:wunderlib:${project.wunderlib_version}", false)

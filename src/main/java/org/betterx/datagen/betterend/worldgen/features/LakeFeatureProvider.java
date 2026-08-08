@@ -8,9 +8,7 @@ import de.ambertation.wover.datagen.api.provider.multi.WoverFeatureProvider;
 import de.ambertation.wover.feature.api.placed.PlacedFeatureKey;
 
 import net.minecraft.data.worldgen.BootstrapContext;
-import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
 import net.minecraft.world.level.levelgen.feature.Feature;
-import net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConfiguration;
 import net.minecraft.world.level.levelgen.placement.PlacedFeature;
 
 import org.jetbrains.annotations.NotNull;
@@ -21,7 +19,7 @@ public class LakeFeatureProvider extends WoverFeatureProvider {
     }
 
     @Override
-    protected void bootstrapConfigured(BootstrapContext<ConfiguredFeature<?, ?>> context) {
+    protected void bootstrapFeatures(BootstrapContext<Feature> context) {
         EndConfiguredLakeFeature.SULPHURIC_LAKE.bootstrap(context).register();
     }
 
@@ -40,7 +38,7 @@ public class LakeFeatureProvider extends WoverFeatureProvider {
                 .register();
     }
 
-    private static <F extends Feature<NoneFeatureConfiguration>> void registerLake(
+    private static <F extends Feature> void registerLake(
             BootstrapContext<PlacedFeature> context, PlacedFeatureKey key,
             F feature, int chance
     ) {

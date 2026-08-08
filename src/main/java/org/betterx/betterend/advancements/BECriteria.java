@@ -2,6 +2,10 @@ package org.betterx.betterend.advancements;
 
 import org.betterx.betterend.BetterEnd;
 
+// 26.3 split net.minecraft.advancements.criterion into .predicates (ItemPredicate,
+// LocationPredicate, StatePropertiesPredicate, ...) and .triggers (CriteriaTriggers and every
+// *Trigger). Criterion and CriterionTrigger moved down out of net.minecraft.advancements into
+// .triggers as well; only CriterionTriggerInstance stayed in the advancements package root.
 import net.minecraft.advancements.triggers.Criterion;
 import net.minecraft.advancements.triggers.CriterionTrigger;
 import net.minecraft.advancements.triggers.PlayerTrigger;

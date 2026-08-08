@@ -8,15 +8,21 @@ import org.betterx.betterend.registry.block.EndTerrainBlocks;
 import org.betterx.betterend.registry.block.EndVineBlocks;
 import org.betterx.betterend.registry.features.EndConfiguredCaveFeatures;
 import org.betterx.betterend.registry.features.EndPlacedCaveFeatures;
+import org.betterx.betterend.world.features.VineFeature;
 import org.betterx.betterend.world.features.VineFeatureConfig;
+import org.betterx.betterend.world.features.bushes.BushFeature;
 import org.betterx.betterend.world.features.bushes.BushFeatureConfig;
+import org.betterx.betterend.world.features.terrain.SingleBlockFeature;
+import org.betterx.betterend.world.features.terrain.StalactiteFeature;
 import org.betterx.betterend.world.features.terrain.StalactiteFeatureConfig;
 import org.betterx.betterend.world.features.terrain.caves.CaveSurfaceCoatConfig;
+import org.betterx.betterend.world.features.terrain.caves.CaveSurfaceCoatFeature;
 import org.betterx.betterend.world.features.terrain.caves.StalactiteClusterConfig;
+import org.betterx.betterend.world.features.terrain.caves.StalactiteClusterFeature;
 import de.ambertation.wover.core.api.ModCore;
 import de.ambertation.wover.datagen.api.provider.multi.WoverFeatureProvider;
-import de.ambertation.wover.feature.api.configured.ConfiguredFeatureManager;
-import de.ambertation.wover.feature.api.configured.ConfiguredFeatureKey;
+import de.ambertation.wover.feature.api.configured.FeatureContentManager;
+import de.ambertation.wover.feature.api.configured.FeatureKey;
 import de.ambertation.wover.feature.api.placed.PlacedFeatureKey;
 import de.ambertation.wover.tag.api.predefined.CommonBlockTags;
 
@@ -31,13 +37,11 @@ import net.minecraft.util.valueproviders.UniformInt;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.levelgen.VerticalAnchor;
 import net.minecraft.world.level.levelgen.heightproviders.ConstantHeight;
-import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
-import net.minecraft.world.level.levelgen.feature.configurations.SimpleBlockConfiguration;
-import net.minecraft.world.level.levelgen.feature.configurations.VegetationPatchConfiguration;
+import net.minecraft.world.level.levelgen.feature.VegetationPatchFeature;
 import net.minecraft.world.level.levelgen.feature.stateproviders.BlockStateProvider;
-import net.minecraft.world.level.levelgen.feature.stateproviders.SimpleStateProvider;
 import net.minecraft.world.level.levelgen.placement.CaveSurface;
 import net.minecraft.world.level.levelgen.placement.HeightRangePlacement;
+import net.minecraft.world.level.levelgen.feature.Feature;
 import net.minecraft.world.level.levelgen.placement.PlacedFeature;
 
 import org.jetbrains.annotations.NotNull;
@@ -48,132 +52,137 @@ public class CaveFeatureProvider extends WoverFeatureProvider {
     }
 
     @Override
-    protected void bootstrapConfigured(BootstrapContext<ConfiguredFeature<?, ?>> context) {
+    protected void bootstrapFeatures(BootstrapContext<Feature> context) {
         //EndConfiguredCaveFeatures.CAVE_BUSH.bootstrap(context).register();
 
         EndConfiguredCaveFeatures.SMARAGDANT_CRYSTAL.bootstrap(context).register();
 
         EndConfiguredCaveFeatures.SMARAGDANT_CRYSTAL_SHARD
                 .bootstrap(context)
-                .configuration(new SimpleBlockConfiguration(SimpleStateProvider.simple(EndCrystalBlocks.SMARAGDANT_CRYSTAL_SHARD)))
+                .feature(new SingleBlockFeature(BlockStateProvider.simple(EndCrystalBlocks.SMARAGDANT_CRYSTAL_SHARD)))
                 .register();
 
         EndConfiguredCaveFeatures.BIG_AURORA_CRYSTAL.bootstrap(context).register();
 
         EndConfiguredCaveFeatures.CAVE_BUSH
                 .bootstrap(context)
-                .configuration(new BushFeatureConfig(EndPlantBlocks.CAVE_BUSH, EndPlantBlocks.CAVE_BUSH))
+                .feature(new BushFeature(new BushFeatureConfig(EndPlantBlocks.CAVE_BUSH, EndPlantBlocks.CAVE_BUSH)))
                 .register();
 
         EndConfiguredCaveFeatures.CAVE_GRASS
                 .bootstrap(context)
-                .configuration(new SimpleBlockConfiguration(SimpleStateProvider.simple(EndPlantBlocks.CAVE_GRASS)))
+                .feature(new SingleBlockFeature(BlockStateProvider.simple(EndPlantBlocks.CAVE_GRASS)))
                 .register();
 
         EndConfiguredCaveFeatures.RUBINEA
                 .bootstrap(context)
-                .configuration(new VineFeatureConfig(EndVineBlocks.RUBINEA, 8))
+                .feature(new VineFeature(new VineFeatureConfig(EndVineBlocks.RUBINEA, 8)))
                 .register();
 
         EndConfiguredCaveFeatures.MAGNULA
                 .bootstrap(context)
-                .configuration(new VineFeatureConfig(EndVineBlocks.MAGNULA, 8))
+                .feature(new VineFeature(new VineFeatureConfig(EndVineBlocks.MAGNULA, 8)))
                 .register();
 
 
         EndConfiguredCaveFeatures.END_STONE_STALACTITE
                 .bootstrap(context)
-                .configuration(new StalactiteFeatureConfig(true, EndStoneBlocks.END_STONE_STALACTITE, Blocks.END_STONE))
+                .feature(new StalactiteFeature(new StalactiteFeatureConfig(true, EndStoneBlocks.END_STONE_STALACTITE, Blocks.END_STONE)))
                 .register();
         EndConfiguredCaveFeatures.END_STONE_STALAGMITE
                 .bootstrap(context)
-                .configuration(new StalactiteFeatureConfig(false, EndStoneBlocks.END_STONE_STALACTITE, Blocks.END_STONE))
+                .feature(new StalactiteFeature(new StalactiteFeatureConfig(false, EndStoneBlocks.END_STONE_STALACTITE, Blocks.END_STONE)))
                 .register();
         EndConfiguredCaveFeatures.END_STONE_STALACTITE_CAVEMOSS
                 .bootstrap(context)
-                .configuration(new StalactiteFeatureConfig(true, EndStoneBlocks.END_STONE_STALACTITE_CAVEMOSS, Blocks.END_STONE, EndTerrainBlocks.CAVE_MOSS))
+                .feature(new StalactiteFeature(new StalactiteFeatureConfig(true, EndStoneBlocks.END_STONE_STALACTITE_CAVEMOSS, Blocks.END_STONE, EndTerrainBlocks.CAVE_MOSS)))
                 .register();
         EndConfiguredCaveFeatures.END_STONE_STALAGMITE_CAVEMOSS
                 .bootstrap(context)
-                .configuration(new StalactiteFeatureConfig(false, EndStoneBlocks.END_STONE_STALACTITE_CAVEMOSS, EndTerrainBlocks.CAVE_MOSS))
+                .feature(new StalactiteFeature(new StalactiteFeatureConfig(false, EndStoneBlocks.END_STONE_STALACTITE_CAVEMOSS, EndTerrainBlocks.CAVE_MOSS)))
                 .register();
         EndConfiguredCaveFeatures.END_STONE_WITH_CAVEMOSS_STALACTITE
                 .bootstrap(context)
-                .configuration(new StalactiteFeatureConfig(true, EndStoneBlocks.END_STONE_STALACTITE, 5, EndStoneBlocks.END_STONE_STALACTITE_CAVEMOSS, 2, Blocks.END_STONE))
+                .feature(new StalactiteFeature(new StalactiteFeatureConfig(true, EndStoneBlocks.END_STONE_STALACTITE, 5, EndStoneBlocks.END_STONE_STALACTITE_CAVEMOSS, 2, Blocks.END_STONE)))
                 .register();
         EndConfiguredCaveFeatures.END_STONE_WITH_CAVEMOSS_STALAGMITE
                 .bootstrap(context)
-                .configuration(new StalactiteFeatureConfig(false, EndStoneBlocks.END_STONE_STALACTITE, 5, EndStoneBlocks.END_STONE_STALACTITE_CAVEMOSS, 1, Blocks.END_STONE))
+                .feature(new StalactiteFeature(new StalactiteFeatureConfig(false, EndStoneBlocks.END_STONE_STALACTITE, 5, EndStoneBlocks.END_STONE_STALACTITE_CAVEMOSS, 1, Blocks.END_STONE)))
                 .register();
 
         EndConfiguredCaveFeatures.CAVE_PUMPKIN.bootstrap(context).register();
 
         // WP4.3: dripstone-style clusters. The cluster owns its per-column floor/ceiling placement, so the
         // floor/ceiling sub-features are referenced as plain configured-feature holders.
-        // Cave surface coat. Geometry only - the floor/ceiling/wall materials are read from the
-        // EndCaveBiome at placement time, so this single instance serves every cave biome and every face.
-        //
-        // The band is deliberately wider than the carved cave band: the feature recognises sky and void by
-        // an air run reaching an end of the band, so the band has to extend past the caves in both
-        // directions for that test to mean anything. 0 is the End's world floor; 72 clears the top of the
-        // carve band with room to spare. shell_depth 5 is the thickness of the jadestone wall lining.
-        //
-        // `replaceable` is bare End stone, NOT CommonBlockTags.END_STONES - that tag also carries the land
-        // biomes' surface blocks and the ores, and a cave passing close to an island's skin then repainted
-        // it. `protected` is redundant while replaceable is bare End stone, but it encodes the invariant a
-        // datapack could otherwise break by widening replaceable: this runs after UNDERGROUND_ORES, unlike
-        // the carve-time coater it replaces, so a wide shell would eat ore veins near a cave face.
-        EndConfiguredCaveFeatures.CAVE_SURFACE_COAT
-                .bootstrap(context)
-                .configuration(new CaveSurfaceCoatConfig(
-                        HolderSet.direct(Blocks.END_STONE.builtInRegistryHolder()),
-                        context.lookup(Registries.BLOCK).getOrThrow(CommonBlockTags.ORES),
-                        0,
-                        72,
-                        5
-                ))
-                .register();
-
         EndConfiguredCaveFeatures.STALACTITE_CLUSTER_PLAIN
                 .bootstrap(context)
-                .configuration(new StalactiteClusterConfig(
+                .feature(new StalactiteClusterFeature(new StalactiteClusterConfig(
                         UniformInt.of(3, 6),
                         ConstantFloat.of(0.35F),
                         0.6F,
                         EndConfiguredCaveFeatures.END_STONE_STALAGMITE.getHolder(context),
                         EndConfiguredCaveFeatures.END_STONE_STALACTITE.getHolder(context)
-                ))
+                )))
                 .register();
         EndConfiguredCaveFeatures.STALACTITE_CLUSTER_CAVEMOSS
                 .bootstrap(context)
-                .configuration(new StalactiteClusterConfig(
+                .feature(new StalactiteClusterFeature(new StalactiteClusterConfig(
                         UniformInt.of(3, 6),
                         ConstantFloat.of(0.35F),
                         0.6F,
                         EndConfiguredCaveFeatures.END_STONE_WITH_CAVEMOSS_STALAGMITE.getHolder(context),
                         EndConfiguredCaveFeatures.END_STONE_WITH_CAVEMOSS_STALACTITE.getHolder(context)
-                ))
+                )))
+                .register();
+
+        // Cave surface coat. Geometry only - the floor/ceiling/wall materials are read from the
+        // EndCaveBiome at placement time, so this single instance serves every cave biome and every face.
+        EndConfiguredCaveFeatures.CAVE_SURFACE_COAT
+                .bootstrap(context)
+                .feature(surfaceCoat(context))
                 .register();
 
         // WP4.4: lush vegetation patches (vanilla VegetationPatchFeature, purely data-driven).
         EndConfiguredCaveFeatures.CAVE_LUSH_FLOOR_PATCH
                 .bootstrap(context)
-                .configuration(lushPatch(context, CaveSurface.FLOOR, floorVegetation(context)))
+                .feature(lushPatch(context, CaveSurface.FLOOR, floorVegetation(context)))
                 .register();
         EndConfiguredCaveFeatures.CAVE_LUSH_CEILING_PATCH
                 .bootstrap(context)
-                .configuration(lushPatch(context, CaveSurface.CEILING, ceilingVegetation(context)))
+                .feature(lushPatch(context, CaveSurface.CEILING, ceilingVegetation(context)))
                 .register();
     }
 
-    private static VegetationPatchConfiguration lushPatch(
-            BootstrapContext<ConfiguredFeature<?, ?>> context,
+    /**
+     * The band the sweep reads, and how deep it paints.
+     * <p>
+     * The band is deliberately wider than the carved cave band ({@code caveHeight()} decorates 4..56 and
+     * {@code EndCaveCarver} caps carving at the cave-biome ceiling): the feature recognises sky and void by
+     * an air run reaching an end of the band, so the band has to extend past the caves in both directions
+     * for that test to mean anything. 0 is the End's world floor; 72 clears the top of the carve band with
+     * room to spare. {@code shell_depth} 5 is the thickness the old radius-5 wall spheres approximated.
+     */
+    private static CaveSurfaceCoatFeature surfaceCoat(BootstrapContext<Feature> context) {
+        return new CaveSurfaceCoatFeature(new CaveSurfaceCoatConfig(
+                // Bare End stone, NOT CommonBlockTags.END_STONES - that tag also carries the land biomes'
+                // surface blocks and the ores, and a cave passing close to an island's skin then repainted
+                // it. See the field docs on CaveSurfaceCoatConfig.
+                HolderSet.direct(Blocks.END_STONE.builtInRegistryHolder()),
+                context.lookup(Registries.BLOCK).getOrThrow(CommonBlockTags.ORES),
+                0,
+                72,
+                5
+        ));
+    }
+
+    private static VegetationPatchFeature lushPatch(
+            BootstrapContext<Feature> context,
             CaveSurface surface,
             Holder<PlacedFeature> vegetation
     ) {
-        // 26.2 turned VegetationPatchConfiguration into a record whose `replaceable` slot is a
-        // HolderSet<Block> instead of a TagKey<Block>; resolve the tag through the bootstrap lookup.
-        return new VegetationPatchConfiguration(
+        return new VegetationPatchFeature(
+                // 26.3's VegetationPatchFeature takes the replaceable blocks as a HolderSet rather than
+                // the TagKey the old configuration accepted, so the tag is resolved here.
                 context.lookup(Registries.BLOCK).getOrThrow(CommonBlockTags.END_STONES),
                 BlockStateProvider.simple(EndTerrainBlocks.CAVE_MOSS),
                 vegetation,
@@ -190,8 +199,8 @@ public class CaveFeatureProvider extends WoverFeatureProvider {
     // Weighted vegetation via RandomSelectorFeature: because vanilla WeightedPlacedFeature stores a 0..1
     // chance (not an integer weight), the design weights [11,4,3,1] are converted to the conditional chances
     // that reproduce that distribution, with the lowest-weight entry as the default fallback.
-    private static Holder<PlacedFeature> floorVegetation(BootstrapContext<ConfiguredFeature<?, ?>> context) {
-        return ConfiguredFeatureManager.INLINE_BUILDER
+    private static Holder<PlacedFeature> floorVegetation(BootstrapContext<Feature> context) {
+        return FeatureContentManager.INLINE_BUILDER
                 .randomFeature()
                 .add(inlinePlaced(context, EndConfiguredCaveFeatures.CAVE_GRASS), 11.0F / 19.0F)
                 .add(inlinePlaced(context, EndConfiguredCaveFeatures.CAVE_BUSH), 4.0F / 8.0F)
@@ -201,8 +210,8 @@ public class CaveFeatureProvider extends WoverFeatureProvider {
                 .directHolder();
     }
 
-    private static Holder<PlacedFeature> ceilingVegetation(BootstrapContext<ConfiguredFeature<?, ?>> context) {
-        return ConfiguredFeatureManager.INLINE_BUILDER
+    private static Holder<PlacedFeature> ceilingVegetation(BootstrapContext<Feature> context) {
+        return FeatureContentManager.INLINE_BUILDER
                 .randomFeature()
                 .add(inlinePlaced(context, EndConfiguredCaveFeatures.RUBINEA), 10.0F / 20.0F)
                 .add(inlinePlaced(context, EndConfiguredCaveFeatures.MAGNULA), 4.0F / 10.0F)
@@ -213,17 +222,17 @@ public class CaveFeatureProvider extends WoverFeatureProvider {
     }
 
     private static Holder<PlacedFeature> inlinePlaced(
-            BootstrapContext<ConfiguredFeature<?, ?>> context,
-            ConfiguredFeatureKey<?> key
+            BootstrapContext<Feature> context,
+            FeatureKey<?> key
     ) {
         return PlacementUtils.inlinePlaced(key.getHolder(context));
     }
 
     @Override
     protected void bootstrapPlaced(BootstrapContext<PlacedFeature> context) {
-        // Cave surface coat: the decoration-time replacement for the carve-time CaveSurfaceCoater, ported
-        // back from 26.3 so a world that migrates forward keeps generating the same caves. See
-        // CaveSurfaceCoatFeature for why the sweep shape is what it is.
+        // Cave surface coat: the decoration-time replacement for the carve-time CaveSurfaceCoater (see
+        // EndCaveCarver's class doc for why it could not stay in the carver). Added to every cave biome from
+        // EndCaveBiome.Config, and a no-op in biomes that declare no materials.
         surfaceCoat(context, EndPlacedCaveFeatures.CAVE_SURFACE_COAT, EndConfiguredCaveFeatures.CAVE_SURFACE_COAT);
 
         // Clusters self-scan for floor/ceiling columns; no findSolid needed.
@@ -260,8 +269,8 @@ public class CaveFeatureProvider extends WoverFeatureProvider {
                 .count(24)
                 .squarePlacement()
                 // Column-biome semantics: filter before the height/findSolid modifiers move the position up
-                // out of the vertical cave band (the cave biomes are vertical: a column either is a cave column
-                // at every Y or it is not).
+                // out of the vertical cave band (the cave biomes are vertical: a column either is a cave
+                // column at every Y or it is not).
                 .onlyInBiome()
                 .modifier(caveHeight())
                 .findSolidFloor(12)
@@ -281,15 +290,16 @@ public class CaveFeatureProvider extends WoverFeatureProvider {
      * Places the {@code CaveSurfaceCoatFeature} exactly once per chunk.
      * <p>
      * The feature sweeps the whole chunk it is decorating, so unlike every other helper in this file the
-     * placement is not a scatter: {@code count(1)} plus the constant height picks one column, and the only
+     * placement is not a scatter: {@code count(1)} plus {@code in_square} picks one column, and the only
      * thing that column decides is <em>whether</em> the sweep runs. There is deliberately no surface search
-     * - an {@code environment_scan} would tie the pass to one cave face again, which is the coverage problem
-     * the sweep exists to solve.
+     * - an {@code environment_scan} would tie the pass to one cave face again, which is the coverage
+     * problem the sweep exists to solve.
      * <p>
-     * {@code onlyInBiome()} is kept - vanilla logs an error for any biome-placed feature without it - but it
-     * is not what selects cave columns here; the sweep's own per-column check is. It passes everywhere
-     * because {@code EndFeatures#addDefaultFeatures} declares this feature on every End biome, land ones
-     * included, exactly so that the roll cannot skip a chunk that holds part of the cave band.
+     * {@code onlyInBiome()} is kept - vanilla logs an error for any biome-placed feature without it, and
+     * without it the coat would be the only feature in the mod doing so - but it is not what selects cave
+     * columns here; the sweep's own per-column check is. It passes everywhere because
+     * {@code EndFeatures#addDefaultFeatures} declares this feature on every End biome, land ones included,
+     * exactly so that the roll cannot skip a chunk that holds part of the cave band (see the note there).
      * <p>
      * The height is a constant deep inside the vertical cave band: {@code EndCaveBiomeDecider} switches a
      * column to a cave biome only BELOW {@code WoverEndConfig#caveBiomesTopY} (plus jitter), and the feature
@@ -299,7 +309,7 @@ public class CaveFeatureProvider extends WoverFeatureProvider {
     private static void surfaceCoat(
             BootstrapContext<PlacedFeature> context,
             PlacedFeatureKey key,
-            ConfiguredFeatureKey<?> configured
+            FeatureKey<?> configured
     ) {
         key.place(context, configured)
            .count(1)
@@ -311,7 +321,7 @@ public class CaveFeatureProvider extends WoverFeatureProvider {
     private static void cluster(
             BootstrapContext<PlacedFeature> context,
             PlacedFeatureKey key,
-            ConfiguredFeatureKey<?> configured,
+            FeatureKey<?> configured,
             int count
     ) {
         key.place(context, configured)
@@ -325,7 +335,7 @@ public class CaveFeatureProvider extends WoverFeatureProvider {
     private static void patch(
             BootstrapContext<PlacedFeature> context,
             PlacedFeatureKey key,
-            ConfiguredFeatureKey<?> configured,
+            FeatureKey<?> configured,
             int count
     ) {
         key.place(context, configured)
@@ -339,7 +349,7 @@ public class CaveFeatureProvider extends WoverFeatureProvider {
     private static void floorScatter(
             BootstrapContext<PlacedFeature> context,
             PlacedFeatureKey key,
-            ConfiguredFeatureKey<?> configured,
+            FeatureKey<?> configured,
             int count
     ) {
         key.place(context, configured)
@@ -354,7 +364,7 @@ public class CaveFeatureProvider extends WoverFeatureProvider {
     private static void ceilScatter(
             BootstrapContext<PlacedFeature> context,
             PlacedFeatureKey key,
-            ConfiguredFeatureKey<?> configured,
+            FeatureKey<?> configured,
             int count
     ) {
         key.place(context, configured)

@@ -99,7 +99,7 @@ public class SulphurSpringsBiome extends EndBiome.Config {
                 return super
                         .surface()
                         .rule(
-                                SurfaceRules.ifTrue(SurfaceRules.ON_FLOOR, surfaceBlockRule),
+                                SurfaceRules.ifTrue(EndBiomeBuilder.ON_FLOOR, surfaceBlockRule),
                                 BaseSurfaceRuleBuilder.TOP_SURFACE_PRIORITY
                         )
                         .rule(

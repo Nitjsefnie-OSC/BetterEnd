@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "betterend:_stonecuttingviolecite_pillar"
+        "recipes": "betterend:_stonecuttingviolecite_pillar"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

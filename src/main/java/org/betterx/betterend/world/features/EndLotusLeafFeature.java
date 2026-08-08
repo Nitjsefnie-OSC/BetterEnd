@@ -8,6 +8,8 @@ import org.betterx.bclib.util.BlocksHelper;
 import org.betterx.betterend.blocks.EndLotusLeafBlock;
 import org.betterx.betterend.registry.EndBlocks;
 
+import com.mojang.serialization.MapCodec;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.BlockPos.MutableBlockPos;
 import net.minecraft.core.Direction;
@@ -17,8 +19,15 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 
 public class EndLotusLeafFeature extends ScatterFeature<ScatterFeatureConfig> {
-    public EndLotusLeafFeature() {
-        super(ScatterFeatureConfig.CODEC);
+    public static final MapCodec<EndLotusLeafFeature> CODEC = ScatterFeatureConfig.CODEC.xmap(EndLotusLeafFeature::new, f -> f.config);
+
+    public EndLotusLeafFeature(ScatterFeatureConfig config) {
+        super(config);
+    }
+
+    @Override
+    public MapCodec<EndLotusLeafFeature> codec() {
+        return CODEC;
     }
 
     @Override

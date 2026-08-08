@@ -23,7 +23,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "betterend:purple_lantern"
+        "recipes": "betterend:purple_lantern"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

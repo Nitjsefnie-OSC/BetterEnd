@@ -4,18 +4,21 @@ import org.betterx.betterend.world.biome.cave.EndCaveBiome;
 import org.betterx.bclib.util.BlocksHelper;
 import de.ambertation.wover.biome.api.BiomeManager;
 
+import com.mojang.serialization.MapCodec;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.BlockPos.MutableBlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.QuartPos;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.ChunkAccess;
+import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.chunk.status.ChunkStatus;
 import net.minecraft.world.level.levelgen.feature.Feature;
-import net.minecraft.world.level.levelgen.feature.FeaturePlaceContext;
 
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 
@@ -102,7 +105,12 @@ import org.jetbrains.annotations.Nullable;
  * budget at all. A cave crossing a chunk border is coated by each chunk's own sweep; only the shell's
  * innermost layers stop at the border, where nothing can see them.
  */
-public class CaveSurfaceCoatFeature extends Feature<CaveSurfaceCoatConfig> {
+public class CaveSurfaceCoatFeature implements Feature {
+    public static final MapCodec<CaveSurfaceCoatFeature> CODEC = CaveSurfaceCoatConfig.CODEC.xmap(
+            CaveSurfaceCoatFeature::new,
+            f -> f.config
+    );
+
     /** Cell has not been looked at, or holds rock this feature may not touch. */
     private static final byte SOLID = 0;
     /** Cell holds rock the coat may paint. */
@@ -126,17 +134,24 @@ public class CaveSurfaceCoatFeature extends Feature<CaveSurfaceCoatConfig> {
     /** {@link #readColumn} is inside an air run that started at the bottom of the band, i.e. an open one. */
     private static final int OPEN_RUN = -2;
 
-    public CaveSurfaceCoatFeature() {
-        super(CaveSurfaceCoatConfig.CODEC);
+    public final CaveSurfaceCoatConfig config;
+
+    public CaveSurfaceCoatFeature(CaveSurfaceCoatConfig config) {
+        this.config = config;
     }
 
     @Override
-    public boolean place(FeaturePlaceContext<CaveSurfaceCoatConfig> ctx) {
-        // 26.1/26.2 still separate Feature from its configuration, so the config arrives per call rather
-        // than living on the instance. Everything below is the 26.3 sweep verbatim.
-        final CaveSurfaceCoatConfig config = ctx.config();
-        final WorldGenLevel world = ctx.level();
-        final BlockPos origin = ctx.origin();
+    public MapCodec<CaveSurfaceCoatFeature> codec() {
+        return CODEC;
+    }
+
+    @Override
+    public boolean place(
+            WorldGenLevel world,
+            ChunkGenerator generator,
+            RandomSource random,
+            BlockPos origin
+    ) {
         final int height = config.maxY() - config.minY() + 1;
         if (height <= 2) {
             return false;
@@ -158,7 +173,7 @@ public class CaveSurfaceCoatFeature extends Feature<CaveSurfaceCoatConfig> {
         for (int dx = -MARGIN; dx < 16 + MARGIN; dx++) {
             for (int dz = -MARGIN; dz < 16 + MARGIN; dz++) {
                 final EndCaveBiome biome = columns.biomeAt(minX + dx, minZ + dz);
-                final boolean paint = biome != null && paintsAnything(config, biome, origin);
+                final boolean paint = biome != null && paintsAnything(biome, origin);
                 paintable[(dx + MARGIN) * SPAN + (dz + MARGIN)] = paint;
                 anyCaveColumn |= paint && dx >= 0 && dx < 16 && dz >= 0 && dz < 16;
             }
@@ -175,7 +190,7 @@ public class CaveSurfaceCoatFeature extends Feature<CaveSurfaceCoatConfig> {
         for (int dx = -MARGIN; dx < 16 + MARGIN; dx++) {
             for (int dz = -MARGIN; dz < 16 + MARGIN; dz++) {
                 readColumn(
-                        config, world, cells, mut, minX + dx, minZ + dz, dx, dz, height,
+                        world, cells, mut, minX + dx, minZ + dz, dx, dz, height,
                         paintable[(dx + MARGIN) * SPAN + (dz + MARGIN)]
                 );
             }
@@ -232,7 +247,7 @@ public class CaveSurfaceCoatFeature extends Feature<CaveSurfaceCoatConfig> {
             final IntArrayList next = new IntArrayList();
             for (int i = 0; i < current.size(); i++) {
                 final int idx = current.getInt(i);
-                toPos(config, mut, idx, minX, minZ, height);
+                toPos(mut, idx, minX, minZ, height);
                 final int dx = mut.getX() - minX;
                 final int dy = mut.getY() - config.minY();
                 final int dz = mut.getZ() - minZ;
@@ -266,7 +281,7 @@ public class CaveSurfaceCoatFeature extends Feature<CaveSurfaceCoatConfig> {
         //    getTopMaterial() is the default End stone, so its jadestone shell is preserved; lush caves
         //    overwrite the floor with their cave moss).
         for (int i = 0; i < floors.size(); i++) {
-            toPos(config, mut, floors.getInt(i), minX, minZ, height);
+            toPos(mut, floors.getInt(i), minX, minZ, height);
             final EndCaveBiome biome = columns.biomeAt(mut.getX(), mut.getZ());
             if (biome == null) {
                 continue;
@@ -279,7 +294,7 @@ public class CaveSurfaceCoatFeature extends Feature<CaveSurfaceCoatConfig> {
 
         // 6) Ceiling material.
         for (int i = 0; i < ceilings.size(); i++) {
-            toPos(config, mut, ceilings.getInt(i), minX, minZ, height);
+            toPos(mut, ceilings.getInt(i), minX, minZ, height);
             final EndCaveBiome biome = columns.biomeAt(mut.getX(), mut.getZ());
             if (biome == null) {
                 continue;
@@ -297,8 +312,7 @@ public class CaveSurfaceCoatFeature extends Feature<CaveSurfaceCoatConfig> {
      * {@link #CAVE_AIR} only when rock closes it both below and above <em>within the band</em>, otherwise it
      * is {@link #OPEN_AIR} (sky, or the void under an island) - see the class doc.
      */
-    private static void readColumn(
-            CaveSurfaceCoatConfig config,
+    private void readColumn(
             WorldGenLevel world,
             byte[] cells,
             MutableBlockPos mut,
@@ -323,7 +337,7 @@ public class CaveSurfaceCoatFeature extends Feature<CaveSurfaceCoatConfig> {
                 }
                 continue;
             }
-            cells[idx] = paintable && coatable(config, state) ? ROCK : SOLID;
+            cells[idx] = paintable && coatable(state) ? ROCK : SOLID;
             if (runStart >= 0) {
                 // Rock closed the run from above, and runStart >= 0 means rock closed it from below too.
                 for (int y = runStart; y < dy; y++) {
@@ -384,7 +398,7 @@ public class CaveSurfaceCoatFeature extends Feature<CaveSurfaceCoatConfig> {
         return ((dx + MARGIN) * SPAN + (dz + MARGIN)) * height + dy;
     }
 
-    private static void toPos(CaveSurfaceCoatConfig config, MutableBlockPos mut, int idx, int minX, int minZ, int height) {
+    private void toPos(MutableBlockPos mut, int idx, int minX, int minZ, int height) {
         final int dy = idx % height;
         final int plane = idx / height;
         final int dz = plane % SPAN - MARGIN;
@@ -396,7 +410,7 @@ public class CaveSurfaceCoatFeature extends Feature<CaveSurfaceCoatConfig> {
      * Whether the coat may touch this block: rock it is allowed to replace, and not something a
      * {@code UNDERGROUND_ORES} feature put there first (see {@link CaveSurfaceCoatConfig#protect}).
      */
-    private static boolean coatable(CaveSurfaceCoatConfig config, BlockState state) {
+    private boolean coatable(BlockState state) {
         return state.is(config.replaceable()) && !state.is(config.protect());
     }
 
@@ -405,7 +419,7 @@ public class CaveSurfaceCoatFeature extends Feature<CaveSurfaceCoatConfig> {
      * effect. Plain End stone as a top material counts as "leave alone": repainting the rock the floor is
      * made of with itself is not worth the read.
      */
-    private static boolean paintsAnything(CaveSurfaceCoatConfig config, EndCaveBiome biome, BlockPos pos) {
+    private boolean paintsAnything(EndCaveBiome biome, BlockPos pos) {
         if (config.shellDepth() > 0 && biome.getWall(pos) != null) {
             return true;
         }

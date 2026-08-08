@@ -20,9 +20,9 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.IronBarsBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.Heightmap.Types;
+import net.minecraft.world.level.WorldGenLevel;
+import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.levelgen.feature.EndSpikeFeature;
-import net.minecraft.world.level.levelgen.feature.FeaturePlaceContext;
-import net.minecraft.world.level.levelgen.feature.configurations.EndSpikeConfiguration;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
 
@@ -32,11 +32,20 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
+/**
+ * 26.3 collapsed {@code ConfiguredFeature} into {@code Feature}: {@code EndSpikeFeature} became a record
+ * that carries what {@code EndSpikeConfiguration} used to hold, {@code FeaturePlaceContext} is gone from
+ * {@code place}, and {@code placeSpike} lost its configuration parameter with it. Both injectors follow the
+ * new descriptors, and the crystal settings are read off the feature record itself.
+ */
 @Mixin(EndSpikeFeature.class)
 public class SpikeFeatureMixin {
     @Inject(method = "place", at = @At("HEAD"), cancellable = true)
     private void be_place(
-            FeaturePlaceContext<EndSpikeConfiguration> featurePlaceContext,
+            WorldGenLevel level,
+            ChunkGenerator generator,
+            RandomSource random,
+            BlockPos origin,
             CallbackInfoReturnable<Boolean> info
     ) {
         if (!GeneratorOptions.hasPillars()) {
@@ -48,10 +57,10 @@ public class SpikeFeatureMixin {
     private void be_placeSpike(
             ServerLevelAccessor world,
             RandomSource random,
-            EndSpikeConfiguration config,
             EndSpikeFeature.EndSpike spike,
             CallbackInfo info
     ) {
+        final EndSpikeFeature self = (EndSpikeFeature) (Object) this;
         int x = spike.getCenterX();
         int z = spike.getCenterZ();
         int radius = spike.getRadius();
@@ -146,8 +155,8 @@ public class SpikeFeatureMixin {
             BlocksHelper.setWithoutUpdate(world, mut, Blocks.BEDROCK);
 
             EndCrystal crystal = EntityTypes.END_CRYSTAL.create(world.getLevel(), EntitySpawnReason.STRUCTURE);
-            crystal.setBeamTarget(config.getCrystalBeamTarget());
-            crystal.setInvulnerable(config.isCrystalInvulnerable());
+            crystal.setBeamTarget(self.crystalBeamTarget().orElse(null));
+            crystal.setPermanentlyInvulnerable(self.crystalInvulnerable());
             crystal.snapTo(x + 0.5D, maxY + 1, z + 0.5D, random.nextFloat() * 360.0F, 0.0F);
             world.addFreshEntity(crystal);
 

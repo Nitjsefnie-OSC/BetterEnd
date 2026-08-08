@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "betterend:stonecutter_dragon_bone_stairs"
+        "recipes": "betterend:stonecutter_dragon_bone_stairs"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

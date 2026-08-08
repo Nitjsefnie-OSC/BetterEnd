@@ -11,31 +11,44 @@ import org.betterx.bclib.util.MHelper;
 import org.betterx.betterend.registry.EndBlocks;
 import de.ambertation.wover.feature.api.WriteZone;
 
+import com.mojang.serialization.MapCodec;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.feature.Feature;
-import net.minecraft.world.level.levelgen.feature.FeaturePlaceContext;
+import net.minecraft.world.level.chunk.ChunkGenerator;
 
 import org.joml.Vector3f;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class IceStarFeature extends Feature<IceStarFeatureConfig> {
+public class IceStarFeature implements Feature {
+    public static final MapCodec<IceStarFeature> CODEC = IceStarFeatureConfig.CODEC.xmap(IceStarFeature::new, f -> f.config);
+
+    public final IceStarFeatureConfig config;
 
 
-    public IceStarFeature() {
-        super(IceStarFeatureConfig.CODEC);
+
+    public IceStarFeature(IceStarFeatureConfig config) {
+        this.config = config;
     }
 
     @Override
-    public boolean place(FeaturePlaceContext<IceStarFeatureConfig> featureConfig) {
-        final RandomSource random = featureConfig.random();
-        BlockPos pos = featureConfig.origin();
-        final WorldGenLevel world = featureConfig.level();
-        IceStarFeatureConfig cfg = featureConfig.config();
+    public MapCodec<IceStarFeature> codec() {
+        return CODEC;
+    }
+
+    @Override
+    public boolean place(
+            WorldGenLevel world,
+            ChunkGenerator generator,
+            RandomSource random,
+            BlockPos pos
+    ) {
+        IceStarFeatureConfig cfg = config;
         // If this log never appears, the placement pipeline (rarity/biome filter) is rejecting the
         // feature before it runs; if it appears, the star is actually being built at that position.
         org.betterx.betterend.util.WorldgenDebug.log("IceStarFeature: placing star at %s", pos);

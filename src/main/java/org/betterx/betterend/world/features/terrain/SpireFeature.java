@@ -15,19 +15,20 @@ import de.ambertation.wover.feature.api.WriteZone;
 import org.betterx.betterend.world.biome.EndBiome;
 import de.ambertation.wover.tag.api.predefined.CommonBlockTags;
 
+import com.mojang.serialization.MapCodec;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.WorldGenLevel;
+import net.minecraft.world.level.levelgen.feature.Feature;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.LeavesBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.ChunkGenerator;
-import net.minecraft.world.level.levelgen.feature.FeaturePlaceContext;
-import net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConfiguration;
 
 import com.google.common.collect.Lists;
 
@@ -35,14 +36,25 @@ import java.util.List;
 import java.util.function.Function;
 
 public class SpireFeature extends DefaultFeature {
+    public static final MapCodec<SpireFeature> CODEC = MapCodec.unit(SpireFeature::new);
+
+    @Override
+    // Declared as the interface's own wildcard type rather than MapCodec<SpireFeature>, because FloatingSpireFeature
+    // overrides this and MapCodec<FloatingSpireFeature> is not a subtype of MapCodec<SpireFeature>.
+    public MapCodec<? extends Feature> codec() {
+        return CODEC;
+    }
+
     protected static final Function<BlockState, Boolean> REPLACE;
 
     @Override
-    public boolean place(FeaturePlaceContext<NoneFeatureConfiguration> featureConfig) {
-        final RandomSource random = featureConfig.random();
-        BlockPos pos = featureConfig.origin();
-        final WorldGenLevel world = featureConfig.level();
-        final ChunkGenerator chunkGenerator = featureConfig.chunkGenerator();
+    public boolean place(
+            WorldGenLevel world,
+            ChunkGenerator generator,
+            RandomSource random,
+            BlockPos pos
+    ) {
+        final ChunkGenerator chunkGenerator = generator;
         pos = getPosOnSurfaceWG(world, pos);
         if (pos.getY() < 10 || !world.getBlockState(pos.below(3))
                                      .is(CommonBlockTags.END_STONES) || !world.getBlockState(pos.below(6))

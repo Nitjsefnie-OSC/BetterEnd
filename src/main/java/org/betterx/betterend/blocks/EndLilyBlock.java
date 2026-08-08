@@ -11,6 +11,8 @@ import de.ambertation.wover.block.api.BlockProperties;
 import de.ambertation.wover.block.api.BlockProperties.TripleShape;
 import de.ambertation.wover.loot.api.LootLookupProvider;
 
+// 26.3 split net.minecraft.advancements.criterion into .predicates (StatePropertiesPredicate,
+// ...) and .triggers (every *Trigger).
 import net.minecraft.advancements.predicates.StatePropertiesPredicate;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -22,6 +24,7 @@ import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.ScheduledTickAccess;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.BonemealSource;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
@@ -32,7 +35,8 @@ import net.minecraft.world.level.storage.loot.LootPool;
 import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.entries.LootItem;
 import net.minecraft.world.level.storage.loot.functions.SetItemCountFunction;
-import net.minecraft.world.level.storage.loot.predicates.LootItemBlockStatePropertyCondition;
+import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
+import net.minecraft.world.level.storage.loot.predicates.MatchBlock;
 import net.minecraft.world.level.storage.loot.providers.number.ConstantValue;
 import net.minecraft.world.level.storage.loot.providers.number.UniformGenerator;
 import net.minecraft.world.phys.Vec3;
@@ -110,20 +114,30 @@ public class EndLilyBlock extends UnderwaterPlantBlock {
                 .lootTable()
                 .withPool(LootPool.lootPool()
                         .setRolls(ConstantValue.exactly(1))
-                        .when(isTop(block))
+                        .when(isTop(block, provider))
                         .add(LootItem.lootTableItem(EndResourceItems.END_LILY_LEAF)
                                      .apply(SetItemCountFunction.setCount(UniformGenerator.between(1, 2)))))
                 .withPool(LootPool.lootPool()
                         .setRolls(ConstantValue.exactly(1))
-                        .when(isTop(block))
+                        .when(isTop(block, provider))
                         .add(LootItem.lootTableItem(EndWaterPlantBlocks.END_LILY_SEED)
                                      .apply(SetItemCountFunction.setCount(UniformGenerator.between(1, 2)))));
     }
 
-    private static LootItemBlockStatePropertyCondition.Builder isTop(Block block) {
-        return LootItemBlockStatePropertyCondition
-                .hasBlockStateProperties(block)
-                .setProperties(StatePropertiesPredicate.Builder.properties().hasProperty(SHAPE, TripleShape.TOP));
+    /**
+     * 26.3 removed {@code LootItemBlockStatePropertyCondition} and folded block matching into
+     * {@link MatchBlock}, which wraps an advancements {@code BlockPredicate} and therefore resolves the
+     * block into a {@code HolderSet} eagerly - hence the block lookup taken from the provider.
+     * Semantically identical, but it serializes as
+     * {@code {"type": "minecraft:match_block", "blocks": ..., "state": {...}}} instead of
+     * {@code {"condition": "minecraft:block_state_property", "block": ..., "properties": {...}}}.
+     */
+    private static LootItemCondition.Builder isTop(Block block, LootLookupProvider provider) {
+        return MatchBlock.blockMatches(
+                provider.blockLookup(),
+                block,
+                StatePropertiesPredicate.Builder.properties().hasProperty(SHAPE, TripleShape.TOP)
+        );
     }
 
     @Override
@@ -132,12 +146,23 @@ public class EndLilyBlock extends UnderwaterPlantBlock {
     }
 
     @Override
-    public boolean isValidBonemealTarget(LevelReader world, BlockPos pos, BlockState state) {
+    public boolean isValidBonemealTarget(
+            LevelReader world,
+            BlockPos pos,
+            BlockState state,
+            BonemealSource bonemealSource
+    ) {
         return false;
     }
 
     @Override
-    public boolean isBonemealSuccess(Level world, RandomSource random, BlockPos pos, BlockState state) {
+    public boolean isBonemealSuccess(
+            Level world,
+            RandomSource random,
+            BlockPos pos,
+            BlockState state,
+            BonemealSource bonemealSource
+    ) {
         return false;
     }
 }

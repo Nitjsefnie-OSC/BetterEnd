@@ -2,15 +2,13 @@
   "type": "minecraft:block",
   "pools": [
     {
-      "conditions": [
-        {
-          "block": "betterend:silk_moth_nest",
-          "condition": "minecraft:block_state_property",
-          "properties": {
-            "active": "true"
-          }
+      "condition": {
+        "type": "minecraft:match_block",
+        "blocks": "betterend:silk_moth_nest",
+        "state": {
+          "active": "true"
         }
-      ],
+      },
       "entries": [
         {
           "type": "minecraft:item",

@@ -63,7 +63,11 @@ public class DragonflyEntity extends DespawnableAnimal {
         FlyingPathNavigation birdNavigation = new FlyingPathNavigation(this, world) {
             public boolean isStableDestination(BlockPos pos) {
                 BlockState state = this.level.getBlockState(pos);
-                return state.isAir() || !state.blocksMotion();
+                // 26.3 dropped BlockState.blocksMotion(); it was `isSolid() && !COBWEB && !BAMBOO_SAPLING`, so
+                // isSolid() (shape-derived, unchanged) is the equivalent here. The other candidate,
+                // BlockTags.BLOCKS_MOTION, is a hand-written vanilla-only tag and would stop treating
+                // every BetterEnd block as an obstacle.
+                return state.isAir() || !state.isSolid();
             }
 
             public void tick() {
@@ -108,7 +112,7 @@ public class DragonflyEntity extends DespawnableAnimal {
         return Entity.MovementEmission.EVENTS;
     }
 
-    // 26.2 removed FlyingAnimal. Its single method had exactly two readers, both in LivingEntity (the
+    // 26.3 removed FlyingAnimal. Its single method had exactly two readers, both in LivingEntity (the
     // air-friction branch of travelInAir and the animation flag in aiStep); both now read
     // Entity#omnidirectionalAirMover(), which flying vanilla mobs override. Same body, same behaviour.
     @Override

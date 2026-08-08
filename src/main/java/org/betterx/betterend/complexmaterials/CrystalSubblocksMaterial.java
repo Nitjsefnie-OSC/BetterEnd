@@ -18,9 +18,12 @@ import de.ambertation.wover.recipe.api.RecipeBuilder;
 import de.ambertation.wover.tag.api.event.context.ItemTagBootstrapContext;
 import de.ambertation.wover.tag.api.event.context.TagBootstrapContext;
 
-import net.minecraft.tags.BlockItemTags;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.Identifier;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.ItemTags;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.RotatedPillarBlock;
 import net.minecraft.world.level.block.SlabBlock;
@@ -32,6 +35,15 @@ import net.fabricmc.api.Environment;
 
 public class CrystalSubblocksMaterial implements MaterialManager.Material {
     /** The shared, hand-authored emissive stair templates every lit-crystal stair child model parents from. */
+    /**
+     * {@code minecraft:slabs}. 26.3 pruned the {@code ItemTags.SLABS} Java constant, but vanilla still ships
+     * {@code data/minecraft/tags/item/slabs.json} with unchanged contents - only the handle went away, so the
+     * key is recreated here rather than dropping the crystal slabs out of a live vanilla tag.
+     * ({@code BlockTags.SLABS} kept its constant and is still used directly.)
+     */
+    private static final TagKey<Item> ITEM_SLABS =
+            TagKey.create(Registries.ITEM, Identifier.withDefaultNamespace("slabs"));
+
     private static final net.minecraft.resources.Identifier LIT_STAIRS = BetterEnd.C.mk("block/lit_stairs");
     private static final net.minecraft.resources.Identifier LIT_STAIRS_INNER = BetterEnd.C.mk("block/lit_stairs_inner");
     private static final net.minecraft.resources.Identifier LIT_STAIRS_OUTER = BetterEnd.C.mk("block/lit_stairs_outer");
@@ -147,9 +159,7 @@ public class CrystalSubblocksMaterial implements MaterialManager.Material {
 
     @Override
     public void registerItemTags(ItemTagBootstrapContext context) {
-        // 26.2 dropped the ItemTags.SLABS constant; the tag itself is unchanged and is now reached
-        // through the paired BlockItemTags.SLABS handle.
-        context.add(BlockItemTags.SLABS.item(), slab.asItem(), brick_slab.asItem());
+        context.add(ITEM_SLABS, slab.asItem(), brick_slab.asItem());
         context.add(ItemTags.STONE_BRICKS, bricks.asItem());
         context.add(ItemTags.STONE_CRAFTING_MATERIALS, source.asItem());
         context.add(ItemTags.STONE_TOOL_MATERIALS, source.asItem());

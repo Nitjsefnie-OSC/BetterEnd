@@ -21,7 +21,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.data.worldgen.BootstrapContext;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.util.KeyDispatchDataCodec;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.Blocks;
@@ -39,7 +38,6 @@ public class EndBiome extends WoverBiomeData implements SurfaceMaterialProvider 
                                          .forGetter(o -> o.surfMatProv),
             EndBiome::new
     );
-    public static final KeyDispatchDataCodec<EndBiome> KEY_CODEC = KeyDispatchDataCodec.of(CODEC);
 
     public EndBiome(
             float fogDensity,
@@ -66,9 +64,15 @@ public class EndBiome extends WoverBiomeData implements SurfaceMaterialProvider 
 
     }
 
+    /**
+     * 26.3 removed {@code KeyDispatchDataCodec}, which was only ever a wrapper around a
+     * {@link MapCodec}. WoVer's {@code BiomeData#codec()} and {@code BiomeCodecRegistry#register} now
+     * take/return the {@link MapCodec} directly, so the {@code KEY_CODEC} constant is gone rather than
+     * replaced - unwrapped it was literally {@link #CODEC}.
+     */
     @Override
-    public KeyDispatchDataCodec<? extends WoverBiomeData> codec() {
-        return KEY_CODEC;
+    public MapCodec<? extends WoverBiomeData> codec() {
+        return CODEC;
     }
 
     private boolean hasCaves = true;

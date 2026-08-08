@@ -19,11 +19,54 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.levelgen.GenerationStep;
+import net.minecraft.world.level.levelgen.SurfaceRules;
+import net.minecraft.world.level.levelgen.placement.CaveSurface;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class EndBiomeBuilder extends WoverBiomeBuilder.AbstractWoverBiomeBuilder<EndBiomeBuilder> {
+    /**
+     * Replacement for {@code SurfaceRules.ON_FLOOR}, which Minecraft 26.3 deleted.
+     * <p>
+     * 26.3 moved these four constants out of Java and into the new
+     * {@code minecraft:worldgen/material_condition} <b>datapack</b> registry (see
+     * {@code net.minecraft.data.worldgen.material.VanillaMaterialConditions}). We deliberately do
+     * <b>not</b> resolve them through {@link SurfaceRules#getCondition(net.minecraft.core.HolderGetter,
+     * ResourceKey)}, for the same two reasons WoVer's {@code SurfaceRuleBuilderImpl} inlines them:
+     * <ul>
+     * <li>resolving the key needs a {@code HolderGetter<ConditionSource>}, and the biome configs build
+     * their rules eagerly - in static initialisers and in {@code surface()} - outside any registry
+     * bootstrap;</li>
+     * <li>a holder reference would make every rule BetterEnd emits depend on a vanilla data file that a
+     * datapack could override or remove, silently changing our surfaces.</li>
+     * </ul>
+     * The inline forms are value-identical to the deleted constants; verified against the 26.3 jar's
+     * {@code VanillaMaterialConditions.bootstrap}, which registers them as
+     * {@code stoneDepthCheck(0, false, FLOOR)}, {@code stoneDepthCheck(0, true, FLOOR)},
+     * {@code stoneDepthCheck(0, false, CEILING)} and {@code stoneDepthCheck(0, true, CEILING)}.
+     */
+    public static final SurfaceRules.ConditionSource ON_FLOOR
+            = SurfaceRules.stoneDepthCheck(0, false, CaveSurface.FLOOR);
+
+    /**
+     * Replacement for the deleted {@code SurfaceRules.UNDER_FLOOR}. See {@link #ON_FLOOR}.
+     */
+    public static final SurfaceRules.ConditionSource UNDER_FLOOR
+            = SurfaceRules.stoneDepthCheck(0, true, CaveSurface.FLOOR);
+
+    /**
+     * Replacement for the deleted {@code SurfaceRules.ON_CEILING}. See {@link #ON_FLOOR}.
+     */
+    public static final SurfaceRules.ConditionSource ON_CEILING
+            = SurfaceRules.stoneDepthCheck(0, false, CaveSurface.CEILING);
+
+    /**
+     * Replacement for the deleted {@code SurfaceRules.UNDER_CEILING}. See {@link #ON_FLOOR}.
+     */
+    public static final SurfaceRules.ConditionSource UNDER_CEILING
+            = SurfaceRules.stoneDepthCheck(0, true, CaveSurface.CEILING);
+
     protected boolean hasCave = false;
     protected SurfaceMaterialProvider surface;
     protected BiomeFactory biomeFactory;
@@ -50,7 +93,7 @@ public class EndBiomeBuilder extends WoverBiomeBuilder.AbstractWoverBiomeBuilder
     }
 
     EndBiomeBuilder configure(EndBiome.Config biomeConfig) {
-        // 26.2: SurfaceRules.isBiome resolves its keys into a HolderSet eagerly, so
+        // 26.3: SurfaceRules.isBiome resolves its keys into a HolderSet eagerly, so
         // SurfaceRuleBuilder.build() gained a HolderGetter<Biome> parameter. The lookup is only
         // consulted when a biome filter was set on the builder - which none of BetterEnd's
         // SurfaceMaterialProviders do - but the bootstrap context we were constructed with provides a

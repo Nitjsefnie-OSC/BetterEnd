@@ -14,15 +14,14 @@ import org.betterx.betterend.world.biome.air.WaterfallPondsBiome;
 import org.betterx.betterend.world.biome.cave.*;
 import org.betterx.betterend.world.biome.land.*;
 import org.betterx.betterend.world.features.BuildingListFeature;
-import org.betterx.betterend.world.features.BuildingListFeatureConfig;
 import org.betterx.betterend.world.features.NBTFeature;
 import de.ambertation.wover.biome.api.builder.BiomeBootstrapContext;
 import de.ambertation.wover.core.api.ModCore;
 import de.ambertation.wover.datagen.api.provider.multi.WoverBiomeProvider;
-import de.ambertation.wover.feature.api.configured.ConfiguredFeatureKey;
-import de.ambertation.wover.feature.api.configured.ConfiguredFeatureManager;
-import de.ambertation.wover.feature.api.configured.configurators.WithConfiguration;
-import de.ambertation.wover.feature.api.placed.PlacedConfiguredFeatureKey;
+import de.ambertation.wover.feature.api.configured.FeatureKey;
+import de.ambertation.wover.feature.api.configured.FeatureContentManager;
+import de.ambertation.wover.feature.api.configured.configurators.WithFeature;
+import de.ambertation.wover.feature.api.placed.BoundPlacedFeatureKey;
 import de.ambertation.wover.feature.api.placed.PlacedFeatureManager;
 import de.ambertation.wover.state.api.WorldState;
 import de.ambertation.wover.tag.api.predefined.CommonBiomeTags;
@@ -33,6 +32,7 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.levelgen.GenerationStep;
+import net.minecraft.world.level.levelgen.feature.Feature;
 import net.minecraft.world.level.levelgen.placement.PlacedFeature;
 
 import com.google.common.collect.Lists;
@@ -48,8 +48,8 @@ import org.jetbrains.annotations.NotNull;
 public class EndBiomesProvider extends WoverBiomeProvider {
     public record BiomeInfo(EndBiome.Config config, TagKey<Biome>[] tags,
                             List<BuildingListFeature.StructureInfo> structures,
-                            ConfiguredFeatureKey<WithConfiguration<BuildingListFeature, BuildingListFeatureConfig>> configuredFeatureKey,
-                            PlacedConfiguredFeatureKey placed) {
+                            FeatureKey<WithFeature<BuildingListFeature>> configuredFeatureKey,
+                            BoundPlacedFeatureKey placed) {
     }
 
     public static final Map<EndBiomeKey<?, ?>, BiomeInfo> BIOMES = new HashMap<>();
@@ -114,16 +114,18 @@ public class EndBiomesProvider extends WoverBiomeProvider {
     @SafeVarargs
     private static void putBiome(EndBiomeKey<?, ?> key, EndBiome.Config config, TagKey<Biome>... tags) {
         final List<BuildingListFeature.StructureInfo> structures = getBiomeStructures(key.key.identifier());
-        PlacedConfiguredFeatureKey placed = null;
-        ConfiguredFeatureKey<WithConfiguration<BuildingListFeature, BuildingListFeatureConfig>> configuredFeatureKey = null;
+        BoundPlacedFeatureKey placed = null;
+        FeatureKey<WithFeature<BuildingListFeature>> configuredFeatureKey = null;
         if (structures != null) {
+            // 26.3: a Feature is its own configuration, and this one's depends on the biome's structure
+            // list, so the instance is built in TerrainFeatureProvider and attached at bootstrap time.
             configuredFeatureKey
-                    = ConfiguredFeatureManager.configuration(
+                    = FeatureContentManager.withFeature(
                     Identifier.fromNamespaceAndPath(
                             key.key.identifier().getNamespace(),
                             key.key.identifier().getPath() + "_structures"
                     ),
-                    EndFeatures.BUILDING_LIST_FEATURE
+                    null
             );
 
             placed = PlacedFeatureManager

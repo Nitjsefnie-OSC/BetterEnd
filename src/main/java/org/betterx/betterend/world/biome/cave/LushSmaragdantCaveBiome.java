@@ -13,7 +13,6 @@ import de.ambertation.wover.biome.api.data.BiomeGenerationDataContainer;
 
 import com.mojang.serialization.MapCodec;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.util.KeyDispatchDataCodec;
 import net.minecraft.world.level.block.state.BlockState;
 
 import org.jetbrains.annotations.NotNull;
@@ -22,12 +21,15 @@ import org.jetbrains.annotations.Nullable;
 public class LushSmaragdantCaveBiome extends EndCaveBiome.Config<LushSmaragdantCaveBiome> {
     public static final MapCodec<Biome> CODEC = EndCaveBiome.simpleCaveBiomeCodec(
             LushSmaragdantCaveBiome.Biome::new);
-    public static final KeyDispatchDataCodec<LushSmaragdantCaveBiome.Biome> KEY_CODEC = KeyDispatchDataCodec.of(CODEC);
 
     public static class Biome extends EndCaveBiome {
+        /**
+         * 26.3 removed {@code KeyDispatchDataCodec}; the {@code KEY_CODEC} wrapper around
+         * {@link LushSmaragdantCaveBiome#CODEC} is gone rather than replaced. See {@link EndBiome#codec()}.
+         */
         @Override
-        public KeyDispatchDataCodec<? extends EndCaveBiome> codec() {
-            return LushSmaragdantCaveBiome.KEY_CODEC;
+        public MapCodec<? extends EndCaveBiome> codec() {
+            return LushSmaragdantCaveBiome.CODEC;
         }
 
         protected Biome(

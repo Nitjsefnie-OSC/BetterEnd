@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "betterend:pythadendron_planks"
+        "recipes": "betterend:pythadendron_planks"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

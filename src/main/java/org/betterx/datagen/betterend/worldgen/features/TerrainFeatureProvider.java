@@ -8,10 +8,15 @@ import org.betterx.betterend.registry.EndBlocks;
 import org.betterx.betterend.registry.EndFeatures;
 import org.betterx.betterend.registry.features.EndTerrainFeatures;
 import org.betterx.betterend.world.biome.EndBiome;
+import org.betterx.betterend.world.features.BuildingListFeature;
 import org.betterx.betterend.world.features.BuildingListFeatureConfig;
 import org.betterx.betterend.world.features.NBTFeatureConfig;
+import org.betterx.betterend.world.features.CrashedShipFeature;
+import org.betterx.betterend.world.features.terrain.ArchFeature;
 import org.betterx.betterend.world.features.terrain.ArchFeatureConfig;
+import org.betterx.betterend.world.features.terrain.IceStarFeature;
 import org.betterx.betterend.world.features.terrain.IceStarFeatureConfig;
+import org.betterx.betterend.world.features.terrain.ThinArchFeature;
 import org.betterx.betterend.world.features.terrain.ThinArchFeatureConfig;
 import org.betterx.betterend.world.structures.village.VillagePools;
 import org.betterx.datagen.betterend.worldgen.EndBiomesProvider;
@@ -26,10 +31,8 @@ import net.minecraft.util.valueproviders.UniformInt;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.levelgen.blockpredicates.BlockPredicate;
-import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
 import net.minecraft.world.level.levelgen.feature.Feature;
-import net.minecraft.world.level.levelgen.feature.configurations.FeatureConfiguration;
-import net.minecraft.world.level.levelgen.feature.configurations.SpeleothemConfiguration;
+import net.minecraft.world.level.levelgen.feature.SpeleothemFeature;
 import net.minecraft.world.level.levelgen.placement.PlacedFeature;
 
 import org.jetbrains.annotations.NotNull;
@@ -40,7 +43,7 @@ public class TerrainFeatureProvider extends WoverFeatureProvider {
     }
 
     @Override
-    protected void bootstrapConfigured(BootstrapContext<ConfiguredFeature<?, ?>> context) {
+    protected void bootstrapFeatures(BootstrapContext<Feature> context) {
         // Randomly place nbt features from folder
         EndBiomesProvider
                 .BIOMES
@@ -50,26 +53,25 @@ public class TerrainFeatureProvider extends WoverFeatureProvider {
                 .forEach(info -> {
                     info.configuredFeatureKey()
                         .bootstrap(context)
-                        .configuration(new BuildingListFeatureConfig(info.structures(), info
+                        .feature(new BuildingListFeature(new BuildingListFeatureConfig(info.structures(), info
                                 .config()
                                 .surfaceMaterial()
-                                .getTopMaterial()))
+                                .getTopMaterial())))
                         .register();
                 });
     }
 
     @Override
     protected void bootstrapPlaced(BootstrapContext<PlacedFeature> context) {
-        registerChanced(context, EndTerrainFeatures.SURFACE_VENT, EndFeatures.SURFACE_VENT_FEATURE, FeatureConfiguration.NONE, 4);
-        registerChanced(context, EndTerrainFeatures.SULPHUR_HILL, EndFeatures.SULPHUR_HILL_FEATURE, FeatureConfiguration.NONE, 8);
+        registerChanced(context, EndTerrainFeatures.SURFACE_VENT, EndFeatures.SURFACE_VENT_FEATURE, 4);
+        registerChanced(context, EndTerrainFeatures.SULPHUR_HILL, EndFeatures.SULPHUR_HILL_FEATURE, 8);
 
         // Sulphur spikes for sulphur_springs. The rarity filter picks the occasional column, and count +
         // spreadHorizontal then turn that one column into a patch of spikes rather than a single spike -
         // the same way vanilla's own sulfur_spike placement builds its clusters.
         EndTerrainFeatures.SULPHUR_SPIKE
                 .inlineConfiguration(context)
-                .withFeature(Feature.SPELEOTHEM)
-                .configuration(surfaceSpike())
+                .withFeature(surfaceSpike())
                 .inlinePlace()
                 .onceEvery(4)
                 .squarePlacement()
@@ -95,8 +97,7 @@ public class TerrainFeatureProvider extends WoverFeatureProvider {
         // only visible from below/outside, so they read as an accent rather than as ground cover.
         EndTerrainFeatures.SULPHUR_SPIKE_HANGING
                 .inlineConfiguration(context)
-                .withFeature(Feature.SPELEOTHEM)
-                .configuration(hangingSpike())
+                .withFeature(hangingSpike())
                 .inlinePlace()
                 .onceEvery(3)
                 .squarePlacement()
@@ -109,23 +110,24 @@ public class TerrainFeatureProvider extends WoverFeatureProvider {
                 .isEmptyAndUnder(BlockPredicate.matchesBlocks(Blocks.END_STONE))
                 .onlyInBiome()
                 .register();
-        registerChanced(context, EndTerrainFeatures.OBSIDIAN_PILLAR_BASEMENT, EndFeatures.OBSIDIAN_PILLAR_FEATURE, FeatureConfiguration.NONE, 8);
-        registerChanced(context, EndTerrainFeatures.OBSIDIAN_BOULDER, EndFeatures.OBSIDIAN_BOULDER_FEATURE, FeatureConfiguration.NONE, 10);
-        registerChanced(context, EndTerrainFeatures.FALLEN_PILLAR, EndFeatures.FALLEN_PILLAR_FEATURE, FeatureConfiguration.NONE, 20);
+
+        registerChanced(context, EndTerrainFeatures.OBSIDIAN_PILLAR_BASEMENT, EndFeatures.OBSIDIAN_PILLAR_FEATURE, 8);
+        registerChanced(context, EndTerrainFeatures.OBSIDIAN_BOULDER, EndFeatures.OBSIDIAN_BOULDER_FEATURE, 10);
+        registerChanced(context, EndTerrainFeatures.FALLEN_PILLAR, EndFeatures.FALLEN_PILLAR_FEATURE, 20);
         // Arches: back to onceEvery, NOT count. ArchFeature ignores the placement XZ and always snaps
         // to the chunk centre (see its getPosOnSurfaceWG at (x&~15)|7), so count(N) just stacks N arches
         // at the same centre (looks like "too many"), while a chunk whose centre is over a void gap
         // rejects entirely ("none"). onceEvery(N) gives one arch per ~N chunks, evenly, no stacking.
-        registerChanced(context, EndTerrainFeatures.UMBRALITH_ARCH, EndFeatures.ARCH_FEATURE, new ArchFeatureConfig(EndStoneBlocks.UMBRALITH.getBlock(SlotType.SOURCE), ArchFeatureConfig.SurfaceFunction.UMBRA_VALLEY), 3);
-        registerChanced(context, EndTerrainFeatures.THIN_UMBRALITH_ARCH, EndFeatures.THIN_ARCH_FEATURE, new ThinArchFeatureConfig(EndStoneBlocks.UMBRALITH.getBlock(SlotType.SOURCE)), 4);
-        registerChanced(context, EndTerrainFeatures.CRASHED_SHIP, EndFeatures.CRASHED_SHIP_FEATURE, new NBTFeatureConfig(EndBiome.Config.DEFAULT_MATERIAL.getTopMaterial()), 500);
-        registerChanced(context, EndTerrainFeatures.SILK_MOTH_NEST, EndFeatures.SILK_MOTH_NEST_FEATURE, FeatureConfiguration.NONE, 2);
+        registerChanced(context, EndTerrainFeatures.UMBRALITH_ARCH, new ArchFeature(new ArchFeatureConfig(EndStoneBlocks.UMBRALITH.getBlock(SlotType.SOURCE), ArchFeatureConfig.SurfaceFunction.UMBRA_VALLEY)), 3);
+        registerChanced(context, EndTerrainFeatures.THIN_UMBRALITH_ARCH, new ThinArchFeature(new ThinArchFeatureConfig(EndStoneBlocks.UMBRALITH.getBlock(SlotType.SOURCE))), 4);
+        registerChanced(context, EndTerrainFeatures.CRASHED_SHIP, new CrashedShipFeature(new NBTFeatureConfig(EndBiome.Config.DEFAULT_MATERIAL.getTopMaterial())), 500);
+        registerChanced(context, EndTerrainFeatures.SILK_MOTH_NEST, EndFeatures.SILK_MOTH_NEST_FEATURE, 2);
 
-        registerChanced(context, EndTerrainFeatures.SPIRE, EndFeatures.SPIRE_FEATURE, FeatureConfiguration.NONE, 4);
-        registerChanced(context, EndTerrainFeatures.FLOATING_SPIRE, EndFeatures.FLOATING_SPIRE_FEATURE, FeatureConfiguration.NONE, 8);
-        registerChanced(context, EndTerrainFeatures.GEYSER, EndFeatures.GEYSER_FEATURE, FeatureConfiguration.NONE, 8);
-        registerChanced(context, EndTerrainFeatures.ICE_STAR, EndFeatures.ICE_STAR_FEATURE, new IceStarFeatureConfig(5, 15, 10, 25), 15);
-        registerChanced(context, EndTerrainFeatures.ICE_STAR_SMALL, EndFeatures.ICE_STAR_FEATURE, new IceStarFeatureConfig(3, 5, 7, 12), 8);
+        registerChanced(context, EndTerrainFeatures.SPIRE, EndFeatures.SPIRE_FEATURE, 4);
+        registerChanced(context, EndTerrainFeatures.FLOATING_SPIRE, EndFeatures.FLOATING_SPIRE_FEATURE, 8);
+        registerChanced(context, EndTerrainFeatures.GEYSER, EndFeatures.GEYSER_FEATURE, 8);
+        registerChanced(context, EndTerrainFeatures.ICE_STAR, new IceStarFeature(new IceStarFeatureConfig(5, 15, 10, 25)), 15);
+        registerChanced(context, EndTerrainFeatures.ICE_STAR_SMALL, new IceStarFeature(new IceStarFeatureConfig(3, 5, 7, 12)), 8);
 
 
         // Rim pond + spill-over waterfall for the waterfall_ponds biome. No squarePlacement so the
@@ -137,7 +139,6 @@ public class TerrainFeatureProvider extends WoverFeatureProvider {
         EndTerrainFeatures.POND_WITH_WATERFALL
                 .inlineConfiguration(context)
                 .withFeature(EndFeatures.POND_WITH_WATERFALL_FEATURE)
-                .configuration(FeatureConfiguration.NONE)
                 .inlinePlace()
                 .count(1)
                 .onlyInBiome()
@@ -175,13 +176,13 @@ public class TerrainFeatureProvider extends WoverFeatureProvider {
     /**
      * The upward-growing sulphur spikes that stand on the sulphur springs crust.
      * <p>
-     * Vanilla's own {@code minecraft:sulfur_spike} is the same {@link Feature#SPELEOTHEM} pointed at
+     * Vanilla's own {@code minecraft:sulfur_spike} is the same {@link SpeleothemFeature} pointed at
      * {@code minecraft:sulfur} and gated on {@code #minecraft:sulfur_spike_replaceable_blocks} - neither of
      * which exists in the End. Rather than widening that vanilla tag (which would let spikes grow on End
-     * stone in every dimension) the configuration is rebuilt here against the biome's own materials.
+     * stone in every dimension) the feature is rebuilt here against the biome's own materials.
      */
-    private static SpeleothemConfiguration surfaceSpike() {
-        return new SpeleothemConfiguration(
+    private static SpeleothemFeature surfaceSpike() {
+        return new SpeleothemFeature(
                 EndStoneBlocks.BRIMSTONE.defaultBlockState(),
                 Blocks.SULFUR_SPIKE.defaultBlockState(),
                 // replaceableBlocks does double duty in SpeleothemFeature: it is both "what counts as a base
@@ -205,8 +206,8 @@ public class TerrainFeatureProvider extends WoverFeatureProvider {
      * block turns {@code createPatchOfBaseBlocks} into a no-op - the island keeps its own skin and only
      * gains the spikes.
      */
-    private static SpeleothemConfiguration hangingSpike() {
-        return new SpeleothemConfiguration(
+    private static SpeleothemFeature hangingSpike() {
+        return new SpeleothemFeature(
                 Blocks.END_STONE.defaultBlockState(),
                 Blocks.SULFUR_SPIKE.defaultBlockState(),
                 HolderSet.direct(Blocks.END_STONE.builtInRegistryHolder()),
@@ -214,13 +215,14 @@ public class TerrainFeatureProvider extends WoverFeatureProvider {
         );
     }
 
-    private static <F extends Feature<FC>, FC extends FeatureConfiguration> void registerChanced(
+    // 26.3: a Feature carries its own configuration, so the separate config argument is gone and
+    // callers hand in the instance they want placed.
+    private static <F extends Feature> void registerChanced(
             BootstrapContext<PlacedFeature> context, PlacedFeatureKey key,
-            F feature, FC config, int chance
+            F feature, int chance
     ) {
         key.inlineConfiguration(context)
            .withFeature(feature)
-           .configuration(config)
            .inlinePlace()
            .onceEvery(chance)
            .squarePlacement()
@@ -228,13 +230,12 @@ public class TerrainFeatureProvider extends WoverFeatureProvider {
            .register();
     }
 
-    private static <F extends Feature<FC>, FC extends FeatureConfiguration> void registerCounted(
+    private static <F extends Feature> void registerCounted(
             BootstrapContext<PlacedFeature> context, PlacedFeatureKey key,
-            F feature, FC config, int count
+            F feature, int count
     ) {
         key.inlineConfiguration(context)
            .withFeature(feature)
-           .configuration(config)
            .inlinePlace()
            .count(count)
            .squarePlacement()

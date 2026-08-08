@@ -2,88 +2,87 @@
   "type": "minecraft:block",
   "pools": [
     {
-      "conditions": [
-        {
-          "condition": "minecraft:any_of",
-          "terms": [
-            {
-              "block": "betterend:lumecorn",
-              "condition": "minecraft:block_state_property",
-              "properties": {
-                "shape": "bottom_big"
-              }
-            },
-            {
-              "block": "betterend:lumecorn",
-              "condition": "minecraft:block_state_property",
-              "properties": {
-                "shape": "bottom_small"
-              }
-            },
-            {
-              "block": "betterend:lumecorn",
-              "condition": "minecraft:block_state_property",
-              "properties": {
-                "shape": "middle"
-              }
+      "condition": {
+        "type": "minecraft:any_of",
+        "terms": [
+          {
+            "type": "minecraft:match_block",
+            "blocks": "betterend:lumecorn",
+            "state": {
+              "shape": "bottom_big"
             }
-          ]
-        }
-      ],
+          },
+          {
+            "type": "minecraft:match_block",
+            "blocks": "betterend:lumecorn",
+            "state": {
+              "shape": "bottom_small"
+            }
+          },
+          {
+            "type": "minecraft:match_block",
+            "blocks": "betterend:lumecorn",
+            "state": {
+              "shape": "middle"
+            }
+          }
+        ]
+      },
       "entries": [
         {
           "type": "minecraft:item",
-          "functions": [
-            {
-              "count": {
-                "type": "minecraft:uniform",
-                "max": 2.0,
-                "min": 1.0
-              },
-              "function": "minecraft:set_count"
+          "modifier": {
+            "type": "minecraft:set_count",
+            "count": {
+              "type": "minecraft:uniform",
+              "max": 2.0,
+              "min": 1.0
             }
-          ],
+          },
           "name": "betterend:lumecorn_seed"
         }
       ],
       "rolls": 1.0
     },
     {
-      "conditions": [
-        {
-          "condition": "minecraft:inverted",
-          "term": {
-            "condition": "minecraft:any_of",
-            "terms": [
-              {
-                "block": "betterend:lumecorn",
-                "condition": "minecraft:block_state_property",
-                "properties": {
-                  "shape": "bottom_big"
+      "condition": {
+        "type": "minecraft:all_of",
+        "terms": [
+          {
+            "type": "minecraft:inverted",
+            "term": {
+              "type": "minecraft:any_of",
+              "terms": [
+                {
+                  "type": "minecraft:match_block",
+                  "blocks": "betterend:lumecorn",
+                  "state": {
+                    "shape": "bottom_big"
+                  }
+                },
+                {
+                  "type": "minecraft:match_block",
+                  "blocks": "betterend:lumecorn",
+                  "state": {
+                    "shape": "bottom_small"
+                  }
+                },
+                {
+                  "type": "minecraft:match_block",
+                  "blocks": "betterend:lumecorn",
+                  "state": {
+                    "shape": "middle"
+                  }
                 }
-              },
-              {
-                "block": "betterend:lumecorn",
-                "condition": "minecraft:block_state_property",
-                "properties": {
-                  "shape": "bottom_small"
-                }
-              },
-              {
-                "block": "betterend:lumecorn",
-                "condition": "minecraft:block_state_property",
-                "properties": {
-                  "shape": "middle"
-                }
-              }
-            ]
+              ]
+            }
+          },
+          {
+            "type": "minecraft:random_chance",
+            "chance": 0.5
           }
-        },
-        {
-          "chance": 0.5,
-          "condition": "minecraft:random_chance"
-        }
-      ],
+        ]
+      },
       "entries": [
         {
           "type": "minecraft:item",

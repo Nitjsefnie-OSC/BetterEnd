@@ -5,10 +5,7 @@ import de.ambertation.wover.datagen.api.provider.multi.WoverFeatureProvider;
 import de.ambertation.wover.feature.api.placed.PlacedFeatureKey;
 
 import net.minecraft.data.worldgen.BootstrapContext;
-import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
 import net.minecraft.world.level.levelgen.feature.Feature;
-import net.minecraft.world.level.levelgen.feature.configurations.FeatureConfiguration;
-import net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConfiguration;
 import net.minecraft.world.level.levelgen.placement.PlacedFeature;
 
 import org.jetbrains.annotations.NotNull;
@@ -19,7 +16,7 @@ public class BYGFeatureProvider extends WoverFeatureProvider {
     }
 
     @Override
-    protected void bootstrapConfigured(BootstrapContext<ConfiguredFeature<?, ?>> context) {
+    protected void bootstrapFeatures(BootstrapContext<Feature> context) {
 
     }
 
@@ -55,25 +52,16 @@ public class BYGFeatureProvider extends WoverFeatureProvider {
 //        );
     }
 
-    private static <F extends Feature<NoneFeatureConfiguration>> void registerVegetation(
+    // 26.3 merged the two overloads: a Feature carries its own configuration, so the (feature, config)
+    // variant and the NoneFeatureConfiguration shortcut both collapse into this one.
+    private static <F extends Feature> void registerVegetation(
             BootstrapContext<PlacedFeature> context,
             PlacedFeatureKey key,
             F feature,
-            int density
-    ) {
-        registerVegetation(context, key, feature, NoneFeatureConfiguration.NONE, density);
-    }
-
-    private static <F extends Feature<FC>, FC extends FeatureConfiguration> void registerVegetation(
-            BootstrapContext<PlacedFeature> context,
-            PlacedFeatureKey key,
-            F feature,
-            FC config,
             int density
     ) {
         key.inlineConfiguration(context)
            .withFeature(feature)
-           .configuration(config)
            .inlinePlace()
            .countMax(density)
            .squarePlacement()

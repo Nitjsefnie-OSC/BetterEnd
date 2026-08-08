@@ -11,7 +11,6 @@ import de.ambertation.wover.block.api.trait.BlockTraitLookup;
 import de.ambertation.wover.core.api.ModCore;
 import de.ambertation.wover.sets.api.blocks.BlockSet;
 
-import net.minecraft.client.color.block.BlockTintSource;
 import net.minecraft.client.data.models.BlockModelGenerators;
 import net.minecraft.client.data.models.blockstates.MultiVariantGenerator;
 import net.minecraft.client.data.models.blockstates.PropertyDispatch;
@@ -37,7 +36,6 @@ public class StoneLanternBlock extends EndLanternBlock {
     public StoneLanternBlock(BlockBehaviour.Properties props) {
         super(props);
     }
-
 
 
     @Override
@@ -85,9 +83,6 @@ public class StoneLanternBlock extends EndLanternBlock {
         generator.acceptBlockState(MultiVariantGenerator
                 .dispatch(block, BlockModelGenerators.plainVariant(ceilModel))
                 .with(floorCeilDispatch));
-        // The glass slot uses the near-grayscale aurora_crystal texture and this block forwards its tint to
-        // AURORA_CRYSTAL's provider; ClientBlockTraits.ITEM_TINT on the lantern definition is what gets that
-        // tint into the item model, so this delegation emits it.
         generator.delegateItemModel(block, ceilModel);
     }
 

@@ -9,6 +9,8 @@ import org.betterx.bclib.util.BlocksHelper;
 import org.betterx.bclib.util.MHelper;
 import org.betterx.betterend.registry.EndBlocks;
 
+import com.mojang.serialization.MapCodec;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.RandomSource;
@@ -17,6 +19,18 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 
 public class FilaluxFeature extends SkyScatterFeature {
+    public static final MapCodec<FilaluxFeature> CODEC =
+            ScatterFeatureConfig.CODEC.xmap(FilaluxFeature::new, f -> f.config);
+
+    public FilaluxFeature(ScatterFeatureConfig config) {
+        super(config);
+    }
+
+    @Override
+    public MapCodec<FilaluxFeature> codec() {
+        return CODEC;
+    }
+
     @Override
     public void generate(ScatterFeatureConfig cfg, WorldGenLevel world, RandomSource random, BlockPos blockPos) {
         BlockState vine = EndVineBlocks.FILALUX.defaultBlockState();

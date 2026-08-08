@@ -22,17 +22,32 @@ import net.minecraft.world.level.block.Mirror;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.feature.Feature;
-import net.minecraft.world.level.levelgen.feature.FeaturePlaceContext;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
+import net.minecraft.world.level.chunk.ChunkGenerator;
 
-public abstract class NBTFeature<FC extends NBTFeatureConfig> extends Feature<FC> {
-    public NBTFeature(Codec<FC> codec) {
-        super(codec);
+/**
+ * 26.3 collapsed {@code ConfiguredFeature} into {@link Feature}, so the configuration is a field of the
+ * feature instead of an argument of the (now deleted) {@code FeaturePlaceContext}. See
+ * {@link ScatterFeature} for the full rationale.
+ */
+public abstract class NBTFeature<FC extends NBTFeatureConfig> implements Feature {
+    public final FC config;
+
+    protected NBTFeature(FC config) {
+        this.config = config;
     }
 
     protected static final DestructionStructureProcessor DESTRUCTION = new DestructionStructureProcessor();
+
+    /**
+     * 26.3 removed the {@code BlockPos(Vec3i)} copy constructor, so a structure size has to be unpacked
+     * by hand. Component-wise identical to what the old constructor did.
+     */
+    protected static BlockPos asBlockPos(Vec3i vec) {
+        return new BlockPos(vec.getX(), vec.getY(), vec.getZ());
+    }
 
     protected abstract StructureTemplate getStructure(FC cfg, WorldGenLevel world, BlockPos pos, RandomSource random);
 
@@ -84,11 +99,13 @@ public abstract class NBTFeature<FC extends NBTFeatureConfig> extends Feature<FC
     }
 
     @Override
-    public boolean place(FeaturePlaceContext<FC> context) {
-        FC cfg = context.config();
-        WorldGenLevel world = context.level();
-        RandomSource random = context.random();
-        BlockPos center = context.origin();
+    public boolean place(
+            WorldGenLevel world,
+            ChunkGenerator generator,
+            RandomSource random,
+            BlockPos center
+    ) {
+        FC cfg = config;
 
         center = new BlockPos(((center.getX() >> 4) << 4) | 8, 128, ((center.getZ() >> 4) << 4) | 8);
         center = getGround(world, center);
@@ -102,7 +119,7 @@ public abstract class NBTFeature<FC extends NBTFeatureConfig> extends Feature<FC
         Rotation rotation = getRotation(world, center, random);
         Mirror mirror = getMirror(world, center, random);
         BlockPos offset = StructureTemplate.transform(
-                new BlockPos(structure.getSize()),
+                asBlockPos(structure.getSize()),
                 mirror,
                 rotation,
                 BlockPos.ZERO

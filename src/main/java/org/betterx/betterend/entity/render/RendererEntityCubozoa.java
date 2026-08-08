@@ -45,7 +45,11 @@ public class RendererEntityCubozoa extends MobRenderer<CubozoaEntity, CubozoaRen
                         15728640,
                         OverlayTexture.NO_OVERLAY,
                         0xffffffff,
-                        null
+                        null,
+                        // 26.3 appended an outlineColor to submitModel. Vanilla's EyesLayer passes the
+                        // render state's own value, which is EntityRenderState.NO_OUTLINE unless the
+                        // entity is glowing.
+                        state.outlineColor
                 );
             }
         });

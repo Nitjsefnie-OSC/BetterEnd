@@ -2,15 +2,13 @@
   "type": "minecraft:block",
   "pools": [
     {
-      "conditions": [
-        {
-          "block": "betterend:lanceleaf",
-          "condition": "minecraft:block_state_property",
-          "properties": {
-            "shape": "bottom"
-          }
+      "condition": {
+        "type": "minecraft:match_block",
+        "blocks": "betterend:lanceleaf",
+        "state": {
+          "shape": "bottom"
         }
-      ],
+      },
       "entries": [
         {
           "type": "minecraft:item",
@@ -20,22 +18,25 @@
       "rolls": 1.0
     },
     {
-      "conditions": [
-        {
-          "condition": "minecraft:inverted",
-          "term": {
-            "block": "betterend:lanceleaf",
-            "condition": "minecraft:block_state_property",
-            "properties": {
-              "shape": "bottom"
+      "condition": {
+        "type": "minecraft:all_of",
+        "terms": [
+          {
+            "type": "minecraft:inverted",
+            "term": {
+              "type": "minecraft:match_block",
+              "blocks": "betterend:lanceleaf",
+              "state": {
+                "shape": "bottom"
+              }
             }
+          },
+          {
+            "type": "minecraft:random_chance",
+            "chance": 0.5
           }
-        },
-        {
-          "chance": 0.5,
-          "condition": "minecraft:random_chance"
-        }
-      ],
+        ]
+      },
       "entries": [
         {
           "type": "minecraft:item",

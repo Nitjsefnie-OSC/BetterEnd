@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "betterend:_stonecuttingterminite_tile"
+        "recipes": "betterend:_stonecuttingterminite_tile"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

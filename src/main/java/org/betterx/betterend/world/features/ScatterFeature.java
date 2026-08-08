@@ -7,17 +7,28 @@ import org.betterx.betterend.util.GlobalState;
 import de.ambertation.wover.feature.api.WriteZone;
 import de.ambertation.wover.tag.api.predefined.CommonBlockTags;
 
-import com.mojang.serialization.Codec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.BlockPos.MutableBlockPos;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.WorldGenLevel;
+import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.levelgen.feature.Feature;
-import net.minecraft.world.level.levelgen.feature.FeaturePlaceContext;
 
-public abstract class ScatterFeature<FC extends ScatterFeatureConfig> extends Feature<FC> {
-    public ScatterFeature(Codec<FC> codec) {
-        super(codec);
+/**
+ * 26.3 collapsed {@code ConfiguredFeature} into {@link Feature}: {@link Feature} is a non-generic interface
+ * that carries its own configuration and its own {@code MapCodec}, and both {@code FeaturePlaceContext} and
+ * the {@code ...feature.configurations} package are gone.
+ * <p>
+ * The {@code <FC>} type parameter is kept, but it no longer feeds a {@code Feature<FC>} supertype: it types
+ * the configuration this instance <em>holds</em>. Every subclass hands its configuration to the constructor
+ * and supplies a {@code codec()} built from the configuration's {@code MapCodec}; the protected hooks keep
+ * taking the configuration as a parameter so their bodies did not have to change.
+ */
+public abstract class ScatterFeature<FC extends ScatterFeatureConfig> implements Feature {
+    public final FC config;
+
+    protected ScatterFeature(FC config) {
+        this.config = config;
     }
 
     public abstract boolean canGenerate(
@@ -59,13 +70,15 @@ public abstract class ScatterFeature<FC extends ScatterFeatureConfig> extends Fe
     }
 
     @Override
-    public boolean place(FeaturePlaceContext<FC> featureConfig) {
-        FC cfg = featureConfig.config();
+    public boolean place(
+            WorldGenLevel world,
+            ChunkGenerator generator,
+            RandomSource random,
+            BlockPos origin
+    ) {
+        final FC cfg = config;
         final MutableBlockPos POS = GlobalState.stateForThread().POS;
-        final RandomSource random = featureConfig.random();
-        BlockPos center = featureConfig.origin();
-        final WorldGenLevel world = featureConfig.level();
-        center = getCenterGround(cfg, world, center);
+        BlockPos center = getCenterGround(cfg, world, origin);
 
         if (!canSpawn(cfg, world, center)) {
             return false;

@@ -1,49 +1,76 @@
 package org.betterx.betterend.world.carvers;
 
-import org.betterx.betterend.BetterEnd;
 import org.betterx.betterend.noise.OpenSimplexNoise;
-import org.betterx.betterend.registry.EndTags;
-import de.ambertation.wover.tag.api.predefined.CommonBlockTags;
+import org.betterx.betterend.world.generator.TerrainGenerator;
 
 import com.mojang.serialization.Codec;
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.Holder;
-import net.minecraft.resources.Identifier;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.ChunkPos;
-import net.minecraft.world.level.biome.Biome;
-import net.minecraft.world.level.chunk.CarvingMask;
-import net.minecraft.world.level.chunk.ChunkAccess;
-import net.minecraft.world.level.levelgen.Aquifer;
-import net.minecraft.world.level.levelgen.Heightmap;
+import net.minecraft.world.level.chunk.CarverOutput;
 import net.minecraft.world.level.levelgen.LegacyRandomSource;
-import net.minecraft.world.level.levelgen.carver.CarvingContext;
+import net.minecraft.world.level.levelgen.WorldGenerationContext;
 import net.minecraft.world.level.levelgen.carver.WorldCarver;
 
-
-import java.util.function.Function;
-
 /**
- * Real {@link WorldCarver} port of the legacy {@code TunelCaveFeature}: carves a continuous,
- * noise-field driven tunnel network. {@link #getRange()} is {@code 0} because the underlying
- * noise field is spatially continuous &ndash; each chunk carves only its own columns and the
- * tunnels line up across chunk borders automatically.
+ * {@link WorldCarver} port of the legacy {@code TunelCaveFeature}: carves a continuous, noise-field driven
+ * tunnel network. {@link #getRange()} is {@code 0} because the underlying noise field is spatially continuous
+ * &ndash; each chunk carves only its own columns and the tunnels line up across chunk borders automatically.
  * <p>
- * The three {@link OpenSimplexNoise} instances ({@code noiseH}/{@code noiseV}/{@code noiseD}) are
- * built in the exact same order as the legacy feature: {@code new LegacyRandomSource(seed)} then
- * three {@code nextInt()} draws. The seed is derived from the world seed via the carving context's
- * {@link net.minecraft.world.level.levelgen.RandomState} (a positional random factory keyed on a
- * fixed {@link Identifier}), so no accessor mixin is needed &ndash; see {@link #getNoises}.
- * <p>
- * The legacy per-corner density lerp is preserved, but the four corner factors are now sourced from
- * biomes instead of the old {@code hasCaves} land flags: a corner is {@code 1.0} when its biome
- * holder {@code is(EndTags.IS_END_CAVE)} else {@code 0.0}. This bilinear blend tapers tunnels to
- * nothing at cave-biome borders and replaces the legacy near-origin guard (which is intentionally
- * not ported).
+ * The three {@link OpenSimplexNoise} instances ({@code noiseH}/{@code noiseV}/{@code noiseD}) are built in the
+ * exact same order as the legacy feature: {@code new LegacyRandomSource(seed)} then three {@code nextInt()}
+ * draws.
+ *
+ * <h2>26.3 carver rewrite</h2>
+ * See {@link EndCaveCarver} for the shape of the new API. Three things this carver used are simply no longer
+ * reachable from {@code carve}, and each was resolved as follows:
+ * <ul>
+ *     <li><b>The noise seed.</b> It used to come from {@code CarvingContext#randomState()} (a positional
+ *     random factory keyed on a fixed identifier). {@code WorldGenerationContext} carries no
+ *     {@code RandomState} and the {@code RandomSource} handed to {@code carve} is re-seeded per chunk, which
+ *     a continuous field cannot use. The seed now comes from {@link TerrainGenerator#noiseSeed}, which the
+ *     End generator sets from the world seed in {@code initNoise} - so the tunnel layout still differs per
+ *     world, which was the explicit requirement of the old comment here.</li>
+ *     <li><b>The per-corner cave-biome blend.</b> The four corner factors came from a biome getter
+ *     ({@code 1.0} when the corner biome {@code is(IS_END_CAVE)}) and produced a bilinear {@code density}
+ *     that both gated the column ({@code density < 0.5}) and biased the noise. {@code carve} has no biome
+ *     access at all now. It does not need the gate: carvers are per-biome to begin with (the generator looks
+ *     the carver list up on the start chunk's biome), and this carver is only attached to
+ *     {@code EndCaveBiome}, so every invocation is already "inside a cave biome" - the case where all four
+ *     corners were {@code 1.0} and {@code density} was exactly {@code 0}. That value is now a constant. What
+ *     is lost is the smooth taper at cave-biome <em>borders</em>: tunnels now run at full strength right up
+ *     to the edge chunk instead of thinning out across it.</li>
+ *     <li><b>The surface height.</b> {@code chunk.getHeight(WORLD_SURFACE_WG, lx, lz)} drove both the y-loop
+ *     bound and the {@code gradient} roof guard that stopped tunnels five blocks below the island top. There
+ *     is no chunk and no heightmap in the new API, and BetterEnd's own
+ *     {@code TerrainGenerator#getSurfaceHeight} is a locked full-column density solve - far too expensive for
+ *     256 columns per chunk. Both now key off {@link EndCaveCarver#caveBandCeiling()} instead, i.e. the top
+ *     of the vertical cave-biome band: the loop stops there and the gradient tapers over the last ten blocks
+ *     below it. That keeps tunnels inside the band (which is what the band means) but no longer guarantees a
+ *     roof over an island whose surface happens to sit <em>below</em> the ceiling. Flagged for the runtime
+ *     smoke test.</li>
+ * </ul>
+ * The block-level {@code is(END_STONES)} test and the {@code isWaterNear} check are gone with the same API
+ * change; masking a position that is already void air is a no-op for the generator, which resolves every
+ * masked position through the aquifer before writing.
  */
-public class EndTunnelCarver extends WorldCarver<EndTunnelCarverConfiguration> {
-    private static final Identifier NOISE_SEED_KEY = BetterEnd.C.mk("tunnel_cave_noise");
+public record EndTunnelCarver(float probability, float threshold) implements WorldCarver {
+    public static final MapCodec<EndTunnelCarver> MAP_CODEC = RecordCodecBuilder.mapCodec(
+            instance -> instance.group(
+                    Codec.floatRange(0.0F, 1.0F)
+                         .fieldOf("probability")
+                         .forGetter(EndTunnelCarver::probability),
+                    Codec.FLOAT.fieldOf("threshold").forGetter(EndTunnelCarver::threshold)
+            ).apply(instance, EndTunnelCarver::new)
+    );
+
+    /**
+     * Inside a cave biome all four legacy corner factors were {@code 1.0}, so the bilinear blend collapsed to
+     * {@code 1 - 1 == 0}. See the class doc for why the blend itself could not be kept.
+     */
+    private static final float DENSITY = 0F;
 
     private record Noises3(long seed, OpenSimplexNoise h, OpenSimplexNoise v, OpenSimplexNoise d) {}
 
@@ -51,13 +78,14 @@ public class EndTunnelCarver extends WorldCarver<EndTunnelCarverConfiguration> {
     // Keyed on the derived seed so a world reload with a different seed rebuilds them.
     private static volatile Noises3 cached;
 
-    public EndTunnelCarver(Codec<EndTunnelCarverConfiguration> codec) {
-        super(codec);
+    @Override
+    public MapCodec<EndTunnelCarver> codec() {
+        return MAP_CODEC;
     }
 
     @Override
-    public boolean isStartChunk(EndTunnelCarverConfiguration cfg, RandomSource random) {
-        return random.nextFloat() <= cfg.probability;
+    public boolean isStartChunk(RandomSource random) {
+        return random.nextFloat() <= probability;
     }
 
     @Override
@@ -67,121 +95,76 @@ public class EndTunnelCarver extends WorldCarver<EndTunnelCarverConfiguration> {
 
     @Override
     public boolean carve(
-            CarvingContext context,
-            EndTunnelCarverConfiguration cfg,
-            ChunkAccess chunk,
-            Function<BlockPos, Holder<Biome>> biomeGetter,
+            WorldGenerationContext context,
             RandomSource random,
-            Aquifer aquifer,
+            ChunkPos chunkPos,
             ChunkPos startChunkPos,
-            CarvingMask mask
+            CarverOutput output
     ) {
-        final ChunkPos cp = chunk.getPos();
-
-        // Vanilla NoiseBasedChunkGenerator.applyCarvers iterates a FIXED 17x17 chunk neighborhood
-        // (j,k in -8..8) around every generating chunk and, for each neighbor that isStartChunk,
-        // calls this carve() with chunk = the CURRENT chunk being generated and startChunkPos = the
-        // NEIGHBOR chunk. getRange() is NOT consulted by that loop in 1.21.6, so up to 17*17 = 289
-        // invocations hit the same current chunk. This tunnel carver's noise field is chunk-local
-        // and fully deterministic: it reads only the current chunk's own columns/noise and ignores
-        // startChunkPos entirely, so all 289 invocations produce byte-for-byte identical output.
-        // Carving once - on the chunk's own start invocation - therefore yields the identical world
-        // at 1/289th the cost. isStartChunk stays probability-based; probability is 1.0 in data, so
-        // every chunk still self-carves. This also skips the getNoises() RandomState lookup 288x.
-        if (!startChunkPos.equals(cp)) {
+        // NoiseBasedChunkGenerator.applyCarvers iterates a FIXED 17x17 chunk neighborhood around every
+        // generating chunk and, for each neighbor that isStartChunk, calls this carve() with chunkPos = the
+        // CURRENT chunk being generated and startChunkPos = the NEIGHBOR chunk, so up to 17*17 = 289
+        // invocations hit the same current chunk. This tunnel carver's noise field is chunk-local and fully
+        // deterministic: it reads only the current chunk's own columns/noise and ignores startChunkPos
+        // entirely, so all 289 invocations produce byte-for-byte identical output. Carving once - on the
+        // chunk's own start invocation - therefore yields the identical world at 1/289th the cost.
+        // isStartChunk stays probability-based; probability is 1.0 in data, so every chunk still self-carves.
+        if (!startChunkPos.equals(chunkPos)) {
             return false;
         }
 
-        final int x1 = cp.getMinBlockX();
-        final int z1 = cp.getMinBlockZ();
-
-        // Legacy a/b/c/d corner blend, now sourced from the IS_END_CAVE biome tag.
-        final float a = caveFactor(biomeGetter, x1, z1);
-        final float b = caveFactor(biomeGetter, x1 + 16, z1);
-        final float c = caveFactor(biomeGetter, x1, z1 + 16);
-        final float d = caveFactor(biomeGetter, x1 + 16, z1 + 16);
-        if (a == 0F && b == 0F && c == 0F && d == 0F) {
-            return false;
+        final Noises3 noises = getNoises();
+        if (noises == null) {
+            return false; // generator not initialised yet - nothing sane to carve against
         }
 
-        final Noises3 noises = getNoises(context);
-        final int minGenY = context.getMinGenY();
-        final int maxGenY = minGenY + context.getGenDepth() - 1;
-        // Caves are the vertical cave-biome band; never carve terrain above its ceiling, or a tunnel
-        // eats into floating islands that sit above the band (see EndCaveCarver#caveBandCeiling).
-        final int bandCeiling = EndCaveCarver.caveBandCeiling();
-        final float threshold = cfg.threshold;
+        final int x1 = chunkPos.getMinBlockX();
+        final int z1 = chunkPos.getMinBlockZ();
+
+        // The mask's own bounds are the hard limit now - writing outside them would index past its BitSet.
+        // Its minY is exactly context.getMinGenY() + 1, i.e. the `minGenY + 1` the loop used to start at.
+        final int minGenY = Math.max(context.getMinGenY(), output.minY());
+        final int maxGenY = Math.min(context.getMinGenY() + context.getGenDepth() - 1, output.maxY());
+        // Caves are the vertical cave-biome band; never carve terrain above its ceiling, or a tunnel eats
+        // into floating islands that sit above the band (see EndCaveCarver#caveBandCeiling). This also
+        // stands in for the removed WORLD_SURFACE_WG heightmap in the gradient guard below.
+        final int ceiling = Math.min(EndCaveCarver.caveBandCeiling(), maxGenY);
 
         boolean carved = false;
-        final BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
-        final BlockPos.MutableBlockPos neighbor = new BlockPos.MutableBlockPos();
-
         for (int lx = 0; lx < 16; lx++) {
+            final int wx = lx + x1;
             for (int lz = 0; lz < 16; lz++) {
-                final int wheight = chunk.getHeight(Heightmap.Types.WORLD_SURFACE_WG, lx, lz);
-                final float dx = lx / 16F;
-                final float dz = lz / 16F;
-                final int wx = lx + x1;
                 final int wz = lz + z1;
-                pos.setX(wx);
-                pos.setZ(wz);
-
-                final float da = Mth.lerp(dx, a, b);
-                final float db = Mth.lerp(dx, c, d);
-                final float density = 1 - Mth.lerp(dz, da, db);
-                if (density < 0.5F) {
-                    for (int y = minGenY + 1; y < wheight && y <= maxGenY && y <= bandCeiling; y++) {
-                        pos.setY(y);
-                        final float gradient = 1 - Mth.clamp((wheight - y) * 0.1F, 0F, 1F);
-                        if (gradient > 0.5F) {
-                            break;
-                        }
-                        float val = Mth.abs((float) noises.h.eval(wx * 0.02, y * 0.01, wz * 0.02));
-                        final float vert = Mth.sin((y + (float) noises.v.eval(wx * 0.01, wz * 0.01) * 20) * 0.1F) * 0.9F;
-                        final float dist = (float) noises.d.eval(wx * 0.1, y * 0.1, wz * 0.1) * 0.12F;
-                        val = (val + vert * vert + dist) + density + gradient;
-                        if (val < threshold
-                                && chunk.getBlockState(pos).is(CommonBlockTags.END_STONES)
-                                && !EndCaveCarver.isWaterNear(chunk, cp, pos, neighbor, minGenY, maxGenY)) {
-                            chunk.setBlockState(pos, CAVE_AIR);
-                            mask.set(lx, y, lz);
-                            carved = true;
-                        }
+                for (int y = minGenY; y <= ceiling; y++) {
+                    final float gradient = 1 - Mth.clamp((ceiling - y) * 0.1F, 0F, 1F);
+                    if (gradient > 0.5F) {
+                        break;
+                    }
+                    float val = Mth.abs((float) noises.h.eval(wx * 0.02, y * 0.01, wz * 0.02));
+                    final float vert = Mth.sin((y + (float) noises.v.eval(wx * 0.01, wz * 0.01) * 20) * 0.1F) * 0.9F;
+                    final float dist = (float) noises.d.eval(wx * 0.1, y * 0.1, wz * 0.1) * 0.12F;
+                    val = (val + vert * vert + dist) + DENSITY + gradient;
+                    if (val < threshold) {
+                        output.carve(lx, y, lz);
+                        carved = true;
                     }
                 }
             }
         }
 
-        // The cave's surface materials are NOT applied here any more: 26.3 rebuilt the carver API so that
-        // carvers cannot write blocks at all, which forced the coat to become a decoration-time feature
-        // (CaveSurfaceCoatFeature). That feature is backported here and the carve-time CaveSurfaceCoater is
-        // deleted, so a world generated on this branch and later opened on 26.3 keeps generating the same
-        // caves instead of switching coat algorithms mid-world.
-
         return carved;
     }
 
-    private static float caveFactor(Function<BlockPos, Holder<Biome>> biomeGetter, int x, int z) {
-        final Holder<Biome> biome = biomeGetter.apply(new BlockPos(x, 0, z));
-        return biome != null && biome.is(EndTags.IS_END_CAVE) ? 1F : 0F;
-    }
-
     /**
-     * Builds (or returns the cached) three noises. The seed is drawn from the world-seed-derived
-     * {@link net.minecraft.world.level.levelgen.RandomState}: a positional random factory keyed on
-     * {@link #NOISE_SEED_KEY} yields a stable {@code long}, which then seeds a
-     * {@link LegacyRandomSource} whose first three {@code nextInt()} draws feed the three noises &ndash;
-     * exactly the legacy construction order.
+     * Builds (or returns the cached) three noises, seeded off the End generator's world seed. Returns
+     * {@code null} before {@code TerrainGenerator#initNoise} has run, which can only happen if this carver is
+     * attached to a biome outside the BetterEnd generator.
      */
-    private static Noises3 getNoises(CarvingContext context) {
-        // at(0,0,0) mixes the factory's world-derived seed into the result (legacy factories XOR it
-        // with the position hash). fromSeed(long) must NOT be used here: the legacy implementation -
-        // which the End's noise settings select - ignores the factory seed entirely, which would give
-        // every world the same tunnel layout.
-        final long seed = context.randomState()
-                                 .getOrCreateRandomFactory(NOISE_SEED_KEY)
-                                 .at(0, 0, 0)
-                                 .nextLong();
+    private static Noises3 getNoises() {
+        final long seed = TerrainGenerator.noiseSeed;
+        if (seed == 0L) {
+            return null;
+        }
         final Noises3 local = cached;
         if (local != null && local.seed == seed) {
             return local;

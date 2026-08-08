@@ -5,9 +5,9 @@
         {
           "type": "add_condition",
           "condition": {
-            "condition": "minecraft:inverted",
+            "type": "minecraft:inverted",
             "term": {
-              "condition": "minecraft:location_check",
+              "type": "minecraft:location_check",
               "predicate": {
                 "dimension": "minecraft:the_end"
               }
@@ -17,14 +17,12 @@
         {
           "type": "add_pool",
           "pools": {
-            "conditions": [
-              {
-                "condition": "minecraft:location_check",
-                "predicate": {
-                  "dimension": "minecraft:the_end"
-                }
+            "condition": {
+              "type": "minecraft:location_check",
+              "predicate": {
+                "dimension": "minecraft:the_end"
               }
-            ],
+            },
             "entries": [
               {
                 "type": "minecraft:loot_table",

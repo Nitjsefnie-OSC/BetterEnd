@@ -182,58 +182,58 @@ public class EndTerrainBlocks {
             .addTrait(BlockTraits.SULFUR_CUBE_ARCHETYPE.slowBouncy())
             .buildAndRegister();
 
-    public static final Block END_MYCELIUM_PATH = EndBlocks.defineBlock("end_mycelium_path", DirtPathBlock::new)
+    public static final Block END_MYCELIUM_PATH = EndBlocks.defineBlock("end_mycelium_path", p -> new EndPathBlock(END_MYCELIUM, p))
             .replacePropertiesWithCopy(END_MYCELIUM)
             .addTrait(PathBlockTrait.withSource(END_MYCELIUM))
             .buildAndRegister();
 
-    public static final Block END_MOSS_PATH = EndBlocks.defineBlock("end_moss_path", DirtPathBlock::new)
+    public static final Block END_MOSS_PATH = EndBlocks.defineBlock("end_moss_path", p -> new EndPathBlock(END_MOSS, p))
             .replacePropertiesWithCopy(END_MOSS)
             .addTrait(PathBlockTrait.withSource(END_MOSS))
             .buildAndRegister();
 
-    public static final Block CHORUS_NYLIUM_PATH = EndBlocks.defineBlock("chorus_nylium_path", DirtPathBlock::new)
+    public static final Block CHORUS_NYLIUM_PATH = EndBlocks.defineBlock("chorus_nylium_path", p -> new EndPathBlock(CHORUS_NYLIUM, p))
             .replacePropertiesWithCopy(CHORUS_NYLIUM)
             .addTrait(PathBlockTrait.withSource(CHORUS_NYLIUM))
             .buildAndRegister();
 
-    public static final Block CAVE_MOSS_PATH = EndBlocks.defineBlock("cave_moss_path", DirtPathBlock::new)
+    public static final Block CAVE_MOSS_PATH = EndBlocks.defineBlock("cave_moss_path", p -> new EndPathBlock(CAVE_MOSS, p))
             .replacePropertiesWithCopy(CAVE_MOSS)
             .addTrait(PathBlockTrait.withSource(CAVE_MOSS))
             .buildAndRegister();
 
-    public static final Block CRYSTAL_MOSS_PATH = EndBlocks.defineBlock("crystal_moss_path", DirtPathBlock::new)
+    public static final Block CRYSTAL_MOSS_PATH = EndBlocks.defineBlock("crystal_moss_path", p -> new EndPathBlock(CRYSTAL_MOSS, p))
             .replacePropertiesWithCopy(CRYSTAL_MOSS)
             .addTrait(PathBlockTrait.withSource(CRYSTAL_MOSS))
             .buildAndRegister();
 
-    public static final Block SHADOW_GRASS_PATH = EndBlocks.defineBlock("shadow_grass_path", DirtPathBlock::new)
+    public static final Block SHADOW_GRASS_PATH = EndBlocks.defineBlock("shadow_grass_path", p -> new EndPathBlock(SHADOW_GRASS, p))
             .replacePropertiesWithCopy(SHADOW_GRASS)
             .addTrait(PathBlockTrait.withSource(SHADOW_GRASS))
             .buildAndRegister();
 
-    public static final Block PINK_MOSS_PATH = EndBlocks.defineBlock("pink_moss_path", DirtPathBlock::new)
+    public static final Block PINK_MOSS_PATH = EndBlocks.defineBlock("pink_moss_path", p -> new EndPathBlock(PINK_MOSS, p))
             .replacePropertiesWithCopy(PINK_MOSS)
             .addTrait(PathBlockTrait.withSource(PINK_MOSS))
             .buildAndRegister();
 
-    public static final Block AMBER_MOSS_PATH = EndBlocks.defineBlock("amber_moss_path", DirtPathBlock::new)
+    public static final Block AMBER_MOSS_PATH = EndBlocks.defineBlock("amber_moss_path", p -> new EndPathBlock(AMBER_MOSS, p))
             .replacePropertiesWithCopy(AMBER_MOSS)
             .addTrait(PathBlockTrait.withSource(AMBER_MOSS, false))
             .addTrait(EndModelTraits.amberMossPath(() -> AMBER_MOSS))
             .buildAndRegister();
 
-    public static final Block JUNGLE_MOSS_PATH = EndBlocks.defineBlock("jungle_moss_path", DirtPathBlock::new)
+    public static final Block JUNGLE_MOSS_PATH = EndBlocks.defineBlock("jungle_moss_path", p -> new EndPathBlock(JUNGLE_MOSS, p))
             .replacePropertiesWithCopy(JUNGLE_MOSS)
             .addTrait(PathBlockTrait.withSource(JUNGLE_MOSS))
             .buildAndRegister();
 
-    public static final Block SANGNUM_PATH = EndBlocks.defineBlock("sangnum_path", DirtPathBlock::new)
+    public static final Block SANGNUM_PATH = EndBlocks.defineBlock("sangnum_path", p -> new EndPathBlock(SANGNUM, p))
             .replacePropertiesWithCopy(SANGNUM)
             .addTrait(PathBlockTrait.withSource(SANGNUM))
             .buildAndRegister();
 
-    public static final Block RUTISCUS_PATH = EndBlocks.defineBlock("rutiscus_path", DirtPathBlock::new)
+    public static final Block RUTISCUS_PATH = EndBlocks.defineBlock("rutiscus_path", p -> new EndPathBlock(RUTISCUS, p))
             .replacePropertiesWithCopy(RUTISCUS)
             .addTrait(PathBlockTrait.withSource(RUTISCUS))
             .buildAndRegister();

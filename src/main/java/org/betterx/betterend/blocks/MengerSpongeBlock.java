@@ -67,7 +67,7 @@ public class MengerSpongeBlock extends Block {
     }
 
     private boolean absorbWater(LevelAccessor world, BlockPos pos) {
-        // 26.2 deleted net.minecraft.util.Tuple; DFU's Pair is the same two-slot carrier.
+        // 26.3 deleted net.minecraft.util.Tuple; DFU's Pair is the same two-slot carrier.
         Queue<Pair<BlockPos, Integer>> queue = Lists.newLinkedList();
         queue.add(Pair.of(pos, 0));
         int i = 0;

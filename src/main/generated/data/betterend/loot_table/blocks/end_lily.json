@@ -2,56 +2,48 @@
   "type": "minecraft:block",
   "pools": [
     {
-      "conditions": [
-        {
-          "block": "betterend:end_lily",
-          "condition": "minecraft:block_state_property",
-          "properties": {
-            "shape": "top"
-          }
+      "condition": {
+        "type": "minecraft:match_block",
+        "blocks": "betterend:end_lily",
+        "state": {
+          "shape": "top"
         }
-      ],
+      },
       "entries": [
         {
           "type": "minecraft:item",
-          "functions": [
-            {
-              "count": {
-                "type": "minecraft:uniform",
-                "max": 2.0,
-                "min": 1.0
-              },
-              "function": "minecraft:set_count"
+          "modifier": {
+            "type": "minecraft:set_count",
+            "count": {
+              "type": "minecraft:uniform",
+              "max": 2.0,
+              "min": 1.0
             }
-          ],
+          },
           "name": "betterend:end_lily_leaf"
         }
       ],
       "rolls": 1.0
     },
     {
-      "conditions": [
-        {
-          "block": "betterend:end_lily",
-          "condition": "minecraft:block_state_property",
-          "properties": {
-            "shape": "top"
-          }
+      "condition": {
+        "type": "minecraft:match_block",
+        "blocks": "betterend:end_lily",
+        "state": {
+          "shape": "top"
         }
-      ],
+      },
       "entries": [
         {
           "type": "minecraft:item",
-          "functions": [
-            {
-              "count": {
-                "type": "minecraft:uniform",
-                "max": 2.0,
-                "min": 1.0
-              },
-              "function": "minecraft:set_count"
+          "modifier": {
+            "type": "minecraft:set_count",
+            "count": {
+              "type": "minecraft:uniform",
+              "max": 2.0,
+              "min": 1.0
             }
-          ],
+          },
           "name": "betterend:end_lily_seed"
         }
       ],

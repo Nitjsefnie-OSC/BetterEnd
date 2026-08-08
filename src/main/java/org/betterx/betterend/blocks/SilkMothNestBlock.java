@@ -36,10 +36,11 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
+import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.LootPool;
 import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.entries.LootItem;
-import net.minecraft.world.level.storage.loot.predicates.LootItemBlockStatePropertyCondition;
+import net.minecraft.world.level.storage.loot.predicates.MatchBlock;
 import net.minecraft.world.level.storage.loot.providers.number.ConstantValue;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
@@ -47,6 +48,8 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
+import java.util.Collections;
+import java.util.List;
 import org.jetbrains.annotations.NotNull;
 
 public class SilkMothNestBlock extends Block {
@@ -129,9 +132,11 @@ public class SilkMothNestBlock extends Block {
                 .withPool(LootPool
                         .lootPool()
                         .setRolls(ConstantValue.exactly(1.0F))
-                        .when(LootItemBlockStatePropertyCondition
-                                .hasBlockStateProperties(block)
-                                .setProperties(StatePropertiesPredicate.Builder.properties().hasProperty(ACTIVE, true)))
+                        .when(MatchBlock.blockMatches(
+                                provider.blockLookup(),
+                                block,
+                                StatePropertiesPredicate.Builder.properties().hasProperty(ACTIVE, true)
+                        ))
                         .add(LootItem.lootTableItem(block)));
     }
 

@@ -9,7 +9,6 @@ import org.betterx.betterend.item.material.ToolsWithHeadsSet;
 import org.betterx.betterend.registry.EndItems;
 import org.betterx.betterend.registry.EndTemplates;
 import de.ambertation.wover.block.api.BlockDefinition;
-import de.ambertation.wover.block.api.client.trait.ClientBlockTraits;
 import de.ambertation.wover.block.api.trait.BlockTraits;
 import de.ambertation.wover.complex.api.equipment.ArmorTier;
 import de.ambertation.wover.complex.api.equipment.ToolTier;

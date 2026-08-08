@@ -17,8 +17,8 @@ import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.storage.loot.LootPool;
 import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.entries.LootItem;
-import net.minecraft.world.level.storage.loot.predicates.LootItemBlockStatePropertyCondition;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
+import net.minecraft.world.level.storage.loot.predicates.MatchBlock;
 import net.minecraft.world.level.storage.loot.providers.number.ConstantValue;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
@@ -53,9 +53,11 @@ public class CavePumpkinBlock extends Block {
      * consulted {@code survives_explosion}, so this table does not either.
      */
     public static LootTable.Builder buildLoot(Block block, LootLookupProvider provider) {
-        final LootItemCondition.Builder small = LootItemBlockStatePropertyCondition
-                .hasBlockStateProperties(block)
-                .setProperties(StatePropertiesPredicate.Builder.properties().hasProperty(SMALL, true));
+        final LootItemCondition.Builder small = MatchBlock.blockMatches(
+                provider.blockLookup(),
+                block,
+                StatePropertiesPredicate.Builder.properties().hasProperty(SMALL, true)
+        );
 
         return LootTable
                 .lootTable()

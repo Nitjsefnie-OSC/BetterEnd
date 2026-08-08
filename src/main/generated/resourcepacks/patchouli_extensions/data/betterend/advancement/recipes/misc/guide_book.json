@@ -33,7 +33,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "betterend:guide_book"
+        "recipes": "betterend:guide_book"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

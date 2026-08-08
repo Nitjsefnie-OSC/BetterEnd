@@ -1,15 +1,13 @@
 {
   "feature": {
     "type": "betterend:single_plant_feature",
-    "config": {
-      "chance": 5,
-      "radius": 12,
-      "raw_heightmap": false,
+    "chance": 5,
+    "radius": 12,
+    "raw_heightmap": false,
+    "state": {
+      "type": "minecraft:simple_state_provider",
       "state": {
-        "type": "minecraft:simple_state_provider",
-        "state": {
-          "Name": "betterend:flamaea"
-        }
+        "Name": "betterend:flamaea"
       }
     }
   },

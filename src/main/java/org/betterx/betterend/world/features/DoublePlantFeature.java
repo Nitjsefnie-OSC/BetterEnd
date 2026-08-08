@@ -4,6 +4,8 @@ import org.betterx.bclib.blocks.BaseDoublePlantBlock;
 import org.betterx.bclib.util.BlocksHelper;
 import org.betterx.bclib.util.MHelper;
 
+import com.mojang.serialization.MapCodec;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.WorldGenLevel;
@@ -12,8 +14,15 @@ import net.minecraft.world.level.block.state.BlockState;
 public class DoublePlantFeature extends ScatterFeature<DoublePlantFeatureConfig> {
     private BlockState plant;
 
-    public DoublePlantFeature() {
-        super(DoublePlantFeatureConfig.CODEC);
+    public static final MapCodec<DoublePlantFeature> CODEC = DoublePlantFeatureConfig.CODEC.xmap(DoublePlantFeature::new, f -> f.config);
+
+    public DoublePlantFeature(DoublePlantFeatureConfig config) {
+        super(config);
+    }
+
+    @Override
+    public MapCodec<DoublePlantFeature> codec() {
+        return CODEC;
     }
 
     @Override

@@ -62,7 +62,7 @@ public class CrystalMountainsBiome extends EndBiome.Config {
                         // top floor block; end stone stays below. Priority must beat the FILLER (900) or
                         // the rule is dead - that was the old bug (1).
                         .rule(SurfaceRules.ifTrue(
-                                SurfaceRules.ON_FLOOR,
+                                EndBiomeBuilder.ON_FLOOR,
                                 surfaceBlockRule
                         ), BaseSurfaceRuleBuilder.SUB_SURFACE_PRIORITY)
                         // Near-vertical faces aren't ON_FLOOR, so cover them explicitly - one block deep

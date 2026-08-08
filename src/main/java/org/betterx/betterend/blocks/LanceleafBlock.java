@@ -9,6 +9,8 @@ import org.betterx.bclib.blocks.BasePlantBlock;
 import org.betterx.betterend.registry.EndBlocks;
 import de.ambertation.wover.loot.api.LootLookupProvider;
 
+// 26.3 split net.minecraft.advancements.criterion into .predicates (StatePropertiesPredicate,
+// ...) and .triggers (every *Trigger).
 import net.minecraft.advancements.predicates.StatePropertiesPredicate;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -26,7 +28,8 @@ import net.minecraft.world.level.storage.loot.LootPool;
 import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.entries.LootItem;
 import net.minecraft.world.level.storage.loot.predicates.InvertedLootItemCondition;
-import net.minecraft.world.level.storage.loot.predicates.LootItemBlockStatePropertyCondition;
+import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
+import net.minecraft.world.level.storage.loot.predicates.MatchBlock;
 import net.minecraft.world.level.storage.loot.predicates.LootItemRandomChanceCondition;
 import net.minecraft.world.level.storage.loot.providers.number.ConstantValue;
 
@@ -75,10 +78,20 @@ public class LanceleafBlock extends BasePlantBlock {
         }
     }
 
-    private static LootItemBlockStatePropertyCondition.Builder isBottom(Block block) {
-        return LootItemBlockStatePropertyCondition
-                .hasBlockStateProperties(block)
-                .setProperties(StatePropertiesPredicate.Builder.properties().hasProperty(SHAPE, PentaShape.BOTTOM));
+    /**
+     * 26.3 removed {@code LootItemBlockStatePropertyCondition} and folded block matching into
+     * {@link MatchBlock}, which wraps an advancements {@code BlockPredicate} and therefore resolves the
+     * block into a {@code HolderSet} eagerly - hence the block lookup taken from the provider.
+     * Semantically identical, but it serializes as
+     * {@code {"type": "minecraft:match_block", "blocks": ..., "state": {...}}} instead of
+     * {@code {"condition": "minecraft:block_state_property", "block": ..., "properties": {...}}}.
+     */
+    private static LootItemCondition.Builder isBottom(Block block, LootLookupProvider provider) {
+        return MatchBlock.blockMatches(
+                provider.blockLookup(),
+                block,
+                StatePropertiesPredicate.Builder.properties().hasProperty(SHAPE, PentaShape.BOTTOM)
+        );
     }
 
     /**
@@ -90,11 +103,11 @@ public class LanceleafBlock extends BasePlantBlock {
                 .lootTable()
                 .withPool(LootPool.lootPool()
                         .setRolls(ConstantValue.exactly(1))
-                        .when(isBottom(block))
+                        .when(isBottom(block, provider))
                         .add(LootItem.lootTableItem(EndPlantBlocks.LANCELEAF_SEED)))
                 .withPool(LootPool.lootPool()
                         .setRolls(ConstantValue.exactly(1))
-                        .when(InvertedLootItemCondition.invert(isBottom(block)))
+                        .when(InvertedLootItemCondition.invert(isBottom(block, provider)))
                         .when(LootItemRandomChanceCondition.randomChance(0.5F))
                         .add(LootItem.lootTableItem(EndPlantBlocks.LANCELEAF_SEED)));
     }

@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "betterend:stonecutter_umbralith_tiles"
+        "recipes": "betterend:stonecutter_umbralith_tiles"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

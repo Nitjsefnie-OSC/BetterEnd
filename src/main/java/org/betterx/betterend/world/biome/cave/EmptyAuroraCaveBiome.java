@@ -11,20 +11,22 @@ import de.ambertation.wover.biome.api.data.BiomeGenerationDataContainer;
 
 import com.mojang.serialization.MapCodec;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.util.KeyDispatchDataCodec;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class EmptyAuroraCaveBiome extends EndCaveBiome.Config<EmptyAuroraCaveBiome> {
     public static final MapCodec<Biome> CODEC = EndCaveBiome.simpleCaveBiomeCodec(EmptyAuroraCaveBiome.Biome::new);
-    public static final KeyDispatchDataCodec<EmptyAuroraCaveBiome.Biome> KEY_CODEC = KeyDispatchDataCodec.of(CODEC);
 
 
     public static class Biome extends EndCaveBiome {
+        /**
+         * 26.3 removed {@code KeyDispatchDataCodec}; the {@code KEY_CODEC} wrapper around
+         * {@link EmptyAuroraCaveBiome#CODEC} is gone rather than replaced. See {@link EndBiome#codec()}.
+         */
         @Override
-        public KeyDispatchDataCodec<? extends EndCaveBiome> codec() {
-            return EmptyAuroraCaveBiome.KEY_CODEC;
+        public MapCodec<? extends EndCaveBiome> codec() {
+            return EmptyAuroraCaveBiome.CODEC;
         }
 
         protected Biome(

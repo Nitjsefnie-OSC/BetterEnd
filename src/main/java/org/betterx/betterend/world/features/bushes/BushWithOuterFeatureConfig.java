@@ -1,13 +1,13 @@
 package org.betterx.betterend.world.features.bushes;
 
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.levelgen.feature.stateproviders.BlockStateProvider;
-import net.minecraft.world.level.levelgen.feature.stateproviders.SimpleStateProvider;
 
 public class BushWithOuterFeatureConfig extends BushFeatureConfig {
-    public static final Codec<BushWithOuterFeatureConfig> CODEC = RecordCodecBuilder.create(instance -> instance
+    public static final MapCodec<BushWithOuterFeatureConfig> CODEC = RecordCodecBuilder.mapCodec(instance -> instance
             .group(
                     BlockStateProvider.CODEC.fieldOf("leaves").forGetter(o -> o.leaves),
                     BlockStateProvider.CODEC.fieldOf("outer_leaves").forGetter(o -> o.outer_leaves),
@@ -20,9 +20,9 @@ public class BushWithOuterFeatureConfig extends BushFeatureConfig {
 
     public BushWithOuterFeatureConfig(Block leaves, Block outer_leaves, Block stem) {
         this(
-                SimpleStateProvider.simple(leaves),
-                SimpleStateProvider.simple(outer_leaves),
-                SimpleStateProvider.simple(stem)
+                BlockStateProvider.simple(leaves),
+                BlockStateProvider.simple(outer_leaves),
+                BlockStateProvider.simple(stem)
         );
     }
 

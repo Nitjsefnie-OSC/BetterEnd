@@ -3,6 +3,8 @@ package org.betterx.betterend.world.features;
 import org.betterx.bclib.blocks.BaseAttachedBlock;
 import org.betterx.bclib.util.BlocksHelper;
 
+import com.mojang.serialization.MapCodec;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.RandomSource;
@@ -13,8 +15,15 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 public class SingleInvertedScatterFeature extends InvertedScatterFeature<SinglePlantFeatureConfig> {
     private BlockState block;
 
-    public SingleInvertedScatterFeature() {
-        super(SinglePlantFeatureConfig.CODEC);
+    public static final MapCodec<SingleInvertedScatterFeature> CODEC = SinglePlantFeatureConfig.CODEC.xmap(SingleInvertedScatterFeature::new, f -> f.config);
+
+    public SingleInvertedScatterFeature(SinglePlantFeatureConfig config) {
+        super(config);
+    }
+
+    @Override
+    public MapCodec<SingleInvertedScatterFeature> codec() {
+        return CODEC;
     }
 
     @Override

@@ -81,18 +81,6 @@ public class EndWoodBlocks {
      */
     private static final float CANOPY_SAPLING_CHANCE = 1F / 128F;
 
-    /** The tenanea petal shimmer - see EndCrystalBlocks.AURORA_PALETTE for the same pattern. */
-    private static final TinterKeys.PaletteCycle TENANEA_PALETTE = new TinterKeys.PaletteCycle(
-            List.of(
-                    ColorUtil.color(250, 111, 222),
-                    ColorUtil.color(167, 89, 255),
-                    ColorUtil.color(120, 207, 239),
-                    ColorUtil.color(255, 87, 182)
-            ),
-            TinterKeys.PaletteCycle.IndexMode.HASH_XZ_PLUS_Y,
-            0.5F
-    );
-
     public static final Block MOSSY_GLOWSHROOM_CAP = EndBlocks.defineBlock("mossy_glowshroom_cap", MossyGlowshroomCapBlock::new)
             .addTrait(BlockTraits.WOOD_BLOCK)
             .addTrait(ModelTraitLibrary.externalModelDelegatedItem())
@@ -199,6 +187,18 @@ public class EndWoodBlocks {
             .addTrait(NoAmbientOcclusionCubeModelTrait.withParent(BetterEnd.C.mk("block/cube_noshade")))
             .buildAndRegister();
 
+    /** The tenanea petal shimmer - see EndCrystalBlocks.AURORA_PALETTE for the same pattern. */
+    private static final TinterKeys.PaletteCycle TENANEA_PALETTE = new TinterKeys.PaletteCycle(
+            List.of(
+                    ColorUtil.color(250, 111, 222),
+                    ColorUtil.color(167, 89, 255),
+                    ColorUtil.color(120, 207, 239),
+                    ColorUtil.color(255, 87, 182)
+            ),
+            TinterKeys.PaletteCycle.IndexMode.HASH_XZ_PLUS_Y,
+            0.5F
+    );
+
     public static final Block TENANEA_FLOWERS = EndBlocks.defineBlock("tenanea_flowers", TenaneaFlowersBlock::new)
             // mapColor=PLANT: TenaneaFlowersBlock's now-removed constructor mutation hardcoded
             // MapColor.PLANT regardless of this trait's color argument, silently overriding the
@@ -238,7 +238,7 @@ public class EndWoodBlocks {
             // Its model is a plain texture-swap child of the shared betterend:block/tint_cube (tinted full cube),
             // single-variant, item delegated to the block model - generate it instead of hand-authoring.
             .addTrait(TemplateModelTrait.cube(BetterEnd.C.mk("block/tint_cube"), false))
-            // tint_cube colorizes the texture from the block tint, so the item model needs it baked in. Sampled
+            // block/tint_cube is grayscale; all the orange comes from the block tint. Sampled
             // at COLOR=4 rather than the default 0: COLOR runs 0..7 from deep orange to yellow, but
             // HelixTreeFeature distributes leaves as noise*3.5+4, so 4 is the shade a player actually sees on a
             // tree, while 0 is the extreme end of the gradient.

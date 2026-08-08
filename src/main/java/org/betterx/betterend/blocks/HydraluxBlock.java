@@ -13,6 +13,8 @@ import org.betterx.betterend.registry.EndBlocks;
 import org.betterx.betterend.registry.EndItems;
 import de.ambertation.wover.loot.api.LootLookupProvider;
 
+// 26.3 split net.minecraft.advancements.criterion into .predicates (StatePropertiesPredicate,
+// ...) and .triggers (every *Trigger).
 import net.minecraft.advancements.predicates.StatePropertiesPredicate;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.RandomSource;
@@ -20,6 +22,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.BonemealSource;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
@@ -29,7 +32,8 @@ import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.entries.LootItem;
 import net.minecraft.world.level.storage.loot.functions.SetItemCountFunction;
 import net.minecraft.world.level.storage.loot.predicates.AnyOfCondition;
-import net.minecraft.world.level.storage.loot.predicates.LootItemBlockStatePropertyCondition;
+import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
+import net.minecraft.world.level.storage.loot.predicates.MatchBlock;
 import net.minecraft.world.level.storage.loot.providers.number.ConstantValue;
 import net.minecraft.world.level.storage.loot.providers.number.UniformGenerator;
 
@@ -64,12 +68,23 @@ public class HydraluxBlock extends UnderwaterPlantBlock {
     }
 
     @Override
-    public boolean isValidBonemealTarget(LevelReader world, BlockPos pos, BlockState state) {
+    public boolean isValidBonemealTarget(
+            LevelReader world,
+            BlockPos pos,
+            BlockState state,
+            BonemealSource bonemealSource
+    ) {
         return false;
     }
 
     @Override
-    public boolean isBonemealSuccess(Level world, RandomSource random, BlockPos pos, BlockState state) {
+    public boolean isBonemealSuccess(
+            Level world,
+            RandomSource random,
+            BlockPos pos,
+            BlockState state,
+            BonemealSource bonemealSource
+    ) {
         return false;
     }
 
@@ -89,20 +104,34 @@ public class HydraluxBlock extends UnderwaterPlantBlock {
                 .withPool(LootPool.lootPool()
                         .setRolls(ConstantValue.exactly(1))
                         .when(AnyOfCondition.anyOf(
-                                shapeCond(block, HydraluxShape.FLOWER_BIG_BOTTOM),
-                                shapeCond(block, HydraluxShape.FLOWER_SMALL_BOTTOM)))
+                                shapeCond(block, provider, HydraluxShape.FLOWER_BIG_BOTTOM),
+                                shapeCond(block, provider, HydraluxShape.FLOWER_SMALL_BOTTOM)))
                         .add(LootItem.lootTableItem(EndResourceItems.HYDRALUX_PETAL)
                                      .apply(SetItemCountFunction.setCount(UniformGenerator.between(1, 4)))))
                 .withPool(LootPool.lootPool()
                         .setRolls(ConstantValue.exactly(1))
-                        .when(shapeCond(block, HydraluxShape.ROOTS))
+                        .when(shapeCond(block, provider, HydraluxShape.ROOTS))
                         .add(LootItem.lootTableItem(EndSaplingBlocks.HYDRALUX_SAPLING)
                                      .apply(SetItemCountFunction.setCount(UniformGenerator.between(1, 2)))));
     }
 
-    private static LootItemBlockStatePropertyCondition.Builder shapeCond(Block block, HydraluxShape shape) {
-        return LootItemBlockStatePropertyCondition
-                .hasBlockStateProperties(block)
-                .setProperties(StatePropertiesPredicate.Builder.properties().hasProperty(SHAPE, shape));
+    /**
+     * 26.3 removed {@code LootItemBlockStatePropertyCondition} and folded block matching into
+     * {@link MatchBlock}, which wraps an advancements {@code BlockPredicate} and therefore resolves the
+     * block into a {@code HolderSet} eagerly - hence the block lookup taken from the provider.
+     * Semantically identical, but it serializes as
+     * {@code {"type": "minecraft:match_block", "blocks": ..., "state": {...}}} instead of
+     * {@code {"condition": "minecraft:block_state_property", "block": ..., "properties": {...}}}.
+     */
+    private static LootItemCondition.Builder shapeCond(
+            Block block,
+            LootLookupProvider provider,
+            HydraluxShape shape
+    ) {
+        return MatchBlock.blockMatches(
+                provider.blockLookup(),
+                block,
+                StatePropertiesPredicate.Builder.properties().hasProperty(SHAPE, shape)
+        );
     }
 }

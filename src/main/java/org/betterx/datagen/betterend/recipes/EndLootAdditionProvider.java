@@ -1,6 +1,5 @@
 package org.betterx.datagen.betterend.recipes;
 
-import org.betterx.betterend.BetterEnd;
 import org.betterx.betterend.util.LootTableUtil;
 import de.ambertation.wover.core.api.ModCore;
 import de.ambertation.wover.datagen.api.provider.WoverLootAdditionProvider;
@@ -21,20 +20,21 @@ import java.util.function.BiConsumer;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * Splices the datagen-emitted {@link LootTableUtil#END_CITY_EXTRA} table (ghast tear / music discs / smithing
- * templates) into vanilla's end-city treasure chest, and swaps vanilla's fishing loot for BetterEnd's
- * End-specific fish/treasure/junk tables while the player is in the End.
+ * Splices BetterEnd's end-city extras into vanilla's end-city treasure chest, and swaps vanilla's fishing loot
+ * for BetterEnd's End-specific fish/treasure/junk tables while the player is in the End.
  *
- * <p>Both additions used to be Java appenders registered from {@code LootTableUtil.init()} against
- * {@code fabric-loot-api-v3}'s {@code LootTableEvents.MODIFY}. They are now emitted as
- * {@code data/betterend/wover/loot_addition/*.json} and applied by {@code wover-loot-api} while the reloadable
- * loot table registry is being rebuilt, just before vanilla validates it - inspectable and overridable by a
- * pack author now, with the verbs, ordering and idempotency guarantees unchanged.
+ * <p>26.3 turned loot tables into a datapack registry, where an entry is replaced wholesale and never merged, and
+ * fabric-api {@code 0.155.3+26.3} dropped both {@code fabric-loot-api-v2} and {@code -v3} along with
+ * {@code LootTableEvents.MODIFY}. WoVer's {@code wover-loot-api} replaces it. Both of these additions used to be
+ * Java appenders registered from {@code LootTableUtil.init()}; they are now emitted as
+ * {@code data/betterend/wover/loot_addition/*.json} and applied while the {@code minecraft:loot_table} registry is
+ * being built, just before vanilla validates it. The verbs, the ordering and the idempotency guarantees are
+ * identical - only the transport changed - but the result is now inspectable and a pack author can override it.
  *
- * <p>Neither addition holds any content of its own: both are a single {@link NestedLootTable} reference to a
- * table {@link EndChestLootTableProvider} emits, so the items, weights and chances stay in one place and stay
- * diffable. A nested reference rolls <em>every</em> pool of the table it points at, independently, exactly as
- * if those pools had been added to the parent table directly.
+ * <p>Neither addition holds any content of its own: both are a single {@link NestedLootTable} reference to a table
+ * {@link EndChestLootTableProvider} emits, so the items, weights and chances stay in one place and stay diffable.
+ * A nested reference rolls <em>every</em> pool of the table it points at, independently, exactly as if those pools
+ * had been added to the parent table directly.
  */
 public class EndLootAdditionProvider extends WoverLootAdditionProvider {
     public EndLootAdditionProvider(ModCore modCore) {
@@ -51,9 +51,9 @@ public class EndLootAdditionProvider extends WoverLootAdditionProvider {
                .addPool(LootPool
                        .lootPool()
                        .setRolls(ConstantValue.exactly(1))
-                       .add(NestedLootTable.lootTableReference(LootTableUtil.END_CITY_EXTRA)));
+                       .add(NestedLootTable.lootTableReference(lootTable(lookup, LootTableUtil.END_CITY_EXTRA))));
 
-        consumer.accept(BetterEnd.C.id("end_city_treasure"), endCity);
+        consumer.accept(modCore.id("end_city_treasure"), endCity);
 
         final LootItemCondition.Builder inEnd = LocationCheck.checkLocation(LocationPredicate.Builder
                 .location()
@@ -61,29 +61,28 @@ public class EndLootAdditionProvider extends WoverLootAdditionProvider {
 
         final LootAdditionFile.Builder fishing = LootAdditionFile.builder();
         fishing.forTables(BuiltInLootTables.FISHING)
-               // Vanilla's own fishing pools must not also roll while the player is in the End -
-               // wover-loot-api can only add conditions, never remove them, so this narrows every pool that
-               // already exists (the datapack-provided vanilla ones) to "not in the End". Operations run in
-               // written order, so this has to come before the End-specific pool below, which would
-               // otherwise gate itself off too.
+               // Vanilla's own fishing pools must not also roll while the player is in the End - wover-loot-api
+               // can only add conditions, never remove them, so this narrows every pool that already exists (the
+               // datapack-provided vanilla ones) to "not in the End". Operations run in written order, so this
+               // has to come before the End-specific pool below, which would otherwise gate itself off too.
                .addConditionToEveryPool(inEnd.invert())
                .addPool(LootPool
                        .lootPool()
                        .when(inEnd)
                        .setRolls(ConstantValue.exactly(1.0F))
                        .add(NestedLootTable
-                               .lootTableReference(LootTableUtil.FISHING_FISH)
+                               .lootTableReference(lootTable(lookup, LootTableUtil.FISHING_FISH))
                                .setWeight(85)
                                .setQuality(-1))
                        .add(NestedLootTable
-                               .lootTableReference(LootTableUtil.FISHING_TREASURE)
+                               .lootTableReference(lootTable(lookup, LootTableUtil.FISHING_TREASURE))
                                .setWeight(5)
                                .setQuality(2))
                        .add(NestedLootTable
-                               .lootTableReference(LootTableUtil.FISHING_JUNK)
+                               .lootTableReference(lootTable(lookup, LootTableUtil.FISHING_JUNK))
                                .setWeight(10)
                                .setQuality(-2)));
 
-        consumer.accept(BetterEnd.C.id("fishing"), fishing);
+        consumer.accept(modCore.id("fishing"), fishing);
     }
 }

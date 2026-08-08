@@ -1,22 +1,14 @@
 package org.betterx.betterend.blocks;
 
-import org.betterx.bclib.util.MHelper;
-import org.betterx.ui.ColorUtil;
 
-import net.minecraft.client.color.block.BlockTintSource;
-import net.minecraft.client.renderer.block.BlockAndTintGetter;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Vec3i;
-import net.minecraft.util.Mth;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.TransparentBlock;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
-
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
 
 public class AuroraCrystalBlock extends TransparentBlock {
     public static final Vec3i[] COLORS;
@@ -35,7 +27,6 @@ public class AuroraCrystalBlock extends TransparentBlock {
     ) {
         return this.getCollisionShape(blockState, blockGetter, blockPos, collisionContext);
     }
-
 
     static {
         COLORS = new Vec3i[]{

@@ -9,27 +9,40 @@ import org.betterx.bclib.util.MHelper;
 import org.betterx.betterend.noise.OpenSimplexNoise;
 import de.ambertation.wover.tag.api.predefined.CommonBlockTags;
 
+import com.mojang.serialization.MapCodec;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.feature.Feature;
-import net.minecraft.world.level.levelgen.feature.FeaturePlaceContext;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.level.chunk.ChunkGenerator;
 
-public class ArchFeature extends Feature<ArchFeatureConfig> {
-    public ArchFeature() {
-        super(ArchFeatureConfig.CODEC);
+public class ArchFeature implements Feature {
+    public static final MapCodec<ArchFeature> CODEC = ArchFeatureConfig.CODEC.xmap(ArchFeature::new, f -> f.config);
+
+    public final ArchFeatureConfig config;
+
+    public ArchFeature(ArchFeatureConfig config) {
+        this.config = config;
     }
 
     @Override
-    public boolean place(FeaturePlaceContext<ArchFeatureConfig> featurePlaceContext) {
-        ArchFeatureConfig cfg = featurePlaceContext.config();
-        final WorldGenLevel world = featurePlaceContext.level();
-        BlockPos origin = featurePlaceContext.origin();
-        RandomSource random = featurePlaceContext.random();
+    public MapCodec<ArchFeature> codec() {
+        return CODEC;
+    }
+
+    @Override
+    public boolean place(
+            WorldGenLevel world,
+            ChunkGenerator generator,
+            RandomSource random,
+            BlockPos origin
+    ) {
+        ArchFeatureConfig cfg = config;
         BlockState cfgBlockState = cfg.block.getState(world, random, origin);
         Block cfgBlock = cfgBlockState.getBlock();
         BlockPos pos = DefaultFeature.getPosOnSurfaceWG(

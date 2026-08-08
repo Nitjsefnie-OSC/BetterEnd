@@ -14,9 +14,8 @@ import net.minecraft.world.level.storage.loot.LootTable;
  * The {@link ResourceKey}s of every loot table BetterEnd ships.
  * <p>
  * The two additions BetterEnd makes to vanilla tables - the end-city treasure extras and the in-End fishing
- * override - used to be Java appenders registered from here against {@code LootTableEvents.MODIFY}. They are
- * data now, emitted by {@code EndLootAdditionProvider} to {@code data/betterend/wover/loot_addition/}, so this
- * class only holds keys.
+ * override - used to be {@code wover-loot-api} Java appenders registered from here. They are data now, emitted by
+ * {@code EndLootAdditionProvider} to {@code data/betterend/wover/loot_addition/}, so this class only holds keys.
  */
 public class LootTableUtil {
     public static final ResourceKey<LootTable> VILLAGE_LOOT = LootTableManager.createLootTableKey(BetterEnd.C, "chests/end_village_loot");
@@ -34,7 +33,9 @@ public class LootTableUtil {
     public static final ResourceKey<LootTable> FISHING_TREASURE = LootTableManager.createLootTableKey(BetterEnd.C, "gameplay/fishing/treasure");
     public static final ResourceKey<LootTable> FISHING_JUNK = LootTableManager.createLootTableKey(BetterEnd.C, "gameplay/fishing/junk");
 
+
     public static ResourceKey<LootTable> getTable(Holder<Biome> biome) {
+        ;
         if (biome.unwrapKey().isPresent()) {
             if (biome.is(EndBiomes.FOGGY_MUSHROOMLAND.key)) {
                 return FOGGY_MUSHROOMLAND;

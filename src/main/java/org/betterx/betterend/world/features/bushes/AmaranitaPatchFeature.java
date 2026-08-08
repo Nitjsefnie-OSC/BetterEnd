@@ -10,6 +10,8 @@ import org.betterx.bclib.util.BlocksHelper;
 import org.betterx.bclib.util.MHelper;
 import de.ambertation.wover.tag.api.predefined.CommonBlockTags;
 
+import com.mojang.serialization.MapCodec;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.BlockPos.MutableBlockPos;
 import net.minecraft.core.Direction;
@@ -17,8 +19,7 @@ import net.minecraft.tags.BlockTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.levelgen.feature.FeaturePlaceContext;
-import net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConfiguration;
+import net.minecraft.world.level.chunk.ChunkGenerator;
 
 /**
  * A ground patch of small-to-medium amaranita mushrooms, used to give the {@code flower_islets}
@@ -38,15 +39,24 @@ import net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConf
  * top instead of a single flat plane.
  */
 public class AmaranitaPatchFeature extends DefaultFeature {
+    public static final MapCodec<AmaranitaPatchFeature> CODEC = MapCodec.unit(AmaranitaPatchFeature::new);
+
+    @Override
+    public MapCodec<AmaranitaPatchFeature> codec() {
+        return CODEC;
+    }
+
     private static final int MIN_COUNT = 4;
     private static final int MAX_COUNT = 8;
     private static final int PATCH_RADIUS = 4;
 
     @Override
-    public boolean place(FeaturePlaceContext<NoneFeatureConfiguration> featureConfig) {
-        final RandomSource random = featureConfig.random();
-        final BlockPos origin = featureConfig.origin();
-        final WorldGenLevel world = featureConfig.level();
+    public boolean place(
+            WorldGenLevel world,
+            ChunkGenerator generator,
+            RandomSource random,
+            BlockPos origin
+    ) {
 
         if (!isGround(world.getBlockState(origin.below()))) {
             return false;

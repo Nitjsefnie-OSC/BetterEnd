@@ -7,6 +7,7 @@ import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.BonemealSource;
 import net.minecraft.world.level.block.BonemealableBlock;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
@@ -76,7 +77,7 @@ public class PlantGrowthGameTest {
             final BlockPos abs = helper.absolutePos(POS);
             final BonemealableBlock bonemealable = (BonemealableBlock) block;
             final BlockState state = helper.getLevel().getBlockState(abs);
-            if (!bonemealable.isValidBonemealTarget(helper.getLevel(), abs, state)) {
+            if (!bonemealable.isValidBonemealTarget(helper.getLevel(), abs, state, BonemealSource.INTERACTION)) {
                 failures.add(name + "_sapling is not a valid bonemeal target when freshly placed");
             }
         });

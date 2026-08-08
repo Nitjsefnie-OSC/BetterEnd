@@ -49,11 +49,6 @@ public class JellyshroomCapBlock extends SlimeBlock {
                 EndModels.PETAL_COLORED,
                 new TextureMapping().put(TextureSlot.TEXTURE, new Material(BetterEnd.C.mk("block/jellyshroom_cap")))
         );
-
-        // block/jellyshroom_cap is grayscale - the color comes from this block's tint, which the item model
-        // needs baked in. That is declared by ClientBlockTraits.ITEM_TINT at registration; delegating here is
-        // enough, delegateItemModel picks the trait up.
         generator.delegateItemModel(block, location);
     }
-
 }

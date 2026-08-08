@@ -95,12 +95,10 @@ public final class EndTreeHelper {
      *                 worldgen lets a feature touch, though: callers pass radii of up to 32 while
      *                 {@code ChunkStatus.FEATURES} permits only the 3x3 chunks around the one being
      *                 decorated (see {@link WriteZone}). Unclipped, the two scans below were by far
-     *                 the loudest source of "Detected unsafe terrain read during worldgen" warnings on
-     *                 26.3 - {@link #hasWater} alone probes {@code (2r+1)^2 * 6} positions for every single
-     *                 tree, and the underlying defect (deciding from a chunk that has no terrain in it yet)
-     *                 is present on 26.1 too even without the warning. Clipping is behaviour-neutral: the
-     *                 canopy blocks this pass exists to re-flood could never have been written outside the
-     *                 zone in the first place.
+     *                 the loudest source of 26.3's "Detected unsafe terrain read during worldgen" warnings -
+     *                 {@link #hasWater} alone probes {@code (2r+1)^2 * 6} positions for every single tree.
+     *                 Clipping is behaviour-neutral: the canopy blocks this pass exists to re-flood could
+     *                 never have been written outside the zone in the first place.
      */
     /**
      * Deletes every outer-leaf / fur block in {@code placed} that ended up with nothing to cling to.

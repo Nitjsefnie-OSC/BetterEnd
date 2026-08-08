@@ -13,6 +13,7 @@ import org.betterx.betterend.blocks.HelixTreeLeavesBlock;
 import org.betterx.betterend.registry.EndBlocks;
 
 import com.mojang.math.Axis;
+import com.mojang.serialization.MapCodec;
 
 import de.ambertation.wover.feature.api.WriteZone;
 
@@ -24,9 +25,8 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.levelgen.feature.FeaturePlaceContext;
-import net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConfiguration;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.phys.Vec3;
 
 import org.joml.Vector3f;
@@ -36,13 +36,22 @@ import java.util.List;
 import java.util.function.Function;
 
 public class HelixTreeFeature extends DefaultFeature {
+    public static final MapCodec<HelixTreeFeature> CODEC = MapCodec.unit(HelixTreeFeature::new);
+
+    @Override
+    public MapCodec<HelixTreeFeature> codec() {
+        return CODEC;
+    }
+
     private static final Function<PosInfo, BlockState> POST;
 
     @Override
-    public boolean place(FeaturePlaceContext<NoneFeatureConfiguration> featureConfig) {
-        final RandomSource random = featureConfig.random();
-        final BlockPos pos = featureConfig.origin();
-        final WorldGenLevel world = featureConfig.level();
+    public boolean place(
+            WorldGenLevel world,
+            ChunkGenerator generator,
+            RandomSource random,
+            BlockPos pos
+    ) {
         if (!world.getBlockState(pos.below()).is(BlockTags.NYLIUM)) return false;
         BlocksHelper.setWithoutUpdate(world, pos, AIR);
 
@@ -80,15 +89,15 @@ public class HelixTreeFeature extends DefaultFeature {
         float dy2 = 100 * scale;
         // fillArea reads every block in the box, and this box is up to 61 blocks wide - far past the 3x3
         // chunks a feature may touch. Clipping it to the write zone drops nothing the tree could have placed
-        // there anyway (those writes were already being discarded) and removes the reads from chunks that
-        // have not been carved - or even filled - yet. See WriteZone.
+        // there anyway (those writes were already being discarded) and removes the "Detected unsafe terrain
+        // read during worldgen" storm this scan produced. See WriteZone.
         final WriteZone zone = WriteZone.of(world);
         sdf.addPostProcess(POST)
            .fillArea(
                    world,
                    pos,
                    new AABB(
-                           // 26.2 removed BlockPos#getCenter(); use Vec3.atCenterOf(Vec3i).
+                           // 26.3 removed BlockPos#getCenter(); use Vec3.atCenterOf(Vec3i).
                            Vec3.atCenterOf(new BlockPos(
                                    zone.clampX(pos.getX() - (int) dx),
                                    pos.getY() + (int) dy1,

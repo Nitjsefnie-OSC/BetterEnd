@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "betterend:tenanea_planks"
+        "recipes": "betterend:tenanea_planks"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

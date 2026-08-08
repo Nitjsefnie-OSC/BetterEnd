@@ -13,28 +13,38 @@ import de.ambertation.wover.feature.api.WriteZone;
 import org.betterx.betterend.world.biome.EndBiome;
 import de.ambertation.wover.tag.api.predefined.CommonBlockTags;
 
+import com.mojang.serialization.MapCodec;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.BlockPos.MutableBlockPos;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.levelgen.feature.FeaturePlaceContext;
-import net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConfiguration;
 import net.minecraft.world.level.material.FluidState;
+import net.minecraft.world.level.chunk.ChunkGenerator;
 
 
 public class DesertLakeFeature extends DefaultFeature {
+    public static final MapCodec<DesertLakeFeature> CODEC = MapCodec.unit(DesertLakeFeature::new);
+
+    @Override
+    public MapCodec<DesertLakeFeature> codec() {
+        return CODEC;
+    }
+
     private static final BlockState END_STONE = Blocks.END_STONE.defaultBlockState();
     private static final OpenSimplexNoise NOISE = new OpenSimplexNoise(15152);
 
     @Override
-    public boolean place(FeaturePlaceContext<NoneFeatureConfiguration> featureConfig) {
+    public boolean place(
+            WorldGenLevel world,
+            ChunkGenerator generator,
+            RandomSource random,
+            BlockPos blockPos
+    ) {
         final MutableBlockPos POS = GlobalState.stateForThread().POS;
 
-        final RandomSource random = featureConfig.random();
-        BlockPos blockPos = featureConfig.origin();
-        final WorldGenLevel world = featureConfig.level();
         double radius = MHelper.randRange(8.0, 15.0, random);
         double depth = radius * 0.5 * MHelper.randRange(0.8, 1.2, random);
         int dist = MHelper.floor(radius);

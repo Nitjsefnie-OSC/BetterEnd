@@ -16,16 +16,16 @@ import org.spongepowered.asm.mixin.injection.At;
 @Mixin(EndPortalBlock.class)
 public class EndPortalBlockMixin {
     /**
-     * 26.2 removed the {@code BlockPos#getBottomCenter()} instance method and replaced every call with the
+     * 26.3 removed the {@code BlockPos#getBottomCenter()} instance method and replaced every call with the
      * static {@code Vec3.atBottomCenterOf(Vec3i)}. Verified with
      * {@code javap -p -c net.minecraft.world.level.block.EndPortalBlock}:
      * <pre>
      * 26.1.2: 83: invokevirtual Method net/minecraft/core/BlockPos.getBottomCenter:()Lnet/minecraft/world/phys/Vec3;
      *        228: invokevirtual Method net/minecraft/core/BlockPos.getBottomCenter:()Lnet/minecraft/world/phys/Vec3;
-     * 26.2:    83: invokestatic  Method net/minecraft/world/phys/Vec3.atBottomCenterOf:(Lnet/minecraft/core/Vec3i;)Lnet/minecraft/world/phys/Vec3;
+     * 26.3:    83: invokestatic  Method net/minecraft/world/phys/Vec3.atBottomCenterOf:(Lnet/minecraft/core/Vec3i;)Lnet/minecraft/world/phys/Vec3;
      *         228: invokestatic  Method net/minecraft/world/phys/Vec3.atBottomCenterOf:(Lnet/minecraft/core/Vec3i;)Lnet/minecraft/world/phys/Vec3;
      * </pre>
-     * {@code javap -p net.minecraft.core.BlockPos} in 26.2 lists no {@code getBottomCenter} (and no
+     * {@code javap -p net.minecraft.core.BlockPos} in 26.3 lists no {@code getBottomCenter} (and no
      * {@code getCenter}) at all, so the old target matched zero instructions. This build has no refmap and no
      * mixin annotation processor, so it compiled anyway and would have thrown at mixin-apply time.
      * <p>

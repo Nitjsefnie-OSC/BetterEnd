@@ -34,10 +34,10 @@ public class MinecraftClientMixin {
 
     @Inject(method = "getSituationalMusic", at = @At("HEAD"), cancellable = true)
     private void be_getEndMusic(CallbackInfoReturnable<Music> info) {
-        // 26.2 moved the active screen off Minecraft onto Gui (Minecraft#screen is gone).
+        // 26.3 moved the active screen off Minecraft onto Gui (Minecraft#screen is gone).
         if (!(this.gui.screen() instanceof WinScreen) && this.player != null) {
             if (this.player.level().dimension() == Level.END) {
-                // 26.2 split the in-game HUD out of Gui into Gui#hud; the boss bar lives there now.
+                // 26.3 split the in-game HUD out of Gui into Gui#hud; the boss bar lives there now.
                 if (this.gui.hud.getBossOverlay().shouldPlayMusic() && MHelper.lengthSqr(
                         this.player.getX(),
                         this.player.getZ()

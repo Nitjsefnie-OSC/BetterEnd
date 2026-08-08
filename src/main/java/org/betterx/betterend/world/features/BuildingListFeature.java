@@ -29,9 +29,15 @@ import org.jetbrains.annotations.Nullable;
 public class BuildingListFeature extends NBTFeature<BuildingListFeatureConfig> {
     private StructureInfo selected;
 
-    public BuildingListFeature() {
-        super(BuildingListFeatureConfig.CODEC);
+    public static final MapCodec<BuildingListFeature> CODEC = BuildingListFeatureConfig.CODEC.xmap(BuildingListFeature::new, f -> f.config);
 
+    public BuildingListFeature(BuildingListFeatureConfig config) {
+        super(config);
+    }
+
+    @Override
+    public MapCodec<BuildingListFeature> codec() {
+        return CODEC;
     }
 
     @Override
@@ -111,11 +117,11 @@ public class BuildingListFeature extends NBTFeature<BuildingListFeatureConfig> {
     /**
      * Fills the loot table of every chest in a placed building from the biome it landed in.
      * <p>
-     * Minecraft 26.2 changes reflected here:
+     * Minecraft 26.3 changes reflected here:
      * <ul>
      * <li>{@code StructureProcessor} became an <b>interface</b>, so this class implements it.</li>
      * <li>{@code getType()} is gone; a processor now returns its {@link MapCodec} from {@code codec()},
-     * because 26.2 removed {@code KeyDispatchDataCodec}. Up to 26.1 this returned
+     * because 26.3 removed {@code KeyDispatchDataCodec}. Up to 26.1 this returned
      * {@code StructureProcessorType.NOP}, a placeholder - the processor is built in Java by
      * {@link #addStructureData}, is never serialized and is not registered in
      * {@code BuiltInRegistries.STRUCTURE_PROCESSOR_TYPE}. It is stateless apart from its enclosing

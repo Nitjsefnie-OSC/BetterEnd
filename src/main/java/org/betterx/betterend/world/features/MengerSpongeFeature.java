@@ -6,6 +6,8 @@ import org.betterx.betterend.registry.block.EndWoodBlocks;
 import org.betterx.bclib.util.BlocksHelper;
 import org.betterx.betterend.registry.EndBlocks;
 
+import com.mojang.serialization.MapCodec;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.RandomSource;
@@ -17,8 +19,15 @@ import java.util.function.Function;
 public class MengerSpongeFeature extends UnderwaterPlantScatter<ScatterFeatureConfig> {
     private static final Function<BlockState, Boolean> REPLACE;
 
-    public MengerSpongeFeature() {
-        super(ScatterFeatureConfig.CODEC);
+    public static final MapCodec<MengerSpongeFeature> CODEC = ScatterFeatureConfig.CODEC.xmap(MengerSpongeFeature::new, f -> f.config);
+
+    public MengerSpongeFeature(ScatterFeatureConfig config) {
+        super(config);
+    }
+
+    @Override
+    public MapCodec<MengerSpongeFeature> codec() {
+        return CODEC;
     }
 
     @Override

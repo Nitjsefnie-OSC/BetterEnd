@@ -1,0 +1,5 @@
+{
+  "type": "betterend:end_tunnel_cave",
+  "probability": 1.0,
+  "threshold": 0.15
+}

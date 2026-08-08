@@ -23,7 +23,6 @@ public class HydraluxPetalColoredBlock extends HydraluxPetalBlock {
         super(settings);
     }
 
-
     private static Identifier PETAL_MODEL;
 
     @Environment(EnvType.CLIENT)
@@ -38,7 +37,7 @@ public class HydraluxPetalColoredBlock extends HydraluxPetalBlock {
         generator.acceptBlockState(BlockModelGenerators.createSimpleBlock(block, BlockModelGenerators.plainVariant(PETAL_MODEL)));
 
         // Item tinting is data-driven via the item model's `tints` list and no longer follows BlockColors, so
-        // this block declares ClientBlockTraits.ITEM_TINT at registration; delegating here emits that tint.
+        // this block declares ClientBlockTraits.TINT at registration; delegating here emits that tint.
         generator.delegateItemModel(block, modelLocation);
     }
 }

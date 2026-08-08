@@ -16,6 +16,8 @@ import org.betterx.betterend.noise.OpenSimplexNoise;
 import org.betterx.betterend.registry.EndBlocks;
 import de.ambertation.wover.feature.api.WriteZone;
 
+import com.mojang.serialization.MapCodec;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.BlockPos.MutableBlockPos;
 import net.minecraft.core.Direction;
@@ -24,8 +26,7 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.LeavesBlock;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.levelgen.feature.FeaturePlaceContext;
-import net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConfiguration;
+import net.minecraft.world.level.chunk.ChunkGenerator;
 
 import com.google.common.collect.Lists;
 import org.joml.Vector3f;
@@ -34,6 +35,13 @@ import java.util.List;
 import java.util.function.Function;
 
 public class TenaneaFeature extends DefaultFeature {
+    public static final MapCodec<TenaneaFeature> CODEC = MapCodec.unit(TenaneaFeature::new);
+
+    @Override
+    public MapCodec<TenaneaFeature> codec() {
+        return CODEC;
+    }
+
     private static final Direction[] DIRECTIONS = Direction.values();
     private static final Function<BlockState, Boolean> REPLACE;
     private static final Function<BlockState, Boolean> IGNORE;
@@ -47,10 +55,12 @@ public class TenaneaFeature extends DefaultFeature {
     private static final float LEAF_BALL_BULGE = 3.5F;
 
     @Override
-    public boolean place(FeaturePlaceContext<NoneFeatureConfiguration> featureConfig) {
-        final RandomSource random = featureConfig.random();
-        final BlockPos pos = featureConfig.origin();
-        final WorldGenLevel world = featureConfig.level();
+    public boolean place(
+            WorldGenLevel world,
+            ChunkGenerator generator,
+            RandomSource random,
+            BlockPos pos
+    ) {
         if (!world.getBlockState(pos.below()).is(BlockTags.NYLIUM)) return false;
 
         // Branch splines are scaled by up to `size * 1.5` and rotated to any angle, so fillSpline and the

@@ -23,7 +23,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "betterend:purple_pedestal"
+        "recipes": "betterend:purple_pedestal"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

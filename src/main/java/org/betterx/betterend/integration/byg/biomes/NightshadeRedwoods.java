@@ -17,7 +17,9 @@ import net.minecraft.world.attribute.EnvironmentAttributeMap;
 import net.minecraft.world.attribute.EnvironmentAttributes;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.level.biome.Biome;
+import net.minecraft.world.level.biome.MobSpawnSettings;
 import net.minecraft.world.level.biome.MobSpawnSettings.SpawnerData;
+import net.minecraft.util.valueproviders.IntProvider;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.GenerationStep.Decoration;
 import net.minecraft.world.level.levelgen.SurfaceRules;
@@ -75,14 +77,24 @@ public class NightshadeRedwoods extends EndBiome.Config {
                  });
              });
 
+        // 26.3 removed Biome#getMobSettings(); the spawn list is now the per-Biome
+        // EnvironmentAttributes.NATURAL_MOB_SPAWNS attribute, read the same way WoVer's
+        // MobSettingsWorker#mobSettingsOf does. getMobs(group) became getMobsToSpawn(group)
+        // (the getOrDefault(..., EMPTY_MOB_LIST) variant, so still never null).
+        MobSpawnSettings mobSettings = biome.value().getAttributes().applyModifier(
+                EnvironmentAttributes.NATURAL_MOB_SPAWNS,
+                EnvironmentAttributes.NATURAL_MOB_SPAWNS.defaultValue()
+        );
         for (MobCategory group : MobCategory.values()) {
-            List<Weighted<SpawnerData>> list = biome.value()
-                                                     .getMobSettings()
-                                                     .getMobs(group)
-                                                     .unwrap();
+            List<Weighted<SpawnerData>> list = mobSettings.getMobsToSpawn(group).unwrap();
             list.forEach(weighted -> {
                 SpawnerData entry = weighted.value();
-                builder.spawn(entry.type(), 1, entry.minCount(), entry.maxCount());
+                // SpawnerData's minCount/maxCount collapsed into a single IntProvider count(). The
+                // builder's spawn(type, weight, min, max) rebuilds a ConstantInt when min == max and a
+                // UniformInt otherwise, which is exactly what vanilla's addSpawn(type, weight, min, max)
+                // produced, so (minInclusive, maxInclusive) round-trips every entry BYG can declare.
+                IntProvider count = entry.count();
+                builder.spawn(entry.type(), 1, count.minInclusive(), count.maxInclusive());
             });
         }
     }
@@ -102,7 +114,7 @@ public class NightshadeRedwoods extends EndBiome.Config {
                         .rule(SurfaceRules.sequence(SurfaceRules.ifTrue(
                                                 BYGBiomes.BYG_WATER_CHECK,
                                                 SurfaceRules.ifTrue(
-                                                        SurfaceRules.ON_FLOOR,
+                                                        EndBiomeBuilder.ON_FLOOR,
                                                         SurfaceRules.state(getTopMaterial())
                                                 )
                                         )

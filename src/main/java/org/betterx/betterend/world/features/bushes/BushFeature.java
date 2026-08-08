@@ -14,6 +14,8 @@ import de.ambertation.wover.feature.api.WriteZone;
 import org.betterx.betterend.world.features.trees.EndTreeHelper;
 import de.ambertation.wover.tag.api.predefined.CommonBlockTags;
 
+import com.mojang.serialization.MapCodec;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.RandomSource;
@@ -22,22 +24,33 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.LeavesBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.feature.Feature;
-import net.minecraft.world.level.levelgen.feature.FeaturePlaceContext;
+import net.minecraft.world.level.chunk.ChunkGenerator;
 
 import java.util.function.Function;
 
-public class BushFeature extends Feature<BushFeatureConfig> {
+public class BushFeature implements Feature {
+    public static final MapCodec<BushFeature> CODEC = BushFeatureConfig.CODEC.xmap(BushFeature::new, f -> f.config);
+
+    public final BushFeatureConfig config;
+
     private static final Function<BlockState, Boolean> REPLACE;
 
-    public BushFeature() {
-        super(BushFeatureConfig.CODEC);
+    public BushFeature(BushFeatureConfig config) {
+        this.config = config;
     }
 
     @Override
-    public boolean place(FeaturePlaceContext<BushFeatureConfig> featureConfig) {
-        final RandomSource random = featureConfig.random();
-        final BlockPos pos = featureConfig.origin();
-        final WorldGenLevel world = featureConfig.level();
+    public MapCodec<BushFeature> codec() {
+        return CODEC;
+    }
+
+    @Override
+    public boolean place(
+            WorldGenLevel world,
+            ChunkGenerator generator,
+            RandomSource random,
+            BlockPos pos
+    ) {
         if (!world.getBlockState(pos.below()).is(CommonBlockTags.END_STONES) && !world.getBlockState(pos.above())
                                                                                       .is(CommonBlockTags.END_STONES))
             return false;
@@ -45,7 +58,7 @@ public class BushFeature extends Feature<BushFeatureConfig> {
         // overhangs the water still generates and gets its submerged leaves waterlogged.
         if (!world.getFluidState(pos).isEmpty()) return false;
 
-        BushFeatureConfig cfg = featureConfig.config();
+        BushFeatureConfig cfg = config;
         Block leaves = cfg.leaves.getState(world, random, pos).getBlock();
         BlockState stem = cfg.stem.getState(world, random, pos);
         float radius = MHelper.randRange(1.8F, 3.5F, random);

@@ -6,6 +6,8 @@ import org.betterx.bclib.blocks.BaseDoublePlantBlock;
 import org.betterx.bclib.util.BlocksHelper;
 import org.betterx.bclib.blocks.BasePlantWithAgeBlock;
 
+import com.mojang.serialization.MapCodec;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.WorldGenLevel;
@@ -15,8 +17,15 @@ public class SinglePlantFeature extends ScatterFeature<SinglePlantFeatureConfig>
 
     BlockState plant;
 
-    public SinglePlantFeature() {
-        super(SinglePlantFeatureConfig.CODEC);
+    public static final MapCodec<SinglePlantFeature> CODEC = SinglePlantFeatureConfig.CODEC.xmap(SinglePlantFeature::new, f -> f.config);
+
+    public SinglePlantFeature(SinglePlantFeatureConfig config) {
+        super(config);
+    }
+
+    @Override
+    public MapCodec<SinglePlantFeature> codec() {
+        return CODEC;
     }
 
     @Override

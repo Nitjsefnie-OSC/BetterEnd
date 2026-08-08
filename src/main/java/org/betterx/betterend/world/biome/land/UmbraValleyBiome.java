@@ -79,7 +79,7 @@ public class UmbraValleyBiome extends EndBiome.Config {
             public SurfaceRuleBuilder surface() {
                 return super.surface()
                             .rule(SurfaceRules.ifTrue(
-                                    SurfaceRules.ON_FLOOR,
+                                    EndBiomeBuilder.ON_FLOOR,
                                     new SwitchRuleSource(
                                             new UmbraSurfaceNoiseCondition(),
                                             List.of(

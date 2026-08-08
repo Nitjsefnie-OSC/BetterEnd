@@ -15,7 +15,6 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.util.KeyDispatchDataCodec;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.state.BlockState;
 
@@ -36,11 +35,13 @@ public class EndCaveBiome extends EndBiome {
         );
     }
 
-    public static final KeyDispatchDataCodec<EndCaveBiome> KEY_CODEC = KeyDispatchDataCodec.of(CODEC);
-
+    /**
+     * 26.3 removed {@code KeyDispatchDataCodec}; the {@code KEY_CODEC} constant that wrapped
+     * {@link #CODEC} is gone rather than replaced. See {@link EndBiome#codec()}.
+     */
     @Override
-    public KeyDispatchDataCodec<? extends WoverBiomeData> codec() {
-        return KEY_CODEC;
+    public MapCodec<? extends WoverBiomeData> codec() {
+        return CODEC;
     }
 
 
@@ -113,7 +114,13 @@ public class EndCaveBiome extends EndBiome {
 
     }
 
-    // Runtime hooks used by CaveSurfaceCoatFeature to coat exposed End-stone surfaces per cave biome.
+    // Per-biome cave surface materials (ceiling / wall). These used to be consumed by CaveSurfaceCoater,
+    // which ran at carve time and wrote them into the blocks a carver had just removed. 26.3's carvers can
+    // no longer touch the world at all - they only fill a CarvingMask - so the coater is gone (see
+    // EndCaveCarver's class doc). They are now read by CaveSurfaceCoatFeature, the decoration-time coat that
+    // EndFeatures#addDefaultFeatures puts on every biome; together with getTopMaterial() they remain the
+    // single description of what a cave is made of, so overriding one of them here is all a new cave biome
+    // has to do. Returning null means "leave this face alone".
     public BlockState getCeil(BlockPos pos) {
         return null;
     }

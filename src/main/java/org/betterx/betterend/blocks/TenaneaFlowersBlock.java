@@ -3,16 +3,13 @@ package org.betterx.betterend.blocks;
 import org.betterx.bclib.blocks.BaseVineBlock;
 import org.betterx.bclib.util.MHelper;
 import org.betterx.betterend.registry.EndParticles;
-import org.betterx.ui.ColorUtil;
 
-import net.minecraft.client.color.block.BlockTintSource;
-import net.minecraft.client.renderer.block.BlockAndTintGetter;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Vec3i;
-import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.block.BonemealSource;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 
@@ -26,9 +23,13 @@ public class TenaneaFlowersBlock extends BaseVineBlock {
         super(props);
     }
 
-
     @Override
-    public boolean isValidBonemealTarget(LevelReader world, BlockPos pos, BlockState state) {
+    public boolean isValidBonemealTarget(
+            LevelReader world,
+            BlockPos pos,
+            BlockState state,
+            BonemealSource bonemealSource
+    ) {
         return false;
     }
 

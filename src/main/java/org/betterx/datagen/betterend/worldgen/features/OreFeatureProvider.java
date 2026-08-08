@@ -7,8 +7,8 @@ import org.betterx.betterend.registry.block.EndStoneBlocks;
 import static org.betterx.betterend.complexmaterials.MetalMaterial.ORE;
 import org.betterx.betterend.complexmaterials.StoneMaterial;
 import org.betterx.betterend.registry.EndBlocks;
-import org.betterx.betterend.registry.EndFeatures;
 import org.betterx.betterend.registry.features.EndOreFeatures;
+import org.betterx.betterend.world.features.terrain.OreLayerFeature;
 import org.betterx.betterend.world.features.terrain.OreLayerFeatureConfig;
 import de.ambertation.wover.core.api.ModCore;
 import de.ambertation.wover.datagen.api.provider.multi.WoverFeatureProvider;
@@ -16,9 +16,9 @@ import de.ambertation.wover.feature.api.placed.PlacedFeatureKey;
 import de.ambertation.wover.sets.api.blocks.SlotType;
 
 import net.minecraft.data.worldgen.BootstrapContext;
+import net.minecraft.world.level.levelgen.feature.Feature;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
 import net.minecraft.world.level.levelgen.placement.PlacedFeature;
 
 import org.jetbrains.annotations.NotNull;
@@ -29,7 +29,7 @@ public class OreFeatureProvider extends WoverFeatureProvider {
     }
 
     @Override
-    protected void bootstrapConfigured(BootstrapContext<ConfiguredFeature<?, ?>> context) {
+    protected void bootstrapFeatures(BootstrapContext<Feature> context) {
 
     }
 
@@ -69,8 +69,7 @@ public class OreFeatureProvider extends WoverFeatureProvider {
             Block block, float radius, int minY, int maxY, int count
     ) {
         key.inlineConfiguration(context)
-           .withFeature(EndFeatures.LAYERED_ORE_FEATURE)
-           .configuration(new OreLayerFeatureConfig(block.defaultBlockState(), radius, minY, maxY))
+           .withFeature(new OreLayerFeature(new OreLayerFeatureConfig(block.defaultBlockState(), radius, minY, maxY)))
            .inlinePlace()
            .onlyInBiome()
            .count(count)

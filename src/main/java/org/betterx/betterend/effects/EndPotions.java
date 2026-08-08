@@ -7,12 +7,12 @@ import org.betterx.betterend.registry.item.EndResourceItems;
 import org.betterx.betterend.BetterEnd;
 import org.betterx.betterend.registry.EndBlocks;
 import org.betterx.betterend.registry.EndItems;
+import de.ambertation.wover.potions.api.BrewingBuilder;
 import de.ambertation.wover.potions.api.PotionManager;
 
 import net.minecraft.core.Holder;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.alchemy.Potion;
-import net.minecraft.world.item.alchemy.PotionBrewing;
 import net.minecraft.world.item.alchemy.Potions;
 
 import org.jetbrains.annotations.ApiStatus;
@@ -27,7 +27,12 @@ public class EndPotions {
         PotionManager.BOOTSTRAP_POTIONS.subscribe(EndPotions::bootstrap);
     }
 
-    private static void bootstrap(PotionBrewing.Builder builder) {
+    /**
+     * 26.3 deleted {@code PotionBrewing} - brewing is an ordinary {@code minecraft:brewing} recipe type now -
+     * so WoVer's bootstrap event hands out a {@link BrewingBuilder} instead of {@code PotionBrewing.Builder}.
+     * It exposes the same four operations under the same names, so the body is unchanged.
+     */
+    private static void bootstrap(BrewingBuilder builder) {
         builder.addMix(Potions.AWKWARD, EndResourceItems.ENDER_DUST, END_VEIL);
         builder.addMix(END_VEIL, Items.REDSTONE, LONG_END_VEIL);
         builder.addMix(Potions.AWKWARD, EndPlantBlocks.MURKWEED.asItem(), Potions.NIGHT_VISION);

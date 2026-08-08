@@ -13,25 +13,29 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.ChorusFlowerBlock;
 import net.minecraft.world.level.block.PipeBlock;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.levelgen.feature.ChorusPlantFeature;
-import net.minecraft.world.level.levelgen.feature.FeaturePlaceContext;
-import net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConfiguration;
 
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
+/**
+ * 26.3 collapsed {@code ConfiguredFeature} into {@code Feature} and deleted {@code FeaturePlaceContext}:
+ * {@code Feature#place} now takes level, generator, random source and origin directly, so the injector's
+ * parameters mirror those instead of a single context object.
+ */
 @Mixin(ChorusPlantFeature.class)
 public class ChorusPlantFeatureMixin {
     @Inject(method = "place", at = @At("HEAD"), cancellable = true)
     private void be_place(
-            FeaturePlaceContext<NoneFeatureConfiguration> featureConfig,
+            WorldGenLevel structureWorldAccess,
+            ChunkGenerator generator,
+            RandomSource random,
+            BlockPos blockPos,
             CallbackInfoReturnable<Boolean> info
     ) {
-        final RandomSource random = featureConfig.random();
-        final BlockPos blockPos = featureConfig.origin();
-        final WorldGenLevel structureWorldAccess = featureConfig.level();
         if (structureWorldAccess.isEmptyBlock(blockPos) && structureWorldAccess.getBlockState(blockPos.below())
                                                                                .is(EndTerrainBlocks.CHORUS_NYLIUM)) {
             ChorusFlowerBlock.generatePlant(structureWorldAccess, blockPos, random, MHelper.randRange(8, 16, random));

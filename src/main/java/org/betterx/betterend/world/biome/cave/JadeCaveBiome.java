@@ -16,7 +16,6 @@ import de.ambertation.wover.biome.api.data.BiomeGenerationDataContainer;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.util.KeyDispatchDataCodec;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.state.BlockState;
 
@@ -25,16 +24,19 @@ import org.jetbrains.annotations.Nullable;
 
 public class JadeCaveBiome extends EndCaveBiome.Config<JadeCaveBiome> {
     public static final MapCodec<Biome> CODEC = EndCaveBiome.simpleCaveBiomeCodec(JadeCaveBiome.Biome::new);
-    public static final KeyDispatchDataCodec<JadeCaveBiome.Biome> KEY_CODEC = KeyDispatchDataCodec.of(CODEC);
 
     public static class Biome extends EndCaveBiome {
         private static final OpenSimplexNoise WALL_NOISE = new OpenSimplexNoise("jade_cave".hashCode());
         private static final OpenSimplexNoise DEPTH_NOISE = new OpenSimplexNoise("depth_noise".hashCode());
         private static final BlockState[] JADE = new BlockState[3];
 
+        /**
+         * 26.3 removed {@code KeyDispatchDataCodec}; the {@code KEY_CODEC} wrapper around
+         * {@link JadeCaveBiome#CODEC} is gone rather than replaced. See {@link EndBiome#codec()}.
+         */
         @Override
-        public KeyDispatchDataCodec<? extends EndCaveBiome> codec() {
-            return JadeCaveBiome.KEY_CODEC;
+        public MapCodec<? extends EndCaveBiome> codec() {
+            return JadeCaveBiome.CODEC;
         }
 
         protected Biome(

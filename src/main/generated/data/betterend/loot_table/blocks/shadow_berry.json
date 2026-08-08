@@ -1,10 +1,8 @@
 {
   "type": "minecraft:block",
-  "functions": [
-    {
-      "function": "minecraft:explosion_decay"
-    }
-  ],
+  "modifier": {
+    "type": "minecraft:explosion_decay"
+  },
   "pools": [
     {
       "entries": [
@@ -13,25 +11,21 @@
           "children": [
             {
               "type": "minecraft:item",
-              "conditions": [
-                {
-                  "block": "betterend:shadow_berry",
-                  "condition": "minecraft:block_state_property",
-                  "properties": {
-                    "age": "3"
-                  }
+              "condition": {
+                "type": "minecraft:match_block",
+                "blocks": "betterend:shadow_berry",
+                "state": {
+                  "age": "3"
                 }
-              ],
-              "functions": [
-                {
-                  "count": {
-                    "type": "minecraft:uniform",
-                    "max": 2.0,
-                    "min": 1.0
-                  },
-                  "function": "minecraft:set_count"
+              },
+              "modifier": {
+                "type": "minecraft:set_count",
+                "count": {
+                  "type": "minecraft:uniform",
+                  "max": 2.0,
+                  "min": 1.0
                 }
-              ],
+              },
               "name": "betterend:shadow_berry_raw"
             },
             {
@@ -44,31 +38,29 @@
       "rolls": 1.0
     },
     {
-      "conditions": [
-        {
-          "block": "betterend:shadow_berry",
-          "condition": "minecraft:block_state_property",
-          "properties": {
-            "age": "3"
-          }
+      "condition": {
+        "type": "minecraft:match_block",
+        "blocks": "betterend:shadow_berry",
+        "state": {
+          "age": "3"
         }
-      ],
+      },
       "entries": [
         {
           "type": "minecraft:item",
-          "functions": [
+          "modifier": [
             {
+              "type": "minecraft:set_count",
               "count": {
                 "type": "minecraft:uniform",
                 "max": 3.0,
                 "min": 1.0
-              },
-              "function": "minecraft:set_count"
+              }
             },
             {
+              "type": "minecraft:apply_bonus",
               "enchantment": "minecraft:fortune",
               "formula": "minecraft:binomial_with_bonus_count",
-              "function": "minecraft:apply_bonus",
               "parameters": {
                 "extra": 3,
                 "probability": 0.571

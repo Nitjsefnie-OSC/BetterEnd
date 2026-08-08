@@ -23,6 +23,10 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.alchemy.Potion;
 import net.minecraft.world.item.alchemy.PotionContents;
 import net.minecraft.world.item.alchemy.Potions;
+import net.minecraft.world.item.crafting.BrewingInput;
+import net.minecraft.world.item.crafting.BrewingRecipe;
+import net.minecraft.world.item.crafting.RecipeHolder;
+import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 
 import java.util.ArrayList;
@@ -173,6 +177,12 @@ public class EndVeilGameTest {
         helper.succeed();
     }
 
+    /**
+     * 26.3 deleted {@code PotionBrewing} and {@code Level#potionBrewing()}: brewing is an ordinary
+     * {@link RecipeType#BREWING} datapack recipe now, so a mix is asserted by matching a
+     * {@link BrewingInput} against the recipe manager and assembling the result, which is exactly what
+     * a brewing stand does.
+     */
     private static void requireMix(
             GameTestHelper helper,
             Holder<Potion> from,
@@ -181,13 +191,18 @@ public class EndVeilGameTest {
             String what,
             List<String> failures
     ) {
-        final ItemStack input = potion(from);
-        if (!helper.getLevel().potionBrewing().hasMix(input, reagent)) {
-            failures.add(what + ": no brewing mix is registered");
+        final BrewingInput input = new BrewingInput(potion(from), reagent);
+        final RecipeHolder<BrewingRecipe> recipe = helper.getLevel()
+                                                         .recipeAccess()
+                                                         .getRecipeFor(RecipeType.BREWING, input, helper.getLevel())
+                                                         .orElse(null);
+
+        if (recipe == null) {
+            failures.add(what + ": no brewing recipe matches");
             return;
         }
 
-        final ItemStack result = helper.getLevel().potionBrewing().mix(reagent, input);
+        final ItemStack result = recipe.value().assemble(input);
         final PotionContents contents = result.get(DataComponents.POTION_CONTENTS);
         final Holder<Potion> got = contents == null ? null : contents.potion().orElse(null);
         if (got == null || !got.value().equals(expected.value())) {

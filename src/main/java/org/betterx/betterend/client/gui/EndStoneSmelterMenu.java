@@ -167,7 +167,7 @@ public class EndStoneSmelterMenu extends RecipeBookMenu {
     }
 
     public boolean isFuel(ItemStack fuelStack) {
-        return EndStoneSmelterBlockEntity.canUseAsFuel(this.world, fuelStack);
+        return EndStoneSmelterBlockEntity.canUseAsFuel(fuelStack);
     }
 
     @Override

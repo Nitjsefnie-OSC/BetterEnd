@@ -14,14 +14,15 @@ import org.betterx.betterend.registry.EndBlocks;
 import de.ambertation.wover.feature.api.WriteZone;
 import de.ambertation.wover.tag.api.predefined.CommonBlockTags;
 
+import com.mojang.serialization.MapCodec;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.levelgen.feature.FeaturePlaceContext;
-import net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConfiguration;
+import net.minecraft.world.level.chunk.ChunkGenerator;
 
 import com.google.common.collect.Lists;
 import org.joml.Vector3f;
@@ -30,14 +31,23 @@ import java.util.List;
 import java.util.function.Function;
 
 public class JellyshroomFeature extends DefaultFeature {
+    public static final MapCodec<JellyshroomFeature> CODEC = MapCodec.unit(JellyshroomFeature::new);
+
+    @Override
+    public MapCodec<JellyshroomFeature> codec() {
+        return CODEC;
+    }
+
     private static final Function<BlockState, Boolean> REPLACE;
     private static final List<Vector3f> ROOT;
 
     @Override
-    public boolean place(FeaturePlaceContext<NoneFeatureConfiguration> featureConfig) {
-        final RandomSource random = featureConfig.random();
-        final BlockPos pos = featureConfig.origin();
-        final WorldGenLevel world = featureConfig.level();
+    public boolean place(
+            WorldGenLevel world,
+            ChunkGenerator generator,
+            RandomSource random,
+            BlockPos pos
+    ) {
         if (!world.getBlockState(pos.below()).is(BlockTags.NYLIUM)) return false;
 
         // Small tree, but reuses the same unbounded BCLib primitives as the larger ones - clip them to the

@@ -3,13 +3,11 @@ package org.betterx.betterend.registry.features;
 import org.betterx.betterend.BetterEnd;
 import org.betterx.betterend.registry.EndFeatures;
 import org.betterx.betterend.world.features.terrain.SulphuricLakeFeature;
-import de.ambertation.wover.feature.api.configured.ConfiguredFeatureKey;
-import de.ambertation.wover.feature.api.configured.ConfiguredFeatureManager;
-import de.ambertation.wover.feature.api.configured.configurators.WithConfiguration;
-
-import net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConfiguration;
+import de.ambertation.wover.feature.api.configured.FeatureKey;
+import de.ambertation.wover.feature.api.configured.FeatureContentManager;
+import de.ambertation.wover.feature.api.configured.configurators.WithFeature;
 
 public class EndConfiguredLakeFeature {
-    public static final ConfiguredFeatureKey<WithConfiguration<SulphuricLakeFeature, NoneFeatureConfiguration>> SULPHURIC_LAKE = ConfiguredFeatureManager
-            .configuration(BetterEnd.C.mk("sulphuric_lake"), EndFeatures.SULPHURIC_LAKE_FEATURE);
+    public static final FeatureKey<WithFeature<SulphuricLakeFeature>> SULPHURIC_LAKE = FeatureContentManager
+            .withFeature(BetterEnd.C.mk("sulphuric_lake"), EndFeatures.SULPHURIC_LAKE_FEATURE);
 }

@@ -10,11 +10,11 @@ import org.betterx.betterend.registry.features.EndBonemealFeature;
 import org.betterx.betterend.registry.features.EndConfiguredBonemealFeature;
 import de.ambertation.wover.core.api.ModCore;
 import de.ambertation.wover.datagen.api.provider.multi.WoverFeatureProvider;
-import de.ambertation.wover.feature.api.features.config.ConditionFeatureConfig;
+import de.ambertation.wover.feature.api.features.ConditionFeature;
 import de.ambertation.wover.feature.api.placed.modifiers.InBiome;
 
 import net.minecraft.data.worldgen.BootstrapContext;
-import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
+import net.minecraft.world.level.levelgen.feature.Feature;
 import net.minecraft.world.level.levelgen.placement.PlacedFeature;
 
 import org.jetbrains.annotations.NotNull;
@@ -25,10 +25,10 @@ public class BonemealFeatureProvider extends WoverFeatureProvider {
     }
 
     @Override
-    protected void bootstrapConfigured(BootstrapContext<ConfiguredFeature<?, ?>> context) {
+    protected void bootstrapFeatures(BootstrapContext<Feature> context) {
         EndConfiguredBonemealFeature.BONEMEAL_END_MOSS
                 .bootstrap(context)
-                .configuration(new ConditionFeatureConfig(
+                .feature(new ConditionFeature(
                         InBiome.matchingID(EndBiomes.GLOWING_GRASSLANDS.key.identifier()),
                         EndBonemealFeature.BONEMEAL_END_MOSS_GLOWING_GRASSLANDS.getHolder(context),
                         EndBonemealFeature.BONEMEAL_END_MOSS_NOT_GLOWING_GRASSLANDS.getHolder(context)
@@ -37,7 +37,7 @@ public class BonemealFeatureProvider extends WoverFeatureProvider {
 
         EndConfiguredBonemealFeature.BONEMEAL_RUTISCUS
                 .bootstrap(context)
-                .configuration(new ConditionFeatureConfig(
+                .feature(new ConditionFeature(
                         InBiome.matchingID(EndBiomes.LANTERN_WOODS.key.identifier()),
                         EndBonemealFeature.BONEMEAL_RUTISCUS_LANTERN_WOODS.getHolder(context),
                         EndBonemealFeature.BONEMEAL_RUTISCUS_NOT_LANTERN_WOODS.getHolder(context)
@@ -95,14 +95,6 @@ public class BonemealFeatureProvider extends WoverFeatureProvider {
 
         EndConfiguredBonemealFeature.BONEMEAL_AMBER_MOSS
                 .bootstrap(context).add(EndPlantBlocks.AMBER_GRASS, 100)
-                .register();
-
-        // Umbra Valley is the only biome that plants on pallidium, and it plants exactly these two
-        // (VegetationFeaturesProvider: INFLEXIA at density 16, FLAMMALIX at 5). The weights keep that
-        // ~3:1 ratio so bonemealed patches look like the generated surface.
-        EndConfiguredBonemealFeature.BONEMEAL_PALLIDIUM
-                .bootstrap(context).add(EndPlantBlocks.INFLEXIA, 100)
-                .add(EndPlantBlocks.FLAMMALIX, 30)
                 .register();
     }
 

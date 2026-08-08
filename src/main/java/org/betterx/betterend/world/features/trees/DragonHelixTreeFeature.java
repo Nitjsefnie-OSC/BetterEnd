@@ -11,14 +11,16 @@ import org.betterx.bclib.util.MHelper;
 import de.ambertation.wover.block.api.BlockProperties.TripleShape;
 import de.ambertation.wover.tag.api.predefined.CommonBlockTags;
 
+import com.mojang.serialization.MapCodec;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.BlockPos.MutableBlockPos;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.LeavesBlock;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.levelgen.feature.FeaturePlaceContext;
-import net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConfiguration;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.level.chunk.ChunkGenerator;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,6 +42,13 @@ import java.util.List;
  * NYLIUM, END_MOSS and END_STONES are all accepted so the tree roots on any island surface.
  */
 public class DragonHelixTreeFeature extends DefaultFeature {
+    public static final MapCodec<DragonHelixTreeFeature> CODEC = MapCodec.unit(DragonHelixTreeFeature::new);
+
+    @Override
+    public MapCodec<DragonHelixTreeFeature> codec() {
+        return CODEC;
+    }
+
     /** Chance a lowest-ring leaf column sprouts a hanging bulb-vine light strand. */
     private static final float LIGHT_CHANCE = 0.6F;
     /** Radians the tier bulge rotates per vertical block - the "helix" twist of the foliage. */
@@ -48,10 +57,13 @@ public class DragonHelixTreeFeature extends DefaultFeature {
     private static final double HELIX_REACH = 1.8;
 
     @Override
-    public boolean place(FeaturePlaceContext<NoneFeatureConfiguration> ctx) {
-        final var random = ctx.random();
-        final BlockPos pos = ctx.origin();
-        final WorldGenLevel world = ctx.level();
+    public boolean place(
+            WorldGenLevel level,
+            ChunkGenerator generator,
+            RandomSource random,
+            BlockPos pos
+    ) {
+        final WorldGenLevel world = level;
         final BlockState below = world.getBlockState(pos.below());
         if (!below.is(BlockTags.NYLIUM)
                 && !below.is(EndTerrainBlocks.END_MOSS)

@@ -83,7 +83,7 @@ public class NeonOasisBiome extends EndBiome.Config {
                         .ceil(Blocks.END_STONE.defaultBlockState())
                         // Top block: the dust/moss oasis mix.
                         .rule(
-                                SurfaceRules.ifTrue(SurfaceRules.ON_FLOOR, surfaceBlockRule),
+                                SurfaceRules.ifTrue(EndBiomeBuilder.ON_FLOOR, surfaceBlockRule),
                                 BaseSurfaceRuleBuilder.TOP_SURFACE_PRIORITY
                         )
                         // Same sand-cover depth rules as the desert (DustWastelands): a randomized-

@@ -167,7 +167,7 @@ public class EndCrystalBlocks {
             .noOcclusion()
             .sound(SoundType.AMETHYST)
             .randomTicks()
-            .pushReaction(PushReaction.DESTROY)
+            .pushReaction(PushReaction.POPPED)
             .addTrait(BlockTraits.MINEABLE_WITH.needsPickAxe())
             // No LOOT_TABLE trait on purpose: a budding block is not obtainable, and a block with no table
             // drops nothing. It used to carry dropSelf() alongside a getDrops override returning an empty

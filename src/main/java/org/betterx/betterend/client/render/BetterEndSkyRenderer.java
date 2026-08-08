@@ -5,17 +5,16 @@ import org.betterx.bclib.util.MHelper;
 import org.betterx.betterend.BetterEnd;
 import org.betterx.betterend.config.Configs;
 
-import com.mojang.blaze3d.PrimitiveTopology;
-import com.mojang.blaze3d.buffers.GpuBuffer;
-import com.mojang.blaze3d.buffers.GpuBufferSlice;
-import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.textures.GpuTextureView;
 import com.mojang.blaze3d.vertex.ByteBufferBuilder;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.MeshData;
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.renderpearl.api.buffers.GpuBuffer;
+import com.mojang.renderpearl.api.buffers.GpuBufferSlice;
+import com.mojang.renderpearl.api.commands.RenderPass;
+import com.mojang.renderpearl.api.pipeline.PrimitiveTopology;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.RenderPipelines;
@@ -27,11 +26,10 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.levelgen.LegacyRandomSource;
 
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.level.LevelTerrainRenderContext;
 
-import java.util.Optional;
-import java.util.OptionalDouble;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
@@ -43,22 +41,28 @@ import org.joml.Vector4f;
  * {@link LevelRenderEvents}. There is no longer a dedicated "replace the sky" extension point, so
  * this hooks {@link LevelRenderEvents#START_MAIN} and manually checks for the End dimension.
  * <p>
- * START_MAIN fires at the very start of the main (terrain) framegraph pass, i.e. right after the
- * separate sky pass ({@code SkyRenderer.renderEndSky()}) and immediately before opaque terrain is
- * drawn. That reproduces vanilla's ordering: our custom sky paints over the vanilla End sky, and
- * the opaque terrain drawn afterwards paints over ours — so terrain occludes the sky naturally at
- * every distance, with no depth test needed (the vanilla END_SKY/STARS pipelines carry no
+ * START_MAIN fires from inside {@code LevelRenderer#executeSolid}, i.e. <em>while</em> that
+ * method's {@code RenderPass} for opaque terrain is already open — not before it, despite what the
+ * event's name suggests. The frontend command encoder only allows one open render pass at a time,
+ * so this can't open its own pass the way vanilla's {@code SkyRenderer#renderEndSky} does; it has
+ * to draw into that same already-open pass. Fabric's {@code LevelTerrainRenderContext} doesn't
+ * expose it, so {@code org.betterx.betterend.mixin.client.LevelRendererMixin} captures it at the
+ * head of {@code executeSolid} and hands it to {@link #setActiveSolidRenderPass}. Drawing into it
+ * here, before the wrapped opaque-terrain draw runs, still reproduces vanilla's ordering: our sky
+ * paints first, opaque terrain paints over it afterwards, so terrain occludes the sky naturally at
+ * every distance with no depth test needed (the vanilla END_SKY/STARS pipelines carry no
  * depth-stencil state precisely because they are meant to run before terrain).
  * <p>
- * Both draw paths below were re-checked against 26.2's own {@code SkyRenderer#renderEndSky}, which
- * performs the identical sequence:
+ * 26.3 moved the GPU API out of {@code com.mojang.blaze3d} into {@code com.mojang.renderpearl}. Both
+ * draw paths below were rebuilt against vanilla's own {@code SkyRenderer#renderEndSky}, which performs
+ * the identical sequence, rather than translated field by field:
  * <ul>
  *     <li>{@code VertexFormat.Mode} split off into {@link PrimitiveTopology}, which is also what
  *     {@code BufferBuilder} and {@code RenderSystem#getSequentialBuffer} now take.</li>
- *     <li>{@code Minecraft#getMainRenderTarget()} is gone; the main target now hangs off
- *     {@code GameRenderer#mainRenderTarget()}, which is what vanilla hands {@code SkyRenderer}.</li>
- *     <li>A render pass' colour clear value became an {@code Optional<Vector4fc>} instead of an
- *     {@code OptionalInt} (26.2 clears with float colours).</li>
+ *     <li>{@code RenderPass#setPipeline} takes a {@code CompiledRenderPipeline}, so the
+ *     {@code RenderPipelines} constant goes through {@code RenderSystem#getCompiledPipeline}.</li>
+ *     <li>Named samplers became bind-group entries: {@code bindTexture(name, view, sampler)} is now
+ *     just another {@code setUniform(name, view, sampler)} overload.</li>
  *     <li>{@code setVertexBuffer} binds a {@link GpuBufferSlice}, hence the {@code .slice()}.</li>
  *     <li>{@code drawIndexed} adopted the Vulkan argument order
  *     {@code (indexCount, instanceCount, firstIndex, vertexOffset, firstInstance)}; the 26.1 call was
@@ -96,6 +100,18 @@ public class BetterEndSkyRenderer implements LevelRenderEvents.StartMain {
 
     private boolean initialised;
 
+    private static RenderPass activeSolidRenderPass;
+
+    /**
+     * Called by {@code org.betterx.betterend.mixin.client.LevelRendererMixin} with the
+     * {@code RenderPass} that {@code LevelRenderer#executeSolid} draws opaque terrain into, so
+     * {@link #renderTexturedMesh} / {@link #renderStarMesh} can draw the sky into the same pass
+     * instead of illegally opening a second one.
+     */
+    public static void setActiveSolidRenderPass(RenderPass pass) {
+        activeSolidRenderPass = pass;
+    }
+
     private void initialise() {
         if (!initialised) {
             initStars();
@@ -114,6 +130,16 @@ public class BetterEndSkyRenderer implements LevelRenderEvents.StartMain {
 
     public static void register() {
         LevelRenderEvents.START_MAIN.register(new BetterEndSkyRenderer());
+        // TextureManager#getTexture() lazily uploads a texture the first time it is referenced.
+        // That upload opens its own render pass on the frontend command encoder, which crashes
+        // ("Close the existing render pass before performing additional commands") if it happens
+        // while startMain() is called from inside LevelRenderer's already-open opaque-terrain pass.
+        // Force the load once here, at the title screen, where no render pass is active.
+        ClientLifecycleEvents.CLIENT_STARTED.register(client -> {
+            for (Identifier texture : new Identifier[]{NEBULA_1, NEBULA_2, HORIZON, STARS, FOG}) {
+                client.getTextureManager().getTexture(texture);
+            }
+        });
     }
 
     @Override
@@ -125,6 +151,10 @@ public class BetterEndSkyRenderer implements LevelRenderEvents.StartMain {
 
         CameraRenderState cameraRenderState = context.levelState().cameraRenderState;
         if (cameraRenderState == null || cameraRenderState.viewRotationMatrix == null) {
+            return;
+        }
+
+        if (activeSolidRenderPass == null) {
             return;
         }
 
@@ -207,8 +237,6 @@ public class BetterEndSkyRenderer implements LevelRenderEvents.StartMain {
             float a
     ) {
         AbstractTexture abstractTexture = Minecraft.getInstance().getTextureManager().getTexture(texture);
-        GpuTextureView colorView = Minecraft.getInstance().gameRenderer.mainRenderTarget().getColorTextureView();
-        GpuTextureView depthView = Minecraft.getInstance().gameRenderer.mainRenderTarget().getDepthTextureView();
         GpuBufferSlice transform = RenderSystem.getDynamicUniforms()
                                                 .writeTransform(
                                                         matrices.last().pose(),
@@ -220,28 +248,16 @@ public class BetterEndSkyRenderer implements LevelRenderEvents.StartMain {
         RenderSystem.AutoStorageIndexBuffer indexBuffer = RenderSystem.getSequentialBuffer(PrimitiveTopology.QUADS);
         GpuBuffer indices = indexBuffer.getBuffer(mesh.indexCount());
 
-        try (RenderPass pass = RenderSystem.getDevice()
-                                            .createCommandEncoder()
-                                            .createRenderPass(
-                                                    () -> "BetterEnd sky",
-                                                    colorView,
-                                                    Optional.empty(),
-                                                    depthView,
-                                                    OptionalDouble.empty()
-                                            )) {
-            pass.setPipeline(RenderPipelines.END_SKY);
-            RenderSystem.bindDefaultUniforms(pass);
-            pass.setUniform("DynamicTransforms", transform);
-            pass.bindTexture("Sampler0", abstractTexture.getTextureView(), abstractTexture.getSampler());
-            pass.setVertexBuffer(0, mesh.buffer().slice());
-            pass.setIndexBuffer(indices, indexBuffer.type());
-            pass.drawIndexed(mesh.indexCount(), 1, 0, 0, 0);
-        }
+        RenderPass pass = activeSolidRenderPass;
+        pass.setPipeline(RenderSystem.getCompiledPipeline(RenderPipelines.END_SKY));
+        pass.setUniform("DynamicTransforms", transform);
+        pass.setUniform("Sampler0", abstractTexture.getTextureView(), abstractTexture.getSampler());
+        pass.setVertexBuffer(0, mesh.buffer().slice());
+        pass.setIndexBuffer(indices, indexBuffer.type());
+        pass.drawIndexed(mesh.indexCount(), 1, 0, 0, 0);
     }
 
     private void renderStarMesh(PoseStack matrices, SkyMesh mesh, float r, float g, float b, float a) {
-        GpuTextureView colorView = Minecraft.getInstance().gameRenderer.mainRenderTarget().getColorTextureView();
-        GpuTextureView depthView = Minecraft.getInstance().gameRenderer.mainRenderTarget().getDepthTextureView();
         GpuBufferSlice transform = RenderSystem.getDynamicUniforms()
                                                 .writeTransform(
                                                         matrices.last().pose(),
@@ -253,22 +269,12 @@ public class BetterEndSkyRenderer implements LevelRenderEvents.StartMain {
         RenderSystem.AutoStorageIndexBuffer indexBuffer = RenderSystem.getSequentialBuffer(PrimitiveTopology.QUADS);
         GpuBuffer indices = indexBuffer.getBuffer(mesh.indexCount());
 
-        try (RenderPass pass = RenderSystem.getDevice()
-                                            .createCommandEncoder()
-                                            .createRenderPass(
-                                                    () -> "BetterEnd stars",
-                                                    colorView,
-                                                    Optional.empty(),
-                                                    depthView,
-                                                    OptionalDouble.empty()
-                                            )) {
-            pass.setPipeline(RenderPipelines.STARS);
-            RenderSystem.bindDefaultUniforms(pass);
-            pass.setUniform("DynamicTransforms", transform);
-            pass.setVertexBuffer(0, mesh.buffer().slice());
-            pass.setIndexBuffer(indices, indexBuffer.type());
-            pass.drawIndexed(mesh.indexCount(), 1, 0, 0, 0);
-        }
+        RenderPass pass = activeSolidRenderPass;
+        pass.setPipeline(RenderSystem.getCompiledPipeline(RenderPipelines.STARS));
+        pass.setUniform("DynamicTransforms", transform);
+        pass.setVertexBuffer(0, mesh.buffer().slice());
+        pass.setIndexBuffer(indices, indexBuffer.type());
+        pass.drawIndexed(mesh.indexCount(), 1, 0, 0, 0);
     }
 
     private void initStars() {
@@ -286,7 +292,11 @@ public class BetterEndSkyRenderer implements LevelRenderEvents.StartMain {
         try (ByteBufferBuilder byteBufferBuilder = ByteBufferBuilder.exactlySized(
                 DefaultVertexFormat.POSITION.getVertexSize() * count * 4
         )) {
-            BufferBuilder builder = new BufferBuilder(byteBufferBuilder, PrimitiveTopology.QUADS, DefaultVertexFormat.POSITION);
+            BufferBuilder builder = new BufferBuilder(
+                    byteBufferBuilder,
+                    PrimitiveTopology.QUADS,
+                    DefaultVertexFormat.POSITION
+            );
             MeshData meshData = makeStars(builder, minSize, maxSize, count, seed);
             return uploadMesh(meshData, "BetterEnd stars vertex buffer");
         }

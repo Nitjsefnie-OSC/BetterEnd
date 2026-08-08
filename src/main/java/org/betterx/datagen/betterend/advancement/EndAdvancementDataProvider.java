@@ -23,8 +23,10 @@ import de.ambertation.wover.sets.api.blocks.slots.WoodSlots;
 
 import net.minecraft.advancements.AdvancementRequirements.Strategy;
 import net.minecraft.advancements.AdvancementType;
-import net.minecraft.advancements.triggers.ChangeDimensionTrigger;
+// 26.3 split net.minecraft.advancements.criterion into .predicates (LocationPredicate, ...) and
+// .triggers (every *Trigger).
 import net.minecraft.advancements.predicates.LocationPredicate;
+import net.minecraft.advancements.triggers.ChangeDimensionTrigger;
 import net.minecraft.advancements.triggers.PlayerTrigger;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;

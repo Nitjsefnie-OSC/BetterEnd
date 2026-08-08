@@ -12,6 +12,8 @@ import org.betterx.betterend.noise.OpenSimplexNoise;
 import de.ambertation.wover.tag.api.predefined.CommonBlockTags;
 
 import com.mojang.math.Axis;
+import com.mojang.serialization.MapCodec;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
@@ -19,22 +21,33 @@ import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.feature.Feature;
-import net.minecraft.world.level.levelgen.feature.FeaturePlaceContext;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.level.chunk.ChunkGenerator;
 
-public class ThinArchFeature extends Feature<ThinArchFeatureConfig> {
+public class ThinArchFeature implements Feature {
+    public static final MapCodec<ThinArchFeature> CODEC = ThinArchFeatureConfig.CODEC.xmap(ThinArchFeature::new, f -> f.config);
 
-    public ThinArchFeature() {
-        super(ThinArchFeatureConfig.CODEC);
+    public final ThinArchFeatureConfig config;
+
+
+    public ThinArchFeature(ThinArchFeatureConfig config) {
+        this.config = config;
     }
 
     @Override
-    public boolean place(FeaturePlaceContext<ThinArchFeatureConfig> featurePlaceContext) {
-        final ThinArchFeatureConfig cfg = featurePlaceContext.config();
-        final WorldGenLevel world = featurePlaceContext.level();
-        BlockPos origin = featurePlaceContext.origin();
-        RandomSource random = featurePlaceContext.random();
+    public MapCodec<ThinArchFeature> codec() {
+        return CODEC;
+    }
+
+    @Override
+    public boolean place(
+            WorldGenLevel world,
+            ChunkGenerator generator,
+            RandomSource random,
+            BlockPos origin
+    ) {
+        final ThinArchFeatureConfig cfg = config;
         BlockState state = cfg.block.getState(world, random, origin);
         Block block = state.getBlock();
 
