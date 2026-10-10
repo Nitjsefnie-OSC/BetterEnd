@@ -22,6 +22,8 @@ import de.ambertation.wover.tag.api.TagManager;
 import de.ambertation.wover.tag.api.event.context.ItemTagBootstrapContext;
 import de.ambertation.wover.tag.api.event.context.TagBootstrapContext;
 
+import net.minecraft.tags.BlockTags;
+import net.minecraft.tags.ItemTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
@@ -191,6 +193,21 @@ public class MetalMaterial extends MetalBlockSet<MetalMaterial> implements Mater
         // review does tier - gets it explicitly at its own registration site instead.
         if (harvestTierTag != null && !slot.equals(ANVIL)) {
             blockDefinition.addTags(harvestTierTag);
+        }
+
+        // Chains join the vanilla and common chain tags (block and item) so other mods - and pack makers - that
+        // treat "a chain" by tag see ours exactly like vanilla's iron/copper chains, instead of only by class.
+        if (slot.equals(CHAIN)) {
+            blockDefinition
+                    .addTags(BlockTags.CHAINS, TagManager.BLOCKS.makeCommonTag("chains"))
+                    .addItemTags(ItemTags.CHAINS, TagManager.ITEMS.makeCommonTag("chains"));
+        }
+
+        // Same for bars: join the vanilla and common bars tags next to iron and copper bars.
+        if (slot.equals(BARS)) {
+            blockDefinition
+                    .addTags(BlockTags.BARS, TagManager.BLOCKS.makeCommonTag("bars"))
+                    .addItemTags(ItemTags.BARS, TagManager.ITEMS.makeCommonTag("bars"));
         }
 
         settingsSupplier.accept(blockDefinition);

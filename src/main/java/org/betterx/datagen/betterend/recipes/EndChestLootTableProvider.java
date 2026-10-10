@@ -296,7 +296,7 @@ public class EndChestLootTableProvider extends WoverLootTableProvider {
                         .apply(SetItemCountFunction.setCount(UniformGenerator.between(1, 4)))
                 )
                 .add(LootItem
-                        .lootTableItem(EndStoneBlocks.FLAVOLITE_RUNED_ETERNAL)
+                        .lootTableItem(EndStoneBlocks.FLAVOLITE_RUNED)
                         .setWeight(4)
                         .apply(SetItemCountFunction.setCount(ConstantValue.exactly(1)))
                 )

@@ -96,7 +96,7 @@ public class EndEquipmentItems {
             .addTrait(EndArmorItemTraitBuilder.BUILDER.with(
                     ArmorSlot.CHESTPLATE_SLOT,
                     EndArmorTier.CRYSTALITE_ELYTRA,
-                    // Under the Crystalite chestplate's 8 armor / 1.2 toughness - reduced protection is
+                    // Under the Crystalite chestplate's 8 armor / 3.2 toughness - reduced protection is
                     // the price of flight and stays. Stated outright rather than divided, see the
                     // Aeternium elytra above: the old factors landed on 6.666666 and 0.96.
                     // The fireproof flag is not part of that trade - every other Crystalite piece is
@@ -113,24 +113,28 @@ public class EndEquipmentItems {
     public static final Item IRON_HAMMER = EndItems.getItemRegistry()
             .defineToolItem("iron_hammer")
             .addTrait(HammerTraitBuilder.BUILDER.with(ToolTiers.IRON_TOOL, 0.2f))
+            .addTrait(ModelTraitLibrary.handheld())
             .addTags(CommonItemTags.HAMMERS)
             .buildAndRegister();
 
     public static final Item GOLDEN_HAMMER = EndItems.getItemRegistry()
             .defineToolItem("golden_hammer")
             .addTrait(HammerTraitBuilder.BUILDER.with(ToolTiers.GOLD_TOOL, 0.3f))
+            .addTrait(ModelTraitLibrary.handheld())
             .addTags(CommonItemTags.HAMMERS)
             .buildAndRegister();
 
     public static final Item DIAMOND_HAMMER = EndItems.getItemRegistry()
             .defineToolItem("diamond_hammer")
             .addTrait(HammerTraitBuilder.BUILDER.with(ToolTiers.DIAMOND_TOOL, 0.2f))
+            .addTrait(ModelTraitLibrary.handheld())
             .addTags(CommonItemTags.HAMMERS)
             .buildAndRegister();
 
     public static final Item NETHERITE_HAMMER = EndItems.getItemRegistry()
             .defineToolItem("netherite_hammer")
             .addTrait(HammerTraitBuilder.BUILDER.with(ToolTiers.NETHERITE_TOOL, 0.2f))
+            .addTrait(ModelTraitLibrary.handheld())
             .addTags(CommonItemTags.HAMMERS)
             .addTrait(ItemTraits.IS_FIREPROOF)
             .buildAndRegister();

@@ -2,17 +2,24 @@
   "type": "betterend:lush_aurora_cave_biome",
   "biome": "betterend:lush_aurora_cave",
   "fogDensity": 2.0,
+  "genChance": 1.25,
   "generation_data": {
     "intended_placement": "betterend:is_end_cave"
   },
   "has_caves": false,
   "surface": {
     "alt": {
-      "Name": "betterend:cave_moss"
+      "Name": "betterend:cave_moss",
+      "Properties": {
+        "shape": "bottom"
+      }
     },
     "floor_rule": true,
     "top": {
-      "Name": "betterend:cave_moss"
+      "Name": "betterend:cave_moss",
+      "Properties": {
+        "shape": "bottom"
+      }
     },
     "under": {
       "Name": "minecraft:end_stone"

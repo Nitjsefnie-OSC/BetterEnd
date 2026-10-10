@@ -33,8 +33,6 @@ import de.ambertation.wover.block.api.DefaultBlockDefinition;
 import de.ambertation.wover.block.api.VanillaBlockDefinition;
 import de.ambertation.wover.block.api.model.ModelTraitLibrary;
 import de.ambertation.wover.core.api.ModCore;
-import de.ambertation.wover.block.api.client.trait.BlockModelTrait;
-import de.ambertation.wover.block.api.client.trait.ClientBlockTraits;
 import de.ambertation.wover.block.api.trait.BlockTraits;
 import de.ambertation.wover.item.api.BlockItemDefinition;
 import de.ambertation.wover.pottable.api.trait.PottablePlantBlockTrait;
@@ -76,9 +74,7 @@ public class EndLightBlocks {
             .addTrait(BlockTraits.PLANT_LIGHT_BLOCK.withDefault())
             .addTrait(CompostableBlockTrait.withChance(0.65f))
             .mapColor(MapColor.WOOD)
-            .addTrait(ModCore.isDatagen() ? ClientBlockTraits.MODEL.with(
-                    (key, block, generator) -> BlueVineLanternBlock.provideBlockModel(generator, block)
-            ) : null)
+            .addTrait(EndModelTraits.blueVineLantern())
             .addTrait(BlockTraits.LOOT_TABLE.dropSelf())
             .buildAndRegister();
 
@@ -92,10 +88,7 @@ public class EndLightBlocks {
             .addTrait(BlockTraits.PLANT_LIGHT_BLOCK.withDefault())
             .addTrait(CompostableBlockTrait.withChance(0.65f))
             .addTrait(BlockTraits.MINEABLE_WITH.needsShears())
-            .addTrait(ModCore.isDatagen() ? ClientBlockTraits.MODEL.with(
-                    (key, block, generator) ->
-                            GlowingHymenophoreBlock.provideUnshadedCubeModel(generator, block)
-            ) : null)
+            .addTrait(EndModelTraits.unshadedCube())
             .mapColor(MapColor.COLOR_ORANGE)
             .addTrait(BlockTraits.LOOT_TABLE.dropSelf())
             .buildAndRegister();
@@ -108,10 +101,7 @@ public class EndLightBlocks {
             .addTrait(BlockTraits.PLANT_LIGHT_BLOCK.withDefault())
             .addTrait(CompostableBlockTrait.withChance(0.65f))
             .mapColor(MapColor.WOOD)
-            .addTrait(ModCore.isDatagen() ? ClientBlockTraits.MODEL.with(
-                    (key, block, generator) ->
-                            GlowingHymenophoreBlock.provideUnshadedCubeModel(generator, block)
-            ) : null)
+            .addTrait(EndModelTraits.unshadedCube())
             .addTrait(BlockTraits.LOOT_TABLE.dropSelf())
             .buildAndRegister();
 

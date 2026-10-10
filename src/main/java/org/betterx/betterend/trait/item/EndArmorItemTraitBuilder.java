@@ -29,7 +29,7 @@ public class EndArmorItemTraitBuilder extends AbstractItemTraitBuilder.Generic {
     }
 
     /**
-     * Humanoid armor, using the tier's declared defense and toughness as-is.
+     * Humanoid armor, using the tier's declared defense, toughness and knockback resistance as-is.
      * <p>
      * The overrides exist for pieces that deliberately trade protection away - the armored elytras, which
      * pass their own - not for regular armor. Setting one here would make the numbers declared on the
@@ -42,7 +42,7 @@ public class EndArmorItemTraitBuilder extends AbstractItemTraitBuilder.Generic {
         return with(
                 slot, tier,
                 null, null,
-                0.0f, true
+                tier.armorMaterial.knockbackResistance(), true
         );
     }
 

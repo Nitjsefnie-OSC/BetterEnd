@@ -4,6 +4,7 @@ import org.betterx.betterend.BetterEnd;
 import de.ambertation.wover.block.api.BlockDefinition;
 import de.ambertation.wover.block.api.model.ModelTraitLibrary;
 import de.ambertation.wover.block.api.trait.*;
+import de.ambertation.wover.block.api.trait.BlockTrait;
 import de.ambertation.wover.block.impl.trait.BlockTraitImpl;
 
 import net.minecraft.world.level.block.Block;

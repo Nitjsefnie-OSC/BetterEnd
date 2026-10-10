@@ -14,7 +14,6 @@ import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.biome.Biome;
-import net.minecraft.world.level.levelgen.Heightmap.Types;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.level.levelgen.structure.pieces.StructurePieceType;
 
@@ -25,6 +24,8 @@ public abstract class MountainPiece extends BasePiece {
     // Concurrent: a mountain spans multiple chunks, and its BasePiece can be postProcess()'d by
     // different worldgen worker threads for adjacent chunks at the same time (e.g. c2me).
     protected Map<Integer, Integer> heightmap = new ConcurrentHashMap<>();
+    // Raw worldgen surface per column (see worldgenSurfaceHeight), shared by getHeight and the subclasses.
+    protected Map<Integer, Integer> surface = new ConcurrentHashMap<>();
     protected OpenSimplexNoise noise1;
     protected OpenSimplexNoise noise2;
     protected BlockPos center;
@@ -84,6 +85,20 @@ public abstract class MountainPiece extends BasePiece {
         noise2 = new OpenSimplexNoise(seed2);
     }
 
+    /**
+     * The first free y above the base terrain at a column, see {@link #worldgenSurfaceHeight}. Use this
+     * instead of the chunk's {@code WORLD_SURFACE_WG} heightmap, which is missing after a reload.
+     */
+    protected int getWorldgenSurface(WorldGenLevel world, int x, int z) {
+        int p = ((x & 2047) << 11) | (z & 2047);
+        Integer h = surface.get(p);
+        if (h == null) {
+            h = worldgenSurfaceHeight(world, x, z);
+            surface.put(p, h);
+        }
+        return h;
+    }
+
     private int getHeight(WorldGenLevel world, BlockPos pos) {
         int p = ((pos.getX() & 2047) << 11) | (pos.getZ() & 2047);
         int h = heightmap.getOrDefault(p, Integer.MIN_VALUE);
@@ -95,7 +110,7 @@ public abstract class MountainPiece extends BasePiece {
             heightmap.put(p, -10);
             return -10;
         }
-        h = world.getHeight(Types.WORLD_SURFACE_WG, pos.getX(), pos.getZ());
+        h = getWorldgenSurface(world, pos.getX(), pos.getZ());
         h = Mth.abs(h - center.getY());
         if (h > 4) {
             h = 4 - h;

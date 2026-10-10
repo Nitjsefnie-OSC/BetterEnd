@@ -1,8 +1,8 @@
 package org.betterx.betterend.client.render;
 
+import de.ambertation.wunderlib.utils.ColorUtilARGB32;
 import org.betterx.betterend.registry.block.EndFunctionalBlocks;
 import org.betterx.betterend.registry.item.EndResourceItems;
-import de.ambertation.wunderlib.ui.ColorHelper;
 import org.betterx.betterend.blocks.EternalPedestal;
 import org.betterx.betterend.blocks.basis.PedestalBlock;
 import org.betterx.betterend.blocks.entities.PedestalBlockEntity;
@@ -273,7 +273,7 @@ public class PedestalItemRenderer implements BlockEntityRenderer<PedestalBlockEn
             matrices.scale(1.25F, 1.25F, 1.25F);
         }
         if (state.activated) {
-            float[] colors = ColorHelper.toFloatArrayRGBA(EternalCrystalRenderer.colors(state.age));
+            float[] colors = ColorUtilARGB32.toFloatArrayRGBA(EternalCrystalRenderer.colors(state.age));
             int y = state.blockPos.getY();
 
             BeamRenderer.renderLightBeam(

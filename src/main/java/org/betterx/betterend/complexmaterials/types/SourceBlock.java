@@ -4,7 +4,6 @@ import org.betterx.betterend.complexmaterials.MetalMaterial;
 import de.ambertation.wover.block.api.BlockDefinition;
 import de.ambertation.wover.block.api.model.BlockModelBinding;
 import de.ambertation.wover.block.api.model.ModelTraitLibrary;
-import de.ambertation.wover.block.api.client.trait.BlockModelTrait;
 import de.ambertation.wover.block.api.trait.BlockRecipeTrait;
 import de.ambertation.wover.block.api.trait.BlockTraitLookup;
 import de.ambertation.wover.block.api.trait.BlockTraits;
@@ -32,6 +31,7 @@ public class SourceBlock extends SlotFromDefinition {
     protected void addSlotSpecificDefinitions(BlockSet<?> set, BlockDefinition<?, ?> def) {
         super.addSlotSpecificDefinitions(set, def);
         def.addTags(BlockTags.BEACON_BASE_BLOCKS);
+        def.addTrait(BlockTraits.LOOT_TABLE.dropSelf());
     }
 
     @Override

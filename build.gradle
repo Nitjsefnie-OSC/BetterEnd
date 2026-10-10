@@ -123,7 +123,12 @@ dependencies {
     // run against the full jar
     runtimeOnly "mcp.mobius.waila:wthit:fabric-${project.wthit_version}"
 
-    //1.19.3 modApi "vazkii.patchouli:Patchouli:${project.patchouli_version}"
+    // Patchouli is optional: compile against it, but only put it on the dev runtime with -PwithPatchouli
+    compileOnly "vazkii.patchouli:patchouli-fabric:${project.patchouli_version}"
+    if (project.hasProperty('withPatchouli')) {
+        localRuntime "vazkii.patchouli:patchouli-fabric:${project.patchouli_version}"
+    }
+
     // alsoInclude=false: BetterEnd doesn't bundle BCLib into its own jar.
     gradle.modApiOrLocal(dependencies, ':BCLib', "org.betterx:bclib:${project.bclib_version}", false)
 //    compileOnly "me.shedaniel:RoughlyEnoughItems-fabric:${project.rei_version}"

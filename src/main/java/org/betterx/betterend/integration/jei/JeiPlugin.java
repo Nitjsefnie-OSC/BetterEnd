@@ -47,14 +47,14 @@ public class JeiPlugin implements IModPlugin {
                     InfusionCategory.TYPE,
                     List.copyOf(SyncedRecipes.allOfType(level, InfusionRecipe.TYPE))
             );
-        }
 
-        List<FuelEntry> fuels = EndStoneSmelterBlockEntity.availableFuels()
-                                                            .entrySet()
-                                                            .stream()
-                                                            .map(e -> new FuelEntry(e.getKey(), e.getValue()))
-                                                            .toList();
-        registration.addRecipes(AlloyingFuelCategory.TYPE, fuels);
+            List<FuelEntry> fuels = EndStoneSmelterBlockEntity.smelterFuels(level.fuelValues())
+                                                                .entrySet()
+                                                                .stream()
+                                                                .map(e -> new FuelEntry(e.getKey(), e.getValue()))
+                                                                .toList();
+            registration.addRecipes(AlloyingFuelCategory.TYPE, fuels);
+        }
     }
 
     @Override

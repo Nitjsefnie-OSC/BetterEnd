@@ -25,7 +25,8 @@ public class BiomeIceStarfield extends EndBiome.Config {
                .temperature(0F)
                .fogDensity(2.2F)
                .foliageColorOverride(193, 244, 244)
-               .genChance(0.01F)
+               // 0.4 -> 0.5 after BetterEnd's x1.25: 1/5 of the void ring, see FlowerIsletsBiome
+               .genChance(0.4F)
                .particles(EndParticles.SNOWFLAKE, 0.002F)
                .feature(EndTerrainFeatures.ICE_STAR)
                .feature(EndTerrainFeatures.ICE_STAR_SMALL)

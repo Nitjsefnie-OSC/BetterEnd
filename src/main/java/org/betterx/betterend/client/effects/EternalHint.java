@@ -1,5 +1,6 @@
 package org.betterx.betterend.client.effects;
 
+import de.ambertation.wunderlib.utils.ColorUtilARGB32;
 import org.betterx.bclib.interfaces.ClientLevelAccess;
 import org.betterx.betterend.blocks.RunedFlavolite;
 import org.betterx.betterend.client.render.EternalCrystalRenderer;
@@ -7,7 +8,6 @@ import org.betterx.betterend.client.render.PedestalItemRenderer;
 import org.betterx.betterend.portal.PortalBuilder;
 import org.betterx.betterend.rituals.EternalRitual;
 import de.ambertation.wunderlib.math.Float3;
-import de.ambertation.wunderlib.ui.ColorHelper;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
@@ -198,7 +198,7 @@ public final class EternalHint {
         ClientLevelAccess clientLevel = level instanceof ClientLevelAccess access ? access : null;
         if (clientLevel == null) return;
 
-        float[] color = ColorHelper.toFloatArrayRGBA(EternalCrystalRenderer.colors(PedestalItemRenderer.getGemAge()));
+        float[] color = ColorUtilARGB32.toFloatArrayRGBA(EternalCrystalRenderer.colors(PedestalItemRenderer.getGemAge()));
         ParticleOptions tinted = SpellParticleOption.create(ParticleTypes.EFFECT, color[0], color[1], color[2], 1.0F);
 
         streakToCentre(clientLevel, pedestalPos, random, tinted);

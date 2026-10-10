@@ -1,12 +1,12 @@
 package org.betterx.betterend.complexmaterials.types;
 
+import de.ambertation.wover.block.api.render.BlockRenderTraits;
 import org.betterx.betterend.blocks.FlowerPotBlock;
 import static org.betterx.betterend.blocks.FlowerPotBlock.POT_LIGHT;
 import org.betterx.betterend.complexmaterials.StoneMaterial;
 import de.ambertation.wover.block.api.BlockDefinition;
 import de.ambertation.wover.block.api.BlockRegistry;
-import de.ambertation.wover.block.api.client.trait.BlockModelTrait;
-import de.ambertation.wover.block.api.client.trait.ClientBlockTraits;
+import de.ambertation.wover.block.api.model.BlockModelBinding;
 import de.ambertation.wover.block.api.trait.BlockRecipeTrait;
 import de.ambertation.wover.block.api.trait.BlockTraitLookup;
 import de.ambertation.wover.block.api.trait.BlockTraits;
@@ -15,6 +15,8 @@ import de.ambertation.wover.recipe.api.RecipeMaterial;
 import de.ambertation.wover.sets.api.blocks.BlockSet;
 import de.ambertation.wover.sets.api.blocks.SlotFromDefinition;
 import de.ambertation.wover.sets.api.blocks.SlotType;
+
+import net.minecraft.tags.BlockTags;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -39,7 +41,9 @@ public class FlowerPot extends SlotFromDefinition {
 
     public static BlockDefinition<?, ?> asFlowerPot(BlockDefinition<?, ?> def) {
         return def.lightLevel(state -> state.getValue(POT_LIGHT) * 5)
-                  .addTrait(ClientBlockTraits.RENDER_LAYER.cutout());
+                  .addTrait(BlockRenderTraits.RENDER_LAYER.cutout())
+                  // Like vanilla's flower_pot, so mods that look for pots by this tag find these too.
+                  .addTags(BlockTags.FLOWER_POTS);
     }
 
     public static BlockRecipeTrait recipe(RecipeMaterial brick) {
@@ -81,7 +85,7 @@ public class FlowerPot extends SlotFromDefinition {
     }
 
     @Override
-    protected BlockModelTrait buildModel(BlockSet<?> set, BlockTraitLookup traitLookup) {
+    protected BlockModelBinding buildModel(BlockSet<?> set, BlockTraitLookup traitLookup) {
         return FlowerPotBlock.buildModel();
     }
 }

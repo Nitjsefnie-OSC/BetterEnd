@@ -238,10 +238,13 @@ public class DesertLakeFeature extends DefaultFeature {
             }
         }
 
-        BlockFixer.fixBlocks(
+        // Clamping alone is not enough here: BlockFixer peeks one block sideways from every column it scans,
+        // so a box ending on the zone edge still read outside it. fixBlocksInZone keeps it one block inside.
+        BlockFixer.fixBlocksInZone(
                 world,
-                new BlockPos(zone.clampX(minX - 2), waterLevel - 2, zone.clampZ(minZ - 2)),
-                new BlockPos(zone.clampX(maxX + 2), blockPos.getY() + 20, zone.clampZ(maxZ + 2))
+                new BlockPos(minX - 2, waterLevel - 2, minZ - 2),
+                new BlockPos(maxX + 2, blockPos.getY() + 20, maxZ + 2),
+                zone
         );
 
         return true;

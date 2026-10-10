@@ -12,6 +12,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
@@ -47,7 +48,9 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import it.unimi.dsi.fastutil.objects.Reference2IntOpenHashMap;
 
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import org.jetbrains.annotations.NotNull;
@@ -715,6 +718,31 @@ public class EndStoneSmelterBlockEntity extends BaseContainerBlockEntity impleme
                 fuelStack.getItem(),
                 fuelValues.burnDuration(fuelStack)
         ) * recipeInfo.burnTimeMultiplicator();
+    }
+
+    /**
+     * Every item the smelter accepts as fuel, with the number of ticks one item burns for in an alloying
+     * recipe (blasting burns twice as long but also cooks twice as fast), sorted by burn time. This is the
+     * list recipe viewers show: every fuel of {@code fuelValues} that burns for more than 2000 ticks (blaze
+     * rods, dried kelp blocks, coal and charcoal blocks, lava buckets, ...), the same rule
+     * {@link #canUseAsFuel} applies, plus everything added through {@link #registerFuel}. Pass the level's
+     * {@link Level#fuelValues()}, which exists on both sides.
+     */
+    public static Map<Item, Integer> smelterFuels(FuelValues fuelValues) {
+        final Map<Item, Integer> fuels = new HashMap<>();
+        for (Item item : fuelValues.fuelItems()) {
+            final int ticks = fuelValues.burnDuration(new ItemStack(item));
+            if (ticks > 2000) fuels.put(item, ticks);
+        }
+        fuels.putAll(AVAILABLE_FUELS);
+
+        final Map<Item, Integer> sorted = new LinkedHashMap<>();
+        fuels.entrySet()
+             .stream()
+             .sorted(Map.Entry.<Item, Integer>comparingByValue()
+                              .thenComparing(e -> BuiltInRegistries.ITEM.getKey(e.getKey()).toString()))
+             .forEach(e -> sorted.put(e.getKey(), e.getValue()));
+        return sorted;
     }
 
     public static void registerFuel(ItemLike fuel, int time) {

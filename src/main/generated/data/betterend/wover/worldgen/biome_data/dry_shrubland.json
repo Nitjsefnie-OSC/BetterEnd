@@ -2,6 +2,7 @@
   "type": "betterend:biome",
   "biome": "betterend:dry_shrubland",
   "fogDensity": 1.2,
+  "genChance": 1.25,
   "generation_data": {
     "intended_placement": "wover:is_end/land"
   },

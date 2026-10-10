@@ -2,6 +2,7 @@ package org.betterx.betterend.testmod.gametest;
 
 import org.betterx.betterend.advancements.BECriteria;
 import org.betterx.betterend.blocks.entities.EternalPedestalEntity;
+import org.betterx.betterend.blocks.EndPortalBlock;
 import org.betterx.betterend.blocks.RunedFlavolite;
 import org.betterx.betterend.portal.PortalBuilder;
 import org.betterx.betterend.registry.EndPortals;
@@ -15,19 +16,26 @@ import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.advancements.AdvancementProgress;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.SectionPos;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.Mth;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import net.fabricmc.fabric.api.gametest.v1.GameTest;
 
@@ -163,6 +171,124 @@ public class EternalPortalGameTest {
     }
 
     /**
+     * A key item on a pedestal without partner pedestals created a ritual without a center; syncing the
+     * pedestal to clients then crashed in {@code EternalRitual#toTag}. Once the rest of the structure is
+     * built around that pedestal, the portal still has to activate.
+     */
+    @GameTest(maxTicks = 200)
+    public void keyItemOnALonePedestalDoesNotBreakTheRitual(GameTestHelper helper) {
+        final ServerPlayer player = MockPlayers.inLevel(helper, CENTER.south(6));
+        final List<BlockPos> pedestals = new ArrayList<>();
+        for (var point : EternalRitual.pedestalOffsets()) {
+            pedestals.add(CENTER.relative(Direction.EAST, point.x).relative(Direction.NORTH, point.y));
+        }
+
+        final BlockPos lone = pedestals.get(0);
+        helper.setBlock(lone, EndFunctionalBlocks.ETERNAL_PEDESTAL);
+        useOn(helper, player, lone, new ItemStack(EndResourceItems.ETERNAL_CRYSTAL));
+        final BlockEntity loneEntity = helper.getLevel().getBlockEntity(helper.absolutePos(lone));
+        if (!(loneEntity instanceof EternalPedestalEntity)) {
+            throw helper.assertionException(Component.literal("the lone pedestal has no EternalPedestalEntity"));
+        }
+        try {
+            loneEntity.getUpdateTag(helper.getLevel().registryAccess());
+        } catch (RuntimeException e) {
+            throw helper.assertionException(Component.literal(
+                    "syncing a lone pedestal holding a key item failed: " + e
+            ));
+        }
+
+        for (BlockPos pos : pedestals) {
+            if (!pos.equals(lone)) helper.setBlock(pos, EndFunctionalBlocks.ETERNAL_PEDESTAL);
+        }
+        final BlockPos framePos = CENTER.below();
+        for (var point : PortalBuilder.FRAME_POSITIONS) {
+            helper.setBlock(framePos.relative(Direction.NORTH, point.x).relative(Direction.UP, point.y),
+                    PortalBuilder.FRAME);
+            helper.setBlock(framePos.relative(Direction.NORTH, -point.x).relative(Direction.UP, point.y),
+                    PortalBuilder.FRAME);
+        }
+        for (BlockPos pos : pedestals) {
+            if (!pos.equals(lone)) useOn(helper, player, pos, new ItemStack(EndResourceItems.ETERNAL_CRYSTAL));
+        }
+
+        for (BlockPos pos : pedestals) {
+            if (helper.getLevel().getBlockEntity(helper.absolutePos(pos)) instanceof EternalPedestalEntity ep
+                    && ep.hasRitual() && ep.getRitual().isActive()) {
+                helper.succeed();
+                return;
+            }
+        }
+        throw helper.assertionException(Component.literal(
+                "the portal did not activate after completing the structure around a pedestal that already"
+                        + " held a key item"
+        ));
+    }
+
+    /**
+     * #572/#376/#482/#530: creating the far side of an eternal portal spiral-searched a 257x257 column area
+     * and force-generated every one of its ~289 chunks synchronously on the server thread, which stalled
+     * the tick for minutes and tripped the watchdog. Starting well above a superflat surface is the worst
+     * case: the closest landing spot is straight down, but its vertical distance alone exceeds the search
+     * radius, so the search can never stop early and visits every column. Only the vanilla-sized core
+     * around the start may be generated; the landing spot must still be the one straight below the start.
+     */
+    @GameTest
+    public void portalDestinationSearchGeneratesOnlyNearbyChunks(GameTestHelper helper) {
+        final ServerLevel level = helper.getLevel();
+        // Far from any test structure or player, so none of these chunks exist yet. Randomised because the
+        // gametest world persists between runs and keeps earlier runs' chunks and portals.
+        final RandomSource random = RandomSource.create();
+        final BlockPos start = new BlockPos(
+                SectionPos.sectionToBlockCoord(random.nextIntBetweenInclusive(10_000, 1_000_000), 8),
+                100,
+                SectionPos.sectionToBlockCoord(random.nextIntBetweenInclusive(10_000, 1_000_000), 8)
+        );
+        final ChunkPos startChunk = ChunkPos.containing(start);
+        final int scanRadius = Mth.ceil(PortalBuilder.SPIRAL_SEARCH_RADIUS / 16.0) + 2;
+
+        final int fullChunksBefore = countFullChunks(level, startChunk, scanRadius);
+        final Optional<BlockPos> exit = new PortalBuilder(level, level).createPortal(start, Direction.Axis.X, 0);
+        final int generated = countFullChunks(level, startChunk, scanRadius) - fullChunksBefore;
+
+        final List<String> failures = new ArrayList<>();
+        // Vanilla's 16-block creation radius (plus the frame footprint) spans at most 4x4 chunks.
+        if (generated > 16) {
+            failures.add("destination search loaded/generated " + generated
+                    + " full chunks around the start, expected at most 16 (vanilla-sized search core)");
+        }
+        if (exit.isEmpty()) {
+            failures.add("createPortal found no destination at all");
+        } else {
+            final BlockPos pos = exit.get();
+            final int surface = level.getHeight(Heightmap.Types.MOTION_BLOCKING, start.getX(), start.getZ());
+            if (pos.getY() != surface
+                    || Math.abs(pos.getX() - start.getX()) > 1
+                    || Math.abs(pos.getZ() - start.getZ()) > 1) {
+                failures.add("portal was placed at " + pos.toShortString() + ", expected the spot straight below "
+                        + start.toShortString() + " on the surface (y=" + surface + ")");
+            }
+        }
+
+        if (!failures.isEmpty()) {
+            throw helper.assertionException(Component.literal(
+                    "Eternal portal destination search regression:\n - " + String.join("\n - ", failures)
+            ));
+        }
+        helper.succeed();
+    }
+
+    private static int countFullChunks(ServerLevel level, ChunkPos center, int radius) {
+        int count = 0;
+        for (int x = center.x() - radius; x <= center.x() + radius; x++) {
+            for (int z = center.z() - radius; z <= center.z() + radius; z++) {
+                if (level.getChunkSource().getChunkNow(x, z) != null) count++;
+            }
+        }
+        return count;
+    }
+
+    /**
      * {@code PORTAL_TRAVEL} fires from {@code EndPortalBlock} when an entity actually rides a portal
      * across dimensions, not from ritual activation - simulating that would mean a player entity
      * genuinely completing a dimension change, a different (and separately risky) thing to drive in a
@@ -206,5 +332,35 @@ public class EternalPortalGameTest {
             progress.getRemainingCriteria().forEach(remaining::add);
             failures.add("betterend:" + path + " was not awarded - still missing " + remaining);
         }
+    }
+
+    /**
+     * Regression for #527: the {@code portal} property always spans at least {@code 0..1}, so a debug stick
+     * (or a world from a config with more portals) can produce an id without a configured portal. The
+     * colour lookup behind the portal's block tint threw {@code ArrayIndexOutOfBoundsException} for those,
+     * crash-looping every client in render distance. Every possible state must resolve to a colour and a
+     * target world.
+     */
+    @GameTest
+    public void everyPortalStateResolvesColourAndTargetWorld(GameTestHelper helper) {
+        final List<String> failures = new ArrayList<>();
+        for (BlockState state : PortalBuilder.PORTAL.getStateDefinition().getPossibleStates()) {
+            final int id = state.getValue(EndPortalBlock.PORTAL);
+            helper.setBlock(CENTER, state);
+            try {
+                EndPortals.getColor(id);
+                if (EndPortals.getWorldId(id) == null) failures.add("portal=" + id + ": world id is null");
+                if (EndPortals.getWorld(helper.getLevel().getServer(), id) == null)
+                    failures.add("portal=" + id + ": target world is null");
+            } catch (RuntimeException e) {
+                failures.add(state + ": " + e);
+            }
+        }
+        if (!failures.isEmpty()) {
+            throw helper.assertionException(Component.literal(
+                    "End portal state regression:\n - " + String.join("\n - ", failures)
+            ));
+        }
+        helper.succeed();
     }
 }

@@ -57,7 +57,7 @@ public class EndFishEntityModel extends EntityModel<EndFishRenderState> {
         bodyPart.addOrReplaceChild(
                 PartNames.LEFT_FIN,
                 CubeListBuilder.create().mirror().texOffs(0, 25).addBox(0.7071F, 0.7071F, -1.5F, 3.0F, 0.0F, 3.0F),
-                PartPose.offsetAndRotation(-1.0F, 0.0F, -1.0F, 1.5708F, -0.7854F, 0.0F)
+                PartPose.offsetAndRotation(1.0F, 0.0F, -1.0F, 1.5708F, -0.7854F, 0.0F)
         );
 
         return LayerDefinition.create(modelData, 32, 32);

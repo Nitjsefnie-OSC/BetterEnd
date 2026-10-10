@@ -1,6 +1,6 @@
 package org.betterx.betterend.blocks;
 
-import org.betterx.ui.ColorUtil;
+import de.ambertation.wunderlib.utils.ColorUtilARGB32;
 
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
@@ -13,7 +13,7 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 
 public class EndstoneDustBlock extends FallingBlock {
-    private static final int COLOR = ColorUtil.color(226, 239, 168);
+    private static final int COLOR = ColorUtilARGB32.color(226, 239, 168);
 
     public static final MapCodec<EndstoneDustBlock> CODEC = simpleCodec(EndstoneDustBlock::new);
 

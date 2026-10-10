@@ -7,8 +7,10 @@ import org.betterx.betterend.BetterEnd;
 import org.betterx.betterend.registry.EndBlocks;
 import de.ambertation.wover.block.api.BlockRegistry;
 import de.ambertation.wover.block.api.client.trait.BlockModelTrait;
-import de.ambertation.wover.block.api.client.trait.ClientBlockTraits;
+import de.ambertation.wover.block.api.render.BlockRenderTraits;
+import de.ambertation.wover.block.api.model.BlockModelBinding;
 import de.ambertation.wover.block.api.model.WoverBlockModelGenerators;
+import de.ambertation.wover.block.api.trait.BlockTrait;
 import de.ambertation.wover.core.api.ModCore;
 import de.ambertation.wover.datagen.api.provider.WoverModelProvider;
 import de.ambertation.wover.item.api.ItemRegistry;
@@ -73,17 +75,17 @@ public class EndModelProvider extends WoverModelProvider {
         this.overrides = buildModelOverrides(generator);
 
         // Blocks with an explicit entry in ModelOverides above are meant to use that custom model
-        // instead of whatever their ClientBlockTraits.MODEL trait would generate (e.g. a "lit"
+        // instead of whatever their model trait would generate (e.g. a "lit"
         // variant with custom emissive textures) - skip them here so the trait-based model isn't
         // ALSO generated, which would collide with the override's model.
         BlockModelTrait.bootstrapModels(modCore, generator, (key, block) -> !overrides.contain(block));
 
-        // Blocks with an explicit ClientBlockTraits.MODEL trait are already fully handled by
+        // Blocks with an explicit model trait are already fully handled by
         // BlockModelTrait.bootstrapModels() above - skip the legacy BlockModelProvider-interface
         // fallback in addFromRegistry() for them, so a block carrying a MODEL trait does not also
         // get a plain cube model registered by the fallback (which would register the same model twice).
         registry.allBlocks().forEach(block -> {
-            if (!overrides.contain(block) && ClientBlockTraits.MODEL.getRuntimeTraits(block) != null) {
+            if (!overrides.contain(block) && BlockTrait.getRuntimeTraits(block, BlockModelBinding.MODEL_TRAIT_KEY) != null) {
                 overrides.ignore(block);
             }
         });
@@ -131,7 +133,7 @@ public class EndModelProvider extends WoverModelProvider {
                              )
                              // Aurora crystal keeps its hand-authored blockstate/model, so the override is what
                              // registers its item model at all. The tint itself comes from the block's
-                             // ClientBlockTraits.TINT trait, which delegateItemModel applies; registering
+                             // BlockRenderTraits.TINT trait, which delegateItemModel applies; registering
                              // this as an override makes BlockModelTrait.bootstrapModels skip the block's
                              // EXTERNAL_MODEL item delegation, so there is exactly one item model, not a
                              // duplicate.

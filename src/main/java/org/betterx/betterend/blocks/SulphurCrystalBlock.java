@@ -35,6 +35,7 @@ import net.minecraft.world.level.storage.loot.functions.ApplyExplosionDecay;
 import net.minecraft.world.level.storage.loot.functions.LootItemConditionalFunction;
 import net.minecraft.world.level.storage.loot.functions.SetItemCountFunction;
 import net.minecraft.world.level.storage.loot.predicates.AllOfCondition;
+import net.minecraft.world.level.storage.loot.predicates.AnyOfCondition;
 import net.minecraft.world.level.storage.loot.predicates.InvertedLootItemCondition;
 import net.minecraft.world.level.storage.loot.predicates.LootItemBlockStatePropertyCondition;
 import net.minecraft.world.level.storage.loot.providers.number.ConstantValue;
@@ -52,11 +53,26 @@ import org.jetbrains.annotations.Nullable;
 @SuppressWarnings("deprecation")
 public class SulphurCrystalBlock extends BaseAttachedBlock.Glass implements SimpleWaterloggedBlock, LiquidBlockContainer {
     private static final EnumMap<Direction, VoxelShape> BOUNDING_SHAPES = Maps.newEnumMap(Direction.class);
-    public static final IntegerProperty AGE = IntegerProperty.create("age", 0, 2);
+    public static final int MAX_AGE = 2;
+    public static final IntegerProperty AGE = IntegerProperty.create("age", 0, MAX_AGE);
     public static final BooleanProperty WATERLOGGED = BlockStateProperties.WATERLOGGED;
 
     public SulphurCrystalBlock(BlockBehaviour.Properties props) {
         super(props);
+        // Without an explicit default the state definition picks the first value of WATERLOGGED, which is
+        // true - a crystal placed by /setblock, a structure or a feature without an explicit state would
+        // then leave a water source behind when it pops. Placement paths set it from the actual fluid.
+        registerDefaultState(defaultBlockState().setValue(WATERLOGGED, false).setValue(AGE, 0));
+    }
+
+    /**
+     * The state a naturally generated/grown crystal should have when it replaces {@code replaced}:
+     * waterlogged exactly when the replaced block holds a water source.
+     */
+    public static BlockState naturalState(BlockState crystal, BlockState replaced, Direction facing, int age) {
+        return crystal.setValue(WATERLOGGED, replaced.getFluidState().getType() == Fluids.WATER)
+                      .setValue(FACING, facing)
+                      .setValue(AGE, age);
     }
 
 
@@ -64,16 +80,6 @@ public class SulphurCrystalBlock extends BaseAttachedBlock.Glass implements Simp
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> stateManager) {
         super.createBlockStateDefinition(stateManager);
         stateManager.add(AGE, WATERLOGGED);
-    }
-
-    private static LootItemConditionalFunction.@NotNull Builder<?> applyAgeBonus(
-            Block block,
-            @NotNull LootLookupProvider provider,
-            int i
-    ) {
-        return ApplyBonusCount
-                .addUniformBonusCount(provider.fortune(), i)
-                .when(ageCondition(block, i));
     }
 
     private static LootItemBlockStatePropertyCondition.@NotNull Builder ageCondition(Block block, int i) {
@@ -87,25 +93,30 @@ public class SulphurCrystalBlock extends BaseAttachedBlock.Glass implements Simp
     public static LootTable.Builder buildLoot(Block block, @NotNull LootLookupProvider provider) {
         return LootTable
                 .lootTable()
+                // The crystal item drops with silk touch, and the young stages (age 0 and 1) always drop
+                // themselves regardless of tool (BetterEnd #517). They only ever match the "count 1"
+                // function below, so they are never multiplied by fortune.
                 .withPool(
                         LootPool.lootPool()
-                                .when(provider.hasSilkTouch())
+                                .when(AnyOfCondition.anyOf(
+                                        provider.hasSilkTouch(),
+                                        ageCondition(block, 0),
+                                        ageCondition(block, 1)
+                                ))
                                 .setRolls(ConstantValue.exactly(1))
                                 .add(LootItem.lootTableItem(block)
                                              .apply(SetItemCountFunction
                                                      .setCount(UniformGenerator.between(1, 3))
-                                                     .when(ageCondition(block, 3))
+                                                     .when(ageCondition(block, MAX_AGE))
                                              )
                                              .apply(SetItemCountFunction
                                                      .setCount(ConstantValue.exactly(1))
-                                                     .when(InvertedLootItemCondition.invert(ageCondition(block, 3)))
+                                                     .when(InvertedLootItemCondition.invert(ageCondition(block, MAX_AGE)))
                                              )
                                              .apply(ApplyBonusCount
                                                      .addOreBonusCount(provider.fortune())
-                                                     .when(ageCondition(block, 3))
+                                                     .when(ageCondition(block, MAX_AGE))
                                              )
-                                             .apply(applyAgeBonus(block, provider, 2))
-                                             .apply(applyAgeBonus(block, provider, 1))
                                              .apply(ApplyExplosionDecay.explosionDecay())
                                 )
                 )
@@ -113,7 +124,7 @@ public class SulphurCrystalBlock extends BaseAttachedBlock.Glass implements Simp
                         LootPool.lootPool()
                                 .when(AllOfCondition.allOf(
                                         InvertedLootItemCondition.invert(provider.hasSilkTouch()),
-                                        ageCondition(block, 3)
+                                        ageCondition(block, MAX_AGE)
                                 ))
                                 .setRolls(ConstantValue.exactly(1))
                                 .add(LootItem.lootTableItem(EndResourceItems.CRYSTALLINE_SULPHUR)

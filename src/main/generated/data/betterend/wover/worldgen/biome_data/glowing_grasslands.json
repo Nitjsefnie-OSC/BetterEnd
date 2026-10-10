@@ -2,6 +2,7 @@
   "type": "betterend:biome",
   "biome": "betterend:glowing_grasslands",
   "fogDensity": 1.3,
+  "genChance": 1.25,
   "generation_data": {
     "intended_placement": "wover:is_end/land"
   },

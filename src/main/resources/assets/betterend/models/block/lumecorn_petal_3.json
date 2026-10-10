@@ -1,0 +1,19 @@
+{
+	"__comment": "The big flat petal of a lumecorn stalk segment, split out of lumecorn_middle/lumecorn_roots_small. It reaches 7.5px into each neighbouring block, so two adjacent stalks at the same height would put coplanar petals on top of each other and z-fight (#388); the blockstate picks one of four slightly different heights at random instead.",
+	"textures": {
+		"particle": "betterend:block/lumecorn_big_petal",
+		"big_petal": "betterend:block/lumecorn_big_petal"
+	},
+	"elements": [
+		{
+			"from": [ 8, 16.3, -7.5 ],
+			"to": [ 30, 16.301, 14.5 ],
+			"rotation": { "origin": [ 8, 16.3, -7.5 ], "axis": "y", "angle": -45 },
+			"shade": false,
+			"faces": {
+				"down": { "uv": [ 0, 0, 11, 11 ], "texture": "#big_petal" },
+				"up": { "uv": [ 0, 0, 11, 11 ], "texture": "#big_petal" }
+			}
+		}
+	]
+}

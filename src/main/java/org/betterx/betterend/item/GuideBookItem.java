@@ -1,10 +1,13 @@
 package org.betterx.betterend.item;
 
+import org.betterx.betterend.BetterEnd;
+import org.betterx.betterend.integration.PatchouliGuideBook;
 import org.betterx.betterend.registry.EndItems;
 import org.betterx.betterend.util.LangUtil;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
@@ -36,11 +39,10 @@ public class GuideBookItem extends Item {
 
     @Override
     public InteractionResult use(Level world, Player user, InteractionHand hand) {
-        //TODO: 1.19.3 Re-Enable once patchouli is available
-//        if (!world.isClientSide() && user instanceof ServerPlayer) {
-//            PatchouliAPI.get().openBookGUI((ServerPlayer) user, BOOK_ID);
-//            return InteractionResult.SUCCESS;
-//        }
+        if (BetterEnd.PATCHOULI.isLoaded() && !world.isClientSide() && user instanceof ServerPlayer serverPlayer) {
+            PatchouliGuideBook.open(serverPlayer);
+            return InteractionResult.SUCCESS;
+        }
         return InteractionResult.CONSUME;
     }
 

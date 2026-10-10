@@ -6,14 +6,16 @@ import org.betterx.betterend.blocks.InfusionPedestal;
 import org.betterx.betterend.blocks.entities.InfusionPedestalEntity;
 import org.betterx.betterend.blocks.entities.PedestalBlockEntity;
 import org.betterx.betterend.client.effects.InfusionHint;
+import org.betterx.betterend.client.models.EndModelKeys;
 import org.betterx.betterend.client.models.EndModels;
 import org.betterx.betterend.rituals.InfusionRitual;
 import de.ambertation.wover.block.api.BlockProperties;
-import de.ambertation.wover.block.api.client.trait.BlockModelTrait;
-import de.ambertation.wover.block.api.client.trait.ClientBlockTraits;
+import de.ambertation.wover.block.api.client.model.ClientBlockModelRegistry;
+import de.ambertation.wover.block.api.client.trait.BlockModelTrait.ModelFactory;
+import de.ambertation.wover.block.api.model.BlockModelBinding;
+import de.ambertation.wover.block.api.model.ModelKey;
 import de.ambertation.wover.block.api.model.WoverBlockModelGenerators;
 import de.ambertation.wover.block.api.trait.BlockTraitLookup;
-import de.ambertation.wover.core.api.ModCore;
 import de.ambertation.wover.sets.api.blocks.BlockSet;
 
 import net.minecraft.client.data.models.BlockModelGenerators;
@@ -480,28 +482,10 @@ public class PedestalBlock extends Block implements EntityBlock {
             Block pedestalBlock,
             Map<PedestalState, ModelTemplate> pedestalModels
     ) {
-        final Identifier id = TextureMapping.getBlockTexture(pedestalBlock).sprite();
-
-        var properties = PropertyDispatch.modify(STATE);
-        // The first model built also serves as the default for dispatch - build each model
-        // exactly once, since generator.vanillaGenerator.modelOutput rejects duplicates.
-        Identifier defaultModel = null;
-
-        for (var entry : pedestalModels.entrySet()) {
-            final String suffix = "_" + entry.getKey();
-            Identifier model = entry
-                    .getValue()
-                    .createWithSuffix(pedestalBlock, suffix, mapping, generator.vanillaGenerator.modelOutput);
-            properties = properties.select(entry.getKey(), (variant) -> BlockModelGenerators.plainModel(model));
-            if (defaultModel == null) {
-                defaultModel = model;
-            }
-        }
-
-        generator.acceptBlockState(MultiVariantGenerator
-                .dispatch(pedestalBlock, BlockModelGenerators.plainVariant(defaultModel))
-                .with(properties));
-        generator.delegateItemModel(pedestalBlock, id.withSuffix("_default"));
+        // The variant lambda must not be compiled into this always-loaded class: javac puts it in a
+        // synthetic method that Fabric's environment stripper does not remove, and its client-only
+        // signature broke reflection over the block class on dedicated servers (e.g. Lithium).
+        ClientModelBuilder.buildBlockModel(generator, mapping, pedestalBlock, pedestalModels);
     }
 
     @Environment(EnvType.CLIENT)
@@ -514,18 +498,71 @@ public class PedestalBlock extends Block implements EntityBlock {
                 .put(EndModels.PILLAR, new Material(parentTexture.withSuffix("_pillar")));
     }
 
-    public static BlockModelTrait buildModel(BlockSet<?> set, BlockTraitLookup traitLookup) {
-        return ModCore.isDatagen() ? ClientModelBuilder.build(set) : null;
+    public static BlockModelBinding buildModel(BlockSet<?> set, BlockTraitLookup traitLookup) {
+        return BlockModelBinding.of(MODEL, new ModelParams(set));
+    }
+
+    private record ModelParams(BlockSet<?> set) {
+    }
+
+    private static final ModelKey<ModelParams> MODEL = EndModelKeys.key("pedestal_block");
+
+    /**
+     * Registers the client generators behind this class's model keys. Called from the mod's
+     * {@code wover.client.traits} entrypoint.
+     */
+    @Environment(EnvType.CLIENT)
+    public static void registerClientModels() {
+        ClientModelBuilder.register();
     }
 
     @Environment(EnvType.CLIENT)
     private static class ClientModelBuilder {
-        private static BlockModelTrait build(BlockSet<?> set) {
-            return ClientBlockTraits.MODEL.with(
-                    (key, block, generator) -> {
-                        provideBlockModel(generator, createTextureMapping(set.getBaseBlock()), block);
-                    }
+        private static void buildBlockModel(
+                WoverBlockModelGenerators generator,
+                TextureMapping mapping,
+                Block pedestalBlock,
+                Map<PedestalState, ModelTemplate> pedestalModels
+        ) {
+            final Identifier id = TextureMapping.getBlockTexture(pedestalBlock).sprite();
+
+            var properties = PropertyDispatch.modify(STATE);
+            // The first model built also serves as the default for dispatch - build each model
+            // exactly once, since generator.vanillaGenerator.modelOutput rejects duplicates.
+            Identifier defaultModel = null;
+
+            for (var entry : pedestalModels.entrySet()) {
+                final String suffix = "_" + entry.getKey();
+                Identifier model = entry
+                        .getValue()
+                        .createWithSuffix(pedestalBlock, suffix, mapping, generator.vanillaGenerator.modelOutput);
+                properties = properties.select(entry.getKey(), (variant) -> BlockModelGenerators.plainModel(model));
+                if (defaultModel == null) {
+                    defaultModel = model;
+                }
+            }
+
+            generator.acceptBlockState(MultiVariantGenerator
+                    .dispatch(pedestalBlock, BlockModelGenerators.plainVariant(defaultModel))
+                    .with(properties));
+            generator.delegateItemModel(pedestalBlock, id.withSuffix("_default"));
+        }
+
+        private static void register() {
+            ClientBlockModelRegistry.register(
+                    MODEL,
+                    (key, block, generator, payload) -> buildFrom(payload).provideBlockModels(key, block, generator)
             );
+        }
+
+        private static ModelFactory buildFrom(ModelParams p) {
+            return build(p.set());
+        }
+
+        private static ModelFactory build(BlockSet<?> set) {
+            return (key, block, generator) -> {
+                provideBlockModel(generator, createTextureMapping(set.getBaseBlock()), block);
+            };
         }
     }
 

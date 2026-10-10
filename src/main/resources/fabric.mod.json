@@ -1,7 +1,7 @@
 {
     "schemaVersion": 1,
     "id": "betterend",
-    "version": "26.101.2",
+    "version": "26.101.3",
     "name": "Better End",
     "description": "More content for The End dimension, including new biomes, plants, mobs, mechanics, terrain generation and more.\nMade by:\n- paulevs (code & art)\n- Bulldog83 (code & art)\n- Edos (building)\n- Yuki (art)\n- Seaward (art)\n- Firel (music)\n",
     "authors": [
@@ -41,6 +41,7 @@
             "org.betterx.betterend.integration.jei.JeiPlugin"
         ],
         "wover.client.traits": [
+            "org.betterx.betterend.client.models.EndClientModels",
             "org.betterx.betterend.client.render.EndClientTinters"
         ]
     },
@@ -63,13 +64,12 @@
         "wunderlib": "26.101.x"
     },
     "breaks": {
-        "bclib": "<26.101.2",
-        "wover": "<26.101.2",
-        "wunderlib": "<26.101.1"
+        "bclib": "<26.101.3",
+        "wover": "<26.101.3",
+        "wunderlib": "<26.101.2"
     },
     "suggests": {
-        "jei": ">=29.0.0",
-        "byg": ">=2.0.0",
+        "jei": ">=29.43.0.107",
         "blockus": ">=2.0.2",
         "nourish": ">=1.2.0",
         "colored_lights": ">=1.0.3",

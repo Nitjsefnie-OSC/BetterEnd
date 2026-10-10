@@ -13,6 +13,8 @@ import net.minecraft.core.Direction;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.vehicle.DismountHelper;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.portal.TeleportTransition;
 import net.minecraft.world.phys.Vec3;
@@ -79,11 +81,23 @@ public abstract class PlayerMixin {
             horizontal = BlocksHelper.makeHorizontal();
         }
         MHelper.shuffle(horizontal, world.getRandom());
-        for (Direction dir : horizontal) {
-            BlockPos p = pos.relative(dir);
-            BlockState state2 = world.getBlockState(p);
-            if (!state2.blocksMotion() && state2.getCollisionShape(world, pos).isEmpty()) {
-                return Optional.of(Vec3.atLowerCornerOf(p).add(0.5, 0, 0.5));
+        // Same checks as the vanilla respawn anchor (DismountHelper): the whole player box (feet and head) must
+        // be free of collisions and there must be a floor to stand on. Like the anchor, a first pass also
+        // rejects dangerous blocks (fire, lava, ...) and only if that finds nothing a second pass accepts them.
+        // Neighbours one block lower are tried as well, so an obelisk standing on a step still works.
+        for (boolean avoidDanger : new boolean[]{true, false}) {
+            for (int dy = 0; dy >= -1; dy--) {
+                for (Direction dir : horizontal) {
+                    Vec3 standUp = DismountHelper.findSafeDismountLocation(
+                            EntityType.PLAYER,
+                            world,
+                            pos.relative(dir).above(dy),
+                            avoidDanger
+                    );
+                    if (standUp != null) {
+                        return Optional.of(standUp);
+                    }
+                }
             }
         }
         return Optional.empty();

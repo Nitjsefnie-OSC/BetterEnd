@@ -7,6 +7,7 @@ import de.ambertation.wover.block.api.BlockProperties.TripleShape;
 import org.betterx.bclib.util.BlocksHelper;
 import org.betterx.betterend.blocks.EndLotusLeafBlock;
 import org.betterx.betterend.registry.EndBlocks;
+import de.ambertation.wover.feature.api.WriteZone;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.BlockPos.MutableBlockPos;
@@ -23,6 +24,14 @@ public class EndLotusLeafFeature extends ScatterFeature<ScatterFeatureConfig> {
 
     @Override
     public void generate(ScatterFeatureConfig cfg, WorldGenLevel world, RandomSource random, BlockPos blockPos) {
+        // ScatterFeature only keeps blockPos itself inside the write zone, but the leaf covers the 3x3 around
+        // it and canGenerate() checks all of it - a point on the zone edge read one column past it. A leaf
+        // there could never be placed whole anyway (WorldGenRegion drops the outer writes). See WriteZone.
+        final WriteZone zone = WriteZone.of(world);
+        if (!zone.contains(blockPos.getX() - 1, blockPos.getZ() - 1)
+                || !zone.contains(blockPos.getX() + 1, blockPos.getZ() + 1)) {
+            return;
+        }
         if (canGenerate(world, blockPos)) {
             generateLeaf(world, blockPos);
         }
