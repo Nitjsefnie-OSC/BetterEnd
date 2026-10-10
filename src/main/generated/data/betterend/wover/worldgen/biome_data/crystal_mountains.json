@@ -1,6 +1,7 @@
 {
   "type": "betterend:biome",
   "biome": "betterend:crystal_mountains",
+  "genChance": 1.25,
   "generation_data": {
     "intended_placement": "wover:is_end/land"
   },

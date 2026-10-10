@@ -126,6 +126,13 @@ public class BlockTagProvider extends WoverTagProvider.ForBlocks {
                 EndStoneBlocks.FLAVOLITE_RUNED_ETERNAL,
                 EndStoneBlocks.FLAVOLITE_RUNED
         );
+        // The eternal portal blocks are unbreakable like bedrock, but WitherBoss.canDestroy only looks at
+        // this tag, so without it the wither (and its skulls) would still break them.
+        context.add(
+                BlockTags.WITHER_IMMUNE,
+                EndFunctionalBlocks.ETERNAL_PEDESTAL,
+                EndStoneBlocks.FLAVOLITE_RUNED_ETERNAL
+        );
 
         context.add(EndTags.BONEMEAL_TARGET_WATER_GRASS, CommonBlockTags.END_STONES);
 

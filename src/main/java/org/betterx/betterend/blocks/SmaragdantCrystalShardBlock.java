@@ -36,6 +36,9 @@ public class SmaragdantCrystalShardBlock extends BaseAttachedBlock implements Si
 
     public SmaragdantCrystalShardBlock(BlockBehaviour.Properties props) {
         super(props);
+        // Without this the default would be waterlogged=true (first value of the property), leaving a
+        // water source behind when a /setblock- or structure-placed shard is broken.
+        registerDefaultState(defaultBlockState().setValue(WATERLOGGED, false));
     }
 
     @Override

@@ -2,12 +2,14 @@ package org.betterx.betterend.blocks;
 
 import org.betterx.betterend.BetterEnd;
 import org.betterx.betterend.blocks.basis.PedestalBlock;
+import org.betterx.betterend.client.models.EndModelKeys;
 import org.betterx.betterend.client.models.EndModels;
-import de.ambertation.wover.block.api.client.trait.BlockModelTrait;
-import de.ambertation.wover.block.api.client.trait.ClientBlockTraits;
+import de.ambertation.wover.block.api.client.model.ClientBlockModelRegistry;
+import de.ambertation.wover.block.api.client.trait.BlockModelTrait.ModelFactory;
+import de.ambertation.wover.block.api.model.BlockModelBinding;
+import de.ambertation.wover.block.api.model.ModelKey;
 import de.ambertation.wover.block.api.model.WoverBlockModelGenerators;
 import de.ambertation.wover.block.api.trait.BlockTraitLookup;
-import de.ambertation.wover.core.api.ModCore;
 import de.ambertation.wover.sets.api.blocks.BlockSet;
 
 import net.minecraft.client.data.models.model.TextureMapping;
@@ -77,18 +79,41 @@ public class EndPedestal extends PedestalBlock {
      * type references (TextureMapping via createTextureMapping's return type) in a class file the
      * server actually has to verify.
      */
-    public static BlockModelTrait buildModel(BlockSet<?> set, BlockTraitLookup traitLookup) {
-        return ModCore.isDatagen() ? ClientModel.build(set) : null;
+    public static BlockModelBinding buildModel(BlockSet<?> set, BlockTraitLookup traitLookup) {
+        return BlockModelBinding.of(MODEL, new ModelParams(set));
+    }
+
+    private record ModelParams(BlockSet<?> set) {
+    }
+
+    private static final ModelKey<ModelParams> MODEL = EndModelKeys.key("end_pedestal");
+
+    /**
+     * Registers the client generators behind this class's model keys. Called from the mod's
+     * {@code wover.client.traits} entrypoint.
+     */
+    @Environment(EnvType.CLIENT)
+    public static void registerClientModels() {
+        ClientModel.register();
     }
 
     @Environment(EnvType.CLIENT)
     private static class ClientModel {
-        private static BlockModelTrait build(BlockSet<?> set) {
-            return ClientBlockTraits.MODEL.with(
-                    (key, block, generator) -> {
-                        provideBlockModel(generator, createTextureMapping(set.getBaseBlock()), block);
-                    }
+        private static void register() {
+            ClientBlockModelRegistry.register(
+                    MODEL,
+                    (key, block, generator, payload) -> buildFrom(payload).provideBlockModels(key, block, generator)
             );
+        }
+
+        private static ModelFactory buildFrom(ModelParams p) {
+            return build(p.set());
+        }
+
+        private static ModelFactory build(BlockSet<?> set) {
+            return (key, block, generator) -> {
+                provideBlockModel(generator, createTextureMapping(set.getBaseBlock()), block);
+            };
         }
     }
 }

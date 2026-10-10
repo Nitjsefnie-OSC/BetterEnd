@@ -19,8 +19,15 @@
         },
         {
           "type": "minecraft:armor_toughness",
-          "amount": 1.2000000476837158,
+          "amount": 3.200000047683716,
           "id": "betterend:toughness_boost_boots",
+          "operation": "add_value",
+          "slot": "feet"
+        },
+        {
+          "type": "minecraft:knockback_resistance",
+          "amount": 0.10000000149011612,
+          "id": "betterend:knockback_boost_boots",
           "operation": "add_value",
           "slot": "feet"
         }

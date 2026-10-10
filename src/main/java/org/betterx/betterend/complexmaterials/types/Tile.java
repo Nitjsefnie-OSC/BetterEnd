@@ -1,9 +1,9 @@
 package org.betterx.betterend.complexmaterials.types;
 
 import org.betterx.betterend.complexmaterials.MetalMaterial;
+import de.ambertation.wover.block.api.BlockDefinition;
 import de.ambertation.wover.block.api.model.BlockModelBinding;
 import de.ambertation.wover.block.api.model.ModelTraitLibrary;
-import de.ambertation.wover.block.api.client.trait.BlockModelTrait;
 import de.ambertation.wover.block.api.trait.BlockRecipeTrait;
 import de.ambertation.wover.block.api.trait.BlockTraitLookup;
 import de.ambertation.wover.block.api.trait.BlockTraits;
@@ -17,6 +17,12 @@ public class Tile extends SlotFromDefinition {
     public Tile(MetalMaterial metalMaterial) {
         super(MetalMaterial.TILE);
         this.metalMaterial = metalMaterial;
+    }
+
+    @Override
+    protected void addSlotSpecificDefinitions(BlockSet<?> set, BlockDefinition<?, ?> def) {
+        super.addSlotSpecificDefinitions(set, def);
+        def.addTrait(BlockTraits.LOOT_TABLE.dropSelf());
     }
 
     @Override

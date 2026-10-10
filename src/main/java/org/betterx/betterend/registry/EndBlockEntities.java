@@ -55,6 +55,23 @@ public class EndBlockEntities {
     public static void register() {
     }
 
+    /**
+     * The types above are built when this class is loaded, which {@code BetterEnd.onInitialize} does
+     * before {@link EndBlocks#ensureStaticallyLoaded()}. At that point only the block classes they
+     * reference (and whatever those pull in) have registered their blocks, so {@link #getPedestals()}
+     * and {@link #getFlowerPots()} missed every pedestal or pot defined elsewhere - e.g. the smaragdant
+     * crystal pedestal from {@code EndCrystalBlocks} - and placing one failed to create its block entity.
+     * Called once all blocks are registered; re-adding a block that is already valid is a no-op.
+     */
+    public static void addLateRegisteredBlocks() {
+        for (Block block : getPedestals()) {
+            PEDESTAL.addSupportedBlock(block);
+        }
+        for (Block block : getFlowerPots()) {
+            FLOWER_POT.addSupportedBlock(block);
+        }
+    }
+
     static Block[] getPedestals() {
         return EndBlocks.getModBlocks()
                         .stream()

@@ -4,11 +4,14 @@ import org.betterx.bclib.util.BlocksHelper;
 import org.betterx.bclib.blocks.BasePlantBlock;
 import org.betterx.betterend.registry.features.EndConfiguredVegetation;
 
+import de.ambertation.wover.tag.api.predefined.CommonBlockTags;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockBehaviour;
@@ -74,6 +77,14 @@ public class SmallAmaranitaBlock extends BasePlantBlock {
         if (world.getBlockState(pos).is(this)) {
             BlocksHelper.setWithUpdate(world, pos, Blocks.AIR);
         }
+    }
+
+    @Override
+    public boolean isValidBonemealTarget(LevelReader world, BlockPos pos, BlockState state) {
+        // Must match LargeAmaranitaFeature's own checks (the fallback whenever the gigantic one is not
+        // possible): the small mushroom also survives on mossy obsidian and mossy dragon bone, and under
+        // other blocks, where bone meal was used up without ever growing anything.
+        return world.getBlockState(pos.below()).is(CommonBlockTags.END_STONES) && world.isEmptyBlock(pos.above());
     }
 
     @Override

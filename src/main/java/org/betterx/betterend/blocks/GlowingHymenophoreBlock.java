@@ -6,11 +6,15 @@ import de.ambertation.wover.block.api.model.WoverBlockModelGenerators;
 import net.minecraft.client.data.models.model.TextureMapping;
 import net.minecraft.world.level.block.Block;
 
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+
 public class GlowingHymenophoreBlock extends Block {
     public GlowingHymenophoreBlock(Properties props) {
         super(props);
     }
 
+    @Environment(EnvType.CLIENT)
     public static void provideUnshadedCubeModel(
             WoverBlockModelGenerators generator,
             Block glowingHymenophoreBlock

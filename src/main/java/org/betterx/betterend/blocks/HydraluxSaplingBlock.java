@@ -3,7 +3,7 @@ package org.betterx.betterend.blocks;
 
 import org.betterx.betterend.registry.block.EndWaterPlantBlocks;
 import org.betterx.bclib.blocks.UnderwaterPlantWithAgeBlock;
-import org.betterx.bclib.util.BlocksHelper;
+import org.betterx.betterend.util.GrowthPlacer;
 import org.betterx.bclib.util.MHelper;
 import org.betterx.betterend.registry.EndBlocks;
 
@@ -40,15 +40,14 @@ public class HydraluxSaplingBlock extends UnderwaterPlantWithAgeBlock {
 
         mut.setY(pos.getY());
         BlockState state = EndWaterPlantBlocks.HYDRALUX.defaultBlockState();
-        BlocksHelper.setWithoutUpdate(
-                world,
+        GrowthPlacer placer = new GrowthPlacer(world);
+        placer.set(
                 pos,
                 state.setValue(EndBlockProperties.HYDRALUX_SHAPE, EndBlockProperties.HydraluxShape.ROOTS)
         );
         for (int i = 1; i < h - 2; i++) {
             mut.setY(pos.getY() + i);
-            BlocksHelper.setWithoutUpdate(
-                    world,
+            placer.set(
                     mut,
                     state.setValue(EndBlockProperties.HYDRALUX_SHAPE, EndBlockProperties.HydraluxShape.VINE)
             );
@@ -56,8 +55,7 @@ public class HydraluxSaplingBlock extends UnderwaterPlantWithAgeBlock {
 
         mut.setY(mut.getY() + 1);
         boolean big = random.nextBoolean();
-        BlocksHelper.setWithoutUpdate(
-                world,
+        placer.set(
                 mut,
                 state.setValue(
                         EndBlockProperties.HYDRALUX_SHAPE,
@@ -68,8 +66,7 @@ public class HydraluxSaplingBlock extends UnderwaterPlantWithAgeBlock {
         );
 
         mut.setY(mut.getY() + 1);
-        BlocksHelper.setWithoutUpdate(
-                world,
+        placer.set(
                 mut,
                 state.setValue(
                         EndBlockProperties.HYDRALUX_SHAPE,
@@ -78,6 +75,7 @@ public class HydraluxSaplingBlock extends UnderwaterPlantWithAgeBlock {
                                 : EndBlockProperties.HydraluxShape.FLOWER_SMALL_TOP
                 )
         );
+        placer.notifyNeighbours();
     }
 
 }

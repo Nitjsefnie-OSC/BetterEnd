@@ -1,5 +1,6 @@
 package org.betterx.betterend.blocks;
 
+import de.ambertation.wover.block.api.render.BlockRenderTraits;
 import org.betterx.bclib.util.BlocksHelper;
 import org.betterx.betterend.BetterEnd;
 import org.betterx.betterend.client.models.EndModels;
@@ -35,7 +36,7 @@ public class HydraluxPetalColoredBlock extends HydraluxPetalBlock {
         generator.acceptBlockState(BlockModelGenerators.createSimpleBlock(block, BlockModelGenerators.plainVariant(PETAL_MODEL)));
 
         // Item tinting is data-driven via the item model's `tints` list and no longer follows BlockColors, so
-        // this block declares ClientBlockTraits.TINT at registration; delegating here emits that tint.
+        // this block declares BlockRenderTraits.TINT at registration; delegating here emits that tint.
         generator.delegateItemModel(block, modelLocation);
     }
 }

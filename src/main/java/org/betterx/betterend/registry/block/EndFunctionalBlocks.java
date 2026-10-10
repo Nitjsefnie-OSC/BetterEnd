@@ -34,8 +34,7 @@ import de.ambertation.wover.block.api.DefaultBlockDefinition;
 import de.ambertation.wover.block.api.VanillaBlockDefinition;
 import de.ambertation.wover.block.api.model.ModelTraitLibrary;
 import de.ambertation.wover.core.api.ModCore;
-import de.ambertation.wover.block.api.client.trait.BlockModelTrait;
-import de.ambertation.wover.block.api.client.trait.ClientBlockTraits;
+import de.ambertation.wover.block.api.render.BlockRenderTraits;
 import de.ambertation.wover.block.api.render.TinterKeys;
 import de.ambertation.wover.block.api.trait.BlockTraits;
 import de.ambertation.wover.item.api.BlockItemDefinition;
@@ -72,13 +71,15 @@ import org.betterx.betterend.registry.EndTemplates;
 public class EndFunctionalBlocks {
     // Mob-Related
     public static final Block SILK_MOTH_NEST = EndBlocks.defineBlock("silk_moth_nest", SilkMothNestBlock::new)
+            // White wool's map colour, as it was built before its props left the constructor.
+            .mapColor(MapColor.SNOW)
             .strength(0.5F, 0.1F)
             .sound(SoundType.WOOL)
             .noOcclusion()
             .randomTicks()
             .addTrait(BlockTraits.MINEABLE_WITH.needsShears())
             .addTrait(ModelTraitLibrary.externalModel())
-            .addTrait(ClientBlockTraits.RENDER_LAYER.cutout())
+            .addTrait(BlockRenderTraits.RENDER_LAYER.cutout())
             .addTrait(BlockTraits.LOOT_TABLE.dropSelf())
             .buildAndRegister();
 
@@ -93,14 +94,17 @@ public class EndFunctionalBlocks {
             .buildAndRegister();
 
     public static final Block RESPAWN_OBELISK = EndBlocks.defineBlock("respawn_obelisk", RespawnObeliskBlock::new)
+            .replacePropertiesWithCopy(Blocks.END_STONE)
             .lightLevel(
                     state -> state.getValue(BlockProperties.TRIPLE_SHAPE) == BlockProperties.TripleShape.BOTTOM ? 0 : 15
             )
             .addTrait(BlockTraits.STONE_BLOCK)
-            .addTrait(ClientBlockTraits.RENDER_LAYER.translucent())
+            // After STONE_BLOCK on purpose: its strength(2, 6) default would otherwise replace end stone's.
+            .strength(Blocks.END_STONE.defaultDestroyTime(), Blocks.END_STONE.getExplosionResistance())
+            .addTrait(BlockRenderTraits.RENDER_LAYER.translucent())
             // Shares AURORA_CRYSTAL's palette instance - this block used to express that by delegating to its
             // provider. World only: the obelisk's item has its own coloured texture.
-            .addTrait(ClientBlockTraits.TINT.world(TinterKeys.PALETTE_CYCLE, () -> EndCrystalBlocks.AURORA_PALETTE))
+            .addTrait(BlockRenderTraits.TINT.world(TinterKeys.PALETTE_CYCLE, () -> EndCrystalBlocks.AURORA_PALETTE))
             .addTrait(ModelTraitLibrary.externalModel())
             .addTrait(BlockTraits.LOOT_TABLE.dropSelf())
             .buildAndRegister();
@@ -119,9 +123,7 @@ public class EndFunctionalBlocks {
     public static final Block ETERNAL_PEDESTAL = EndBlocks.getBlockRegistry()
             .defineDefaultBlock("eternal_pedestal", def -> new EternalPedestal(def.blockKey))
             .addTrait(BlockTraits.STONE_BLOCK)
-            .addTrait(ModCore.isDatagen() ? ClientBlockTraits.MODEL.with(
-                    (key, block, generator) -> ((EternalPedestal) block).provideBlockModelsInstance(generator)
-            ) : null)
+            .addTrait(EndModelTraits.eternalPedestal())
             .addTrait(BlockTraits.LOOT_TABLE.dropSelf())
             .addTags(EndTags.PEDESTALS)
             .buildAndRegister();
@@ -129,9 +131,7 @@ public class EndFunctionalBlocks {
     public static final Block INFUSION_PEDESTAL = EndBlocks.getBlockRegistry()
             .defineDefaultBlock("infusion_pedestal", def -> new InfusionPedestal(def.blockKey))
             .addTrait(BlockTraits.STONE_BLOCK)
-            .addTrait(ModCore.isDatagen() ? ClientBlockTraits.MODEL.with(
-                    (key, block, generator) -> ((InfusionPedestal) block).provideBlockModelsInstance(generator)
-            ) : null)
+            .addTrait(EndModelTraits.infusionPedestal())
             .addTrait(BlockTraits.LOOT_TABLE.dropSelf())
             .addTags(EndTags.PEDESTALS)
             .buildAndRegister();
@@ -149,11 +149,15 @@ public class EndFunctionalBlocks {
 
     // Technical
     public static final Block END_PORTAL_BLOCK = EndBlocks.defineBlockOnly("end_portal_block", EndPortalBlock::new)
+            // Nether portal's properties (no collision, no loot, glass sound, piston-immovable), but never
+            // breakable - lost when the props left the constructor.
+            .replacePropertiesWithCopy(Blocks.NETHER_PORTAL)
+            .destroyTime(Blocks.BEDROCK.getExplosionResistance())
             .lightLevel(bs -> 15)
-            .addTrait(ClientBlockTraits.RENDER_LAYER.translucent())
+            .addTrait(BlockRenderTraits.RENDER_LAYER.translucent())
             // World only - defineBlockOnly, so there is no item to tint. The colour comes from the runtime
             // EndPortals config, which is why this uses BetterEnd's own key rather than a wover built-in.
-            .addTrait(ClientBlockTraits.TINT.world(EndTinterKeys.END_PORTAL, () -> null))
+            .addTrait(BlockRenderTraits.TINT.world(EndTinterKeys.END_PORTAL, () -> null))
             .buildAndRegister();
 
     public static void ensureLoaded() {}

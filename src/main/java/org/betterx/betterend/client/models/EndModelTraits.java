@@ -6,10 +6,19 @@ import org.betterx.betterend.BetterEnd;
 import org.betterx.betterend.blocks.GlowingHymenophoreBlock;
 import org.betterx.betterend.blocks.RunedFlavolite;
 import org.betterx.bclib.blocks.BaseWallPlantBlock;
+import org.betterx.betterend.blocks.BlueVineLanternBlock;
+import org.betterx.betterend.blocks.EternalPedestal;
+import org.betterx.betterend.blocks.HydraluxPetalColoredBlock;
+import org.betterx.betterend.blocks.InfusionPedestal;
+import org.betterx.betterend.blocks.JellyshroomCapBlock;
+import org.betterx.betterend.blocks.UmbrellaTreeMembraneBlock;
 import org.betterx.betterend.blocks.basis.FurBlock;
 import de.ambertation.wover.block.api.BlockProperties;
+import de.ambertation.wover.block.api.client.model.ClientBlockModelRegistry;
 import de.ambertation.wover.block.api.client.trait.BlockModelTrait;
-import de.ambertation.wover.block.api.client.trait.ClientBlockTraits;
+import de.ambertation.wover.block.api.client.trait.BlockModelTrait.ModelFactory;
+import de.ambertation.wover.block.api.model.BlockModelBinding;
+import de.ambertation.wover.block.api.model.ModelKey;
 import de.ambertation.wover.block.api.model.WoverBlockModelGenerators;
 import de.ambertation.wover.core.api.ModCore;
 
@@ -42,13 +51,22 @@ import net.fabricmc.api.Environment;
  */
 public class EndModelTraits {
     /** A twisted-vine model: top/middle/bottom triple-shape with cross-no-distortion variants + a flat item. */
-    public static BlockModelTrait twistedVine() {
-        return ModCore.isDatagen() ? Impl.twistedVine() : null;
+    public static BlockModelBinding twistedVine() {
+        return BlockModelBinding.of(MODEL_TWISTED_VINE, null);
     }
 
     /** The amber-moss cover: three weighted, rotated full-cube variants ({@code _1/_2/_3}) over end stone. */
-    public static BlockModelTrait amberMoss() {
-        return ModCore.isDatagen() ? Impl.amberMoss() : null;
+    public static BlockModelBinding amberMoss() {
+        return BlockModelBinding.of(MODEL_AMBER_MOSS, null);
+    }
+
+    /**
+     * The cave-moss cover, dispatched over its {@code shape}: {@code bottom} is the floor top/side/bottom cube
+     * over end stone (four Y rotations), {@code top} the same cube flipped ({@code x=180}) for ceilings, and
+     * {@code middle} a {@code _middle} cube with the moss texture on every face, randomly rotated.
+     */
+    public static BlockModelBinding caveMoss() {
+        return BlockModelBinding.of(MODEL_CAVE_MOSS, null);
     }
 
     /**
@@ -56,8 +74,8 @@ public class EndModelTraits {
      *
      * @param base supplies the terrain block whose {@code _side_N} textures the path reuses
      */
-    public static BlockModelTrait amberMossPath(Supplier<Block> base) {
-        return ModCore.isDatagen() ? Impl.amberMossPath(base) : null;
+    public static BlockModelBinding amberMossPath(Supplier<Block> base) {
+        return BlockModelBinding.of(MODEL_AMBER_MOSS_PATH, new AmberMossPathParams(base));
     }
 
     /**
@@ -65,8 +83,8 @@ public class EndModelTraits {
      *
      * @param texture supplies the base texture location (without suffix)
      */
-    public static BlockModelTrait rotatedPillar(Supplier<ResourceLocation> texture) {
-        return ModCore.isDatagen() ? Impl.rotatedPillar(texture) : null;
+    public static BlockModelBinding rotatedPillar(Supplier<ResourceLocation> texture) {
+        return BlockModelBinding.of(MODEL_ROTATED_PILLAR, new RotatedPillarParams(texture));
     }
 
     /**
@@ -74,8 +92,8 @@ public class EndModelTraits {
      * helper, hoisted here per decision 2. Delegates to {@link GlowingHymenophoreBlock}'s shared
      * unshaded-cube generator.
      */
-    public static BlockModelTrait unshadedCube() {
-        return ModCore.isDatagen() ? Impl.unshadedCube() : null;
+    public static BlockModelBinding unshadedCube() {
+        return BlockModelBinding.of(MODEL_UNSHADED_CUBE, null);
     }
 
     /**
@@ -83,8 +101,8 @@ public class EndModelTraits {
      *
      * @param texture supplies the base texture location (without suffix)
      */
-    public static BlockModelTrait litStairs(Supplier<ResourceLocation> texture) {
-        return ModCore.isDatagen() ? Impl.litStairs(texture) : null;
+    public static BlockModelBinding litStairs(Supplier<ResourceLocation> texture) {
+        return BlockModelBinding.of(MODEL_LIT_STAIRS, new LitStairsParams(texture));
     }
 
     /**
@@ -94,8 +112,8 @@ public class EndModelTraits {
      * @param source  supplies the full block the double slab mirrors
      * @param texture supplies the base texture location (without suffix)
      */
-    public static BlockModelTrait slabFrom(Supplier<Block> source, Supplier<ResourceLocation> texture) {
-        return ModCore.isDatagen() ? Impl.slabFrom(source, texture) : null;
+    public static BlockModelBinding slabFrom(Supplier<Block> source, Supplier<ResourceLocation> texture) {
+        return BlockModelBinding.of(MODEL_SLAB_FROM, new SlabFromParams(source, texture));
     }
 
     /**
@@ -133,7 +151,7 @@ public class EndModelTraits {
     }
 
     /** The shared 39-entry weighted blockstate model for {@code flavolite_runed}/{@code flavolite_runed_eternal}. */
-    public static BlockModelTrait flavoliteRuned() {
+    public static BlockModelBinding flavoliteRuned() {
         final var tmplInactive = BetterEnd.C.mk("block/flavolite_runed_1");
         final var tmplActive = BetterEnd.C.mk("block/flavolite_runed_active_1");
         final var whenFalse = flavoliteRunedVariants(
@@ -187,7 +205,7 @@ public class EndModelTraits {
      * rotation, while {@code up}/{@code down} reference the kept, hand-authored {@code glowing_pillar_leaves_up}
      * mesh directly ({@code down} at {@code x=180}). Item is the generated flat block-texture icon.
      */
-    public static BlockModelTrait glowingPillarLeaves() {
+    public static BlockModelBinding glowingPillarLeaves() {
         final var tex = BetterEnd.C.mk("block/glowing_pillar_leaves");
         final var up = BetterEnd.C.mk("block/glowing_pillar_leaves_up");
         return WeightedTemplateModelTrait.propertyDispatch(
@@ -212,7 +230,7 @@ public class EndModelTraits {
      * holds the three bulb_moss-mesh single-texture children (generated) at the matching Y rotation. The item
      * keeps the hand-authored {@code item/ruscus} flat model (referenced via a delegated item definition).
      */
-    public static BlockModelTrait ruscus() {
+    public static BlockModelBinding ruscus() {
         final var tex = BetterEnd.C.mk("block/ruscus");
         return WeightedTemplateModelTrait.propertyDispatch(
                 BaseWallPlantBlock.FACING,
@@ -248,7 +266,7 @@ public class EndModelTraits {
      * #texture=block/twisted_moss}, {@code #texture2=block/twisted_moss_2}) at the matching Y rotation per
      * horizontal facing. Item is the generated flat block-texture icon.
      */
-    public static BlockModelTrait twistedMoss() {
+    public static BlockModelBinding twistedMoss() {
         final var t = BetterEnd.C.mk("block/twisted_moss");
         final var t2 = BetterEnd.C.mk("block/twisted_moss_2");
         return WeightedTemplateModelTrait.propertyDispatch(
@@ -275,7 +293,7 @@ public class EndModelTraits {
         return out;
     }
 
-    public static BlockModelTrait bulbMoss() {
+    public static BlockModelBinding bulbMoss() {
         return WeightedTemplateModelTrait.propertyDispatch(
                 BaseWallPlantBlock.FACING,
                 java.util.List.of(
@@ -318,7 +336,7 @@ public class EndModelTraits {
         return out;
     }
 
-    public static BlockModelTrait jungleFern() {
+    public static BlockModelBinding jungleFern() {
         return WeightedTemplateModelTrait.propertyDispatch(
                 BaseWallPlantBlock.FACING,
                 java.util.List.of(
@@ -335,7 +353,7 @@ public class EndModelTraits {
      * shared by blue_vine_fur, tenanea_outer_leaves and the lucernia up/down leaves. Its own blockstate references
      * the template directly, weighted over the four Y rotations; item delegates to {@code item/creeping_moss}.
      */
-    public static BlockModelTrait creepingMoss() {
+    public static BlockModelBinding creepingMoss() {
         final var m = BetterEnd.C.mk("block/creeping_moss");
         return WeightedTemplateModelTrait.simple(
                 java.util.List.of(
@@ -358,7 +376,7 @@ public class EndModelTraits {
      * is placed at the six standard fur facings (up unrotated, down {@code x=180}, the four horizontals at
      * {@code x=90} with the matching Y).
      */
-    public static BlockModelTrait upLeaf(
+    public static BlockModelBinding upLeaf(
             net.minecraft.resources.ResourceLocation tex,
             WeightedTemplateModelTrait.Item item
     ) {
@@ -404,7 +422,7 @@ public class EndModelTraits {
                 upLeafChild(BetterEnd.C.mk("block/lucernia_outer_leaves_2")).rotated(x, 0));
     }
 
-    public static BlockModelTrait lucerniaOuterLeaves() {
+    public static BlockModelBinding lucerniaOuterLeaves() {
         return WeightedTemplateModelTrait.propertyDispatch(
                 FurBlock.FACING,
                 java.util.List.of(
@@ -436,13 +454,13 @@ public class EndModelTraits {
         return out;
     }
 
-    public static BlockModelTrait umbrellaMoss() {
+    public static BlockModelBinding umbrellaMoss() {
         return WeightedTemplateModelTrait.simple(
                 umbrellaMossSmallLayers(),
                 WeightedTemplateModelTrait.Item.flat(BetterEnd.C.mk("item/umbrella_moss_small")));
     }
 
-    public static BlockModelTrait twistedUmbrellaMoss() {
+    public static BlockModelBinding twistedUmbrellaMoss() {
         final var swap = java.util.Map.of(
                 "texture", BetterEnd.C.mk("block/twisted_umbrella_moss_up"),
                 "particle", BetterEnd.C.mk("block/twisted_umbrella_moss_up"),
@@ -462,8 +480,209 @@ public class EndModelTraits {
                 WeightedTemplateModelTrait.Item.flat(BetterEnd.C.mk("item/twisted_umbrella_moss_small")));
     }
 
+    /**
+     * The colored hydralux petal block model.
+     */
+    public static BlockModelBinding hydraluxPetalColored() {
+        return BlockModelBinding.of(MODEL_HYDRALUX_PETAL_COLORED, null);
+    }
+
+    /**
+     * The eternal pedestal's own block model.
+     */
+    public static BlockModelBinding eternalPedestal() {
+        return BlockModelBinding.of(MODEL_ETERNAL_PEDESTAL, null);
+    }
+
+    /**
+     * The infusion pedestal's own block model.
+     */
+    public static BlockModelBinding infusionPedestal() {
+        return BlockModelBinding.of(MODEL_INFUSION_PEDESTAL, null);
+    }
+
+    /**
+     * The blue vine lantern block model.
+     */
+    public static BlockModelBinding blueVineLantern() {
+        return BlockModelBinding.of(MODEL_BLUE_VINE_LANTERN, null);
+    }
+
+    /**
+     * The umbrella tree membrane block model (one model per color).
+     */
+    public static BlockModelBinding umbrellaTreeMembrane() {
+        return BlockModelBinding.of(MODEL_UMBRELLA_TREE_MEMBRANE, null);
+    }
+
+    /**
+     * The jellyshroom cap block model (one model per color).
+     */
+    public static BlockModelBinding jellyshroomCap() {
+        return BlockModelBinding.of(MODEL_JELLYSHROOM_CAP, null);
+    }
+
+    private static final ModelKey<Void> MODEL_HYDRALUX_PETAL_COLORED =
+            EndModelKeys.key("end_model_traits/hydralux_petal_colored");
+
+    private static final ModelKey<Void> MODEL_ETERNAL_PEDESTAL = EndModelKeys.key("end_model_traits/eternal_pedestal");
+
+    private static final ModelKey<Void> MODEL_INFUSION_PEDESTAL =
+            EndModelKeys.key("end_model_traits/infusion_pedestal");
+
+    private static final ModelKey<Void> MODEL_BLUE_VINE_LANTERN =
+            EndModelKeys.key("end_model_traits/blue_vine_lantern");
+
+    private static final ModelKey<Void> MODEL_UMBRELLA_TREE_MEMBRANE =
+            EndModelKeys.key("end_model_traits/umbrella_tree_membrane");
+
+    private static final ModelKey<Void> MODEL_JELLYSHROOM_CAP = EndModelKeys.key("end_model_traits/jellyshroom_cap");
+
+    private static final ModelKey<Void> MODEL_CAVE_MOSS = EndModelKeys.key("end_model_traits/cave_moss");
+
+    private static final ModelKey<Void> MODEL_AMBER_MOSS = EndModelKeys.key("end_model_traits/amber_moss");
+
+    private record AmberMossPathParams(Supplier<Block> base) {
+    }
+
+    private static final ModelKey<AmberMossPathParams> MODEL_AMBER_MOSS_PATH =
+            EndModelKeys.key("end_model_traits/amber_moss_path");
+
+    private record RotatedPillarParams(Supplier<ResourceLocation> texture) {
+    }
+
+    private static final ModelKey<RotatedPillarParams> MODEL_ROTATED_PILLAR =
+            EndModelKeys.key("end_model_traits/rotated_pillar");
+
+    private static final ModelKey<Void> MODEL_UNSHADED_CUBE = EndModelKeys.key("end_model_traits/unshaded_cube");
+
+    private record LitStairsParams(Supplier<ResourceLocation> texture) {
+    }
+
+    private static final ModelKey<LitStairsParams> MODEL_LIT_STAIRS = EndModelKeys.key("end_model_traits/lit_stairs");
+
+    private record SlabFromParams(Supplier<Block> source, Supplier<ResourceLocation> texture) {
+    }
+
+    private static final ModelKey<SlabFromParams> MODEL_SLAB_FROM = EndModelKeys.key("end_model_traits/slab_from");
+
+    private static final ModelKey<Void> MODEL_TWISTED_VINE = EndModelKeys.key("end_model_traits/twisted_vine");
+
+    /**
+     * Registers the client generators behind this class's model keys. Called from the mod's
+     * {@code wover.client.traits} entrypoint.
+     */
+    @Environment(EnvType.CLIENT)
+    public static void registerClientModels() {
+        Impl.register();
+    }
+
     @Environment(EnvType.CLIENT)
     private static class Impl {
+        private static void register() {
+            ClientBlockModelRegistry.register(
+                    MODEL_HYDRALUX_PETAL_COLORED,
+                    (key, block, generator, payload) -> hydraluxPetalColored()
+                            .provideBlockModels(key, block, generator)
+            );
+            ClientBlockModelRegistry.register(
+                    MODEL_ETERNAL_PEDESTAL,
+                    (key, block, generator, payload) -> eternalPedestal().provideBlockModels(key, block, generator)
+            );
+            ClientBlockModelRegistry.register(
+                    MODEL_INFUSION_PEDESTAL,
+                    (key, block, generator, payload) -> infusionPedestal().provideBlockModels(key, block, generator)
+            );
+            ClientBlockModelRegistry.register(
+                    MODEL_BLUE_VINE_LANTERN,
+                    (key, block, generator, payload) -> blueVineLantern().provideBlockModels(key, block, generator)
+            );
+            ClientBlockModelRegistry.register(
+                    MODEL_UMBRELLA_TREE_MEMBRANE,
+                    (key, block, generator, payload) -> umbrellaTreeMembrane()
+                            .provideBlockModels(key, block, generator)
+            );
+            ClientBlockModelRegistry.register(
+                    MODEL_JELLYSHROOM_CAP,
+                    (key, block, generator, payload) -> jellyshroomCap().provideBlockModels(key, block, generator)
+            );
+            ClientBlockModelRegistry.register(
+                    MODEL_CAVE_MOSS,
+                    (key, block, generator, payload) -> caveMoss().provideBlockModels(key, block, generator)
+            );
+            ClientBlockModelRegistry.register(
+                    MODEL_AMBER_MOSS,
+                    (key, block, generator, payload) -> amberMoss().provideBlockModels(key, block, generator)
+            );
+            ClientBlockModelRegistry.register(
+                    MODEL_AMBER_MOSS_PATH,
+                    (key, block, generator, payload) -> amberMossPathFrom(payload)
+                            .provideBlockModels(key, block, generator)
+            );
+            ClientBlockModelRegistry.register(
+                    MODEL_ROTATED_PILLAR,
+                    (key, block, generator, payload) -> rotatedPillarFrom(payload)
+                            .provideBlockModels(key, block, generator)
+            );
+            ClientBlockModelRegistry.register(
+                    MODEL_UNSHADED_CUBE,
+                    (key, block, generator, payload) -> unshadedCube().provideBlockModels(key, block, generator)
+            );
+            ClientBlockModelRegistry.register(
+                    MODEL_LIT_STAIRS,
+                    (key, block, generator, payload) -> litStairsFrom(payload)
+                            .provideBlockModels(key, block, generator)
+            );
+            ClientBlockModelRegistry.register(
+                    MODEL_SLAB_FROM,
+                    (key, block, generator, payload) -> slabFromFrom(payload).provideBlockModels(key, block, generator)
+            );
+            ClientBlockModelRegistry.register(
+                    MODEL_TWISTED_VINE,
+                    (key, block, generator, payload) -> twistedVine().provideBlockModels(key, block, generator)
+            );
+        }
+
+        private static ModelFactory amberMossPathFrom(AmberMossPathParams p) {
+            return amberMossPath(p.base());
+        }
+
+        private static ModelFactory rotatedPillarFrom(RotatedPillarParams p) {
+            return rotatedPillar(p.texture());
+        }
+
+        private static ModelFactory litStairsFrom(LitStairsParams p) {
+            return litStairs(p.texture());
+        }
+
+        private static ModelFactory slabFromFrom(SlabFromParams p) {
+            return slabFrom(p.source(), p.texture());
+        }
+
+        private static ModelFactory hydraluxPetalColored() {
+            return (key, block, generator) -> HydraluxPetalColoredBlock.provideBlockModel(generator, block);
+        }
+
+        private static ModelFactory eternalPedestal() {
+            return (key, block, generator) -> ((EternalPedestal) block).provideBlockModelsInstance(generator);
+        }
+
+        private static ModelFactory infusionPedestal() {
+            return (key, block, generator) -> ((InfusionPedestal) block).provideBlockModelsInstance(generator);
+        }
+
+        private static ModelFactory blueVineLantern() {
+            return (key, block, generator) -> BlueVineLanternBlock.provideBlockModel(generator, block);
+        }
+
+        private static ModelFactory umbrellaTreeMembrane() {
+            return (key, block, generator) -> UmbrellaTreeMembraneBlock.provideBlockModel(generator, block);
+        }
+
+        private static ModelFactory jellyshroomCap() {
+            return (key, block, generator) -> JellyshroomCapBlock.provideBlockModel(generator, block);
+        }
+
         private static void buildRotated(WoverBlockModelGenerators generator, Block block, List<ResourceLocation> models) {
             final WeightedList.Builder<Variant> variants = WeightedList.builder();
             models.forEach(model -> {
@@ -476,8 +695,40 @@ public class EndModelTraits {
             generator.delegateItemModel(block, models.get(0));
         }
 
-        private static BlockModelTrait amberMoss() {
-            return ClientBlockTraits.MODEL.with((key, block, generator) -> {
+        private static ModelFactory caveMoss() {
+            return (key, block, generator) -> {
+                final var topTexture = TextureMapping.getBlockTexture(block, "_top");
+                final var mapping = new TextureMapping()
+                        .put(TextureSlot.SIDE, TextureMapping.getBlockTexture(block, "_side"))
+                        .put(TextureSlot.TOP, topTexture)
+                        .put(TextureSlot.BOTTOM, TextureMapping.getBlockTexture(Blocks.END_STONE));
+                final var model = ModelTemplates.CUBE_BOTTOM_TOP.create(block, mapping, generator.modelOutput());
+                final var middle = ModelTemplates.CUBE_ALL.createWithSuffix(
+                        block, "_middle", TextureMapping.cube(topTexture), generator.modelOutput());
+
+                final WeightedList.Builder<Variant> bottom = WeightedList.builder();
+                final WeightedList.Builder<Variant> top = WeightedList.builder();
+                final WeightedList.Builder<Variant> mid = WeightedList.builder();
+                for (Quadrant y : Quadrant.values()) {
+                    bottom.add(new Variant(model).withYRot(y));
+                    top.add(new Variant(model).withXRot(Quadrant.R180).withYRot(y));
+                    for (Quadrant x : Quadrant.values()) {
+                        mid.add(new Variant(middle).withXRot(x).withYRot(y));
+                    }
+                }
+
+                generator.acceptBlockState(MultiVariantGenerator
+                        .dispatch(block)
+                        .with(PropertyDispatch.initial(BlockProperties.TRIPLE_SHAPE)
+                                              .select(BlockProperties.TripleShape.TOP, new MultiVariant(top.build()))
+                                              .select(BlockProperties.TripleShape.MIDDLE, new MultiVariant(mid.build()))
+                                              .select(BlockProperties.TripleShape.BOTTOM, new MultiVariant(bottom.build()))));
+                generator.delegateItemModel(block, model);
+            };
+        }
+
+        private static ModelFactory amberMoss() {
+            return (key, block, generator) -> {
                 final var endStone = TextureMapping.getBlockTexture(Blocks.END_STONE);
                 final var baseTexture = TextureMapping.getBlockTexture(block, "_top");
                 final var models = List.of("_1", "_2", "_3").stream().map(suffix -> {
@@ -493,11 +744,11 @@ public class EndModelTraits {
                     return ModelTemplates.CUBE.createWithSuffix(block, suffix, mapping, generator.modelOutput());
                 }).toList();
                 buildRotated(generator, block, models);
-            });
+            };
         }
 
-        private static BlockModelTrait amberMossPath(Supplier<Block> base) {
-            return ClientBlockTraits.MODEL.with((key, block, generator) -> {
+        private static ModelFactory amberMossPath(Supplier<Block> base) {
+            return (key, block, generator) -> {
                 final var endStone = TextureMapping.getBlockTexture(Blocks.END_STONE);
                 final var baseTexture = TextureMapping.getBlockTexture(block, "_top");
                 final var models = List.of("_1", "_2", "_3").stream().map(suffix -> {
@@ -509,26 +760,24 @@ public class EndModelTraits {
                     return EndModels.PATH.createWithSuffix(block, suffix, mapping, generator.modelOutput());
                 }).toList();
                 buildRotated(generator, block, models);
-            });
+            };
         }
 
-        private static BlockModelTrait rotatedPillar(Supplier<ResourceLocation> texture) {
-            return ClientBlockTraits.MODEL.with((key, block, generator) -> {
+        private static ModelFactory rotatedPillar(Supplier<ResourceLocation> texture) {
+            return (key, block, generator) -> {
                 final var t = texture.get();
                 generator.createRotatedPillar(block, new TextureMapping()
                         .put(TextureSlot.END, t.withSuffix("_top"))
                         .put(TextureSlot.SIDE, t.withSuffix("_side")));
-            });
+            };
         }
 
-        private static BlockModelTrait unshadedCube() {
-            return ClientBlockTraits.MODEL.with(
-                    (key, block, generator) -> GlowingHymenophoreBlock.provideUnshadedCubeModel(generator, block)
-            );
+        private static ModelFactory unshadedCube() {
+            return (key, block, generator) -> GlowingHymenophoreBlock.provideUnshadedCubeModel(generator, block);
         }
 
-        private static BlockModelTrait litStairs(Supplier<ResourceLocation> texture) {
-            return ClientBlockTraits.MODEL.with((key, block, generator) -> {
+        private static ModelFactory litStairs(Supplier<ResourceLocation> texture) {
+            return (key, block, generator) -> {
                 final var id = TextureMapping.getBlockTexture(block);
                 final var t = texture.get();
                 final var mapping = new TextureMapping()
@@ -541,21 +790,21 @@ public class EndModelTraits {
                 final var stairsInner = EndModels.LIT_STAIRS_INNER.create(
                         id.withSuffix("_inner"), mapping, generator.modelOutput());
                 generator.createStairsWithModels(block, stairs, stairsOuter, stairsInner);
-            });
+            };
         }
 
-        private static BlockModelTrait slabFrom(Supplier<Block> source, Supplier<ResourceLocation> texture) {
-            return ClientBlockTraits.MODEL.with((key, block, generator) -> {
+        private static ModelFactory slabFrom(Supplier<Block> source, Supplier<ResourceLocation> texture) {
+            return (key, block, generator) -> {
                 final var t = texture.get();
                 generator.createSlab(block, source.get(), new TextureMapping()
                         .put(TextureSlot.TOP, t.withSuffix("_top"))
                         .put(TextureSlot.BOTTOM, t.withSuffix("_top"))
                         .put(TextureSlot.SIDE, t.withSuffix("_side")));
-            });
+            };
         }
 
-        private static BlockModelTrait twistedVine() {
-            return ClientBlockTraits.MODEL.with((key, block, generator) -> {
+        private static ModelFactory twistedVine() {
+            return (key, block, generator) -> {
                 final var itemTextureLocation = TextureMapping.getBlockTexture(block, "_bottom");
                 var bottomMapping = new TextureMapping().put(TextureSlot.TEXTURE, itemTextureLocation);
                 var middleMapping = new TextureMapping().put(TextureSlot.TEXTURE, TextureMapping.getBlockTexture(block));
@@ -581,7 +830,7 @@ public class EndModelTraits {
                                                       new MultiVariant(WeightedList.<Variant>builder()
                                                               .add(new Variant(bottom1)).add(new Variant(bottom2)).build()))));
                 generator.createFlatItem(block, itemTextureLocation);
-            });
+            };
         }
     }
 }

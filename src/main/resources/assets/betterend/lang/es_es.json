@@ -326,7 +326,6 @@
 	"biome.betterend.amber_land": "Tierra de Ámbar",
 	"biome.betterend.blossoming_spires": "Agujas Florecientes",
 	"block.betterend.amber_grass": "Hierba de Ámber",
-	"block.betterend.amber_grass_path": "Camino de Hierba de Ámber",
 	"block.betterend.tenanea_bark": "Corteza de Tenanea",
 	"block.betterend.tenanea_barrel": "Barril de Tenanea",
 	"block.betterend.tenanea_bookshelf": "Librería de Tenanea",
@@ -488,7 +487,6 @@
 	"block.betterend.lanceleaf": "Hoja Lanza",
 	"block.betterend.lanceleaf_seed": "Semilla de Hoja Lanza",
 	"block.betterend.hydralux": "Hidrálux",
-	"block.betterend.helix_tree_luminophor": "Luminóforo de Lanceleaf",
 	
 	"block.betterend.glowing_pillar_leaves": "Hojas de Pilar Brillante",
 	"block.betterend.glowing_pillar_luminophor": "Luminóforo de Pilar Brillante",
@@ -518,8 +516,6 @@
 	"block.betterend.pythadendron_composter": "Compostador de Fitadendrón",
 	"block.betterend.tenanea_composter": "Compostador de Tenanea",
 	
-	"biome.betterend.old_bulbis_gardens": "Jardín de Bulbis Viejos",
-	"block.betterend.ivis_moss": "Musgo Ivis",
 	"block.betterend.ivis_vine": "Vid Ivis",
 	"block.betterend.silk_moth_nest": "Nido de Polilla de Seda",
 	
@@ -579,14 +575,11 @@
 	"block.betterend.jellyshroom_stripped_log": "Tronco Despojado de Seta Gelatinosa",
 	"block.betterend.jellyshroom_trapdoor": "Trampilla de Seta Gelatinosa",
 	
-	"biome.betterend.eterial_grove": "Arboleda Eterial",
 	"block.betterend.umbrella_tree_sapling": "Sapling de Árbol Sombrilla",
 	"item.betterend.umbrella_cluster_juice": "Zumo de Racimo de Paraguas",
 	"block.betterend.blossom_berry_seed": "Semilla de Balla Floreciente",
 	"item.betterend.blossom_berry": "Balla Floreciente",
 	
-	"biome.betterend.nightshade_redwoods": "Secuoyas Nocturnas",
-	"block.betterend.nightshade_moss": "Musgo Nocturno",
 	
 	"biome.betterend.glowing_grasslands": "Tierras de Hierba Brillante",
 	"block.betterend.blooming_cooksonia": "Cooksonia Floreciente",
@@ -696,7 +689,6 @@
 	"block.betterend.lamellarium": "Lamelario",
 	"block.betterend.large_amaranita_mushroom": "Seta de Amaranita Grande",
 	"block.betterend.lutebus": "Lutebús",
-	"block.betterend.mossy_bone": "Hueso Musgoso",
 	"block.betterend.mossy_obsidian": "Obsidiana Musgosa",
 	"block.betterend.orango": "Orango",
 	"block.betterend.rutiscus": "Rútiscus",
@@ -725,7 +717,6 @@
 	"block.betterend.chorus_mushroom_seed": "Semilla de Seta Coral",
 	"block.betterend.end_stone_stalactite": "Estalactita de Piedra del End",
 	"block.betterend.end_stone_stalactite_cavemoss": "Estalactita de Piedrad el End con Musgo de Cueva",
-	"block.betterend.pearlberry_seed": "Semilla de Balla Perla",
 	"block.betterend.rubinea": "Rubinea",
 	"block.betterend.sandy_jadestone": "Piedra Jade Arenosa",
 	"block.betterend.sandy_jadestone_brick": "Ladrillos de Piedra Jade Arenosa",

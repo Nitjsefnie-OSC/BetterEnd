@@ -129,20 +129,26 @@ public final class EndTreeHelper {
      *               anything that no longer holds a {@link FurBlock} is skipped
      */
     public static void pruneUnsupportedFur(WorldGenLevel world, Iterable<BlockPos> placed) {
+        final WriteZone zone = WriteZone.of(world);
         final MutableBlockPos probe = new MutableBlockPos();
         boolean removedAny = true;
         while (removedAny) {
             removedAny = false;
             for (BlockPos pos : placed) {
-                removedAny |= dropIfUnsupported(world, pos);
+                removedAny |= dropIfUnsupported(world, zone, pos);
                 for (Direction dir : Direction.values()) {
-                    removedAny |= dropIfUnsupported(world, probe.set(pos).move(dir));
+                    removedAny |= dropIfUnsupported(world, zone, probe.set(pos).move(dir));
                 }
             }
         }
     }
 
-    private static boolean dropIfUnsupported(WorldGenLevel world, BlockPos pos) {
+    private static boolean dropIfUnsupported(WorldGenLevel world, WriteZone zone, BlockPos pos) {
+        // canSurvive reads the block the fur hangs from, one step away, so a position is only judged when
+        // that read stays inside the write zone too. A fur on the zone's outermost column is left as placed.
+        if (!zone.contains(pos.getX() - 1, pos.getZ() - 1) || !zone.contains(pos.getX() + 1, pos.getZ() + 1)) {
+            return false;
+        }
         final BlockState state = world.getBlockState(pos);
         if (!(state.getBlock() instanceof FurBlock) || state.canSurvive(world, pos)) {
             return false;

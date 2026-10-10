@@ -3023,10 +3023,10 @@ betterend:end_moss  shape=[0,0,0|1,1,1] collision=[0,0,0|1,1,1]
 betterend:end_moss_path  shape=[0,0,0|1,0.9375,1] collision=[0,0,0|1,0.9375,1]
 betterend:end_mycelium  shape=[0,0,0|1,1,1] collision=[0,0,0|1,1,1]
 betterend:end_mycelium_path  shape=[0,0,0|1,0.9375,1] collision=[0,0,0|1,0.9375,1]
-betterend:end_portal_block[axis=x,portal=0]  shape=[0,0,0.375|1,1,0.625] collision=[0,0,0.375|1,1,0.625]
-betterend:end_portal_block[axis=x,portal=1]  shape=[0,0,0.375|1,1,0.625] collision=[0,0,0.375|1,1,0.625]
-betterend:end_portal_block[axis=z,portal=0]  shape=[0.375,0,0|0.625,1,1] collision=[0.375,0,0|0.625,1,1]
-betterend:end_portal_block[axis=z,portal=1]  shape=[0.375,0,0|0.625,1,1] collision=[0.375,0,0|0.625,1,1]
+betterend:end_portal_block[axis=x,portal=0]  shape=[0,0,0.375|1,1,0.625] collision=empty
+betterend:end_portal_block[axis=x,portal=1]  shape=[0,0,0.375|1,1,0.625] collision=empty
+betterend:end_portal_block[axis=z,portal=0]  shape=[0.375,0,0|0.625,1,1] collision=empty
+betterend:end_portal_block[axis=z,portal=1]  shape=[0.375,0,0|0.625,1,1] collision=empty
 betterend:end_stone_brick_cracked  shape=[0,0,0|1,1,1] collision=[0,0,0|1,1,1]
 betterend:end_stone_brick_cracked_slab[type=top,waterlogged=true]  shape=[0,0.5,0|1,1,1] collision=[0,0.5,0|1,1,1]
 betterend:end_stone_brick_cracked_slab[type=top,waterlogged=false]  shape=[0,0.5,0|1,1,1] collision=[0,0.5,0|1,1,1]

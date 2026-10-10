@@ -21,10 +21,15 @@ import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.levelgen.LegacyRandomSource;
 
 import net.fabricmc.fabric.api.client.rendering.v1.DimensionRenderingRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
+import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
 
 import java.util.OptionalDouble;
 import java.util.OptionalInt;
@@ -33,6 +38,18 @@ import org.joml.Quaternionf;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 
+/**
+ * Fabric calls {@link DimensionRenderingRegistry.SkyRenderer#render} from the head of
+ * {@code LevelRenderer.addSkyPass}, i.e. while the frame graph is still being <i>built</i>. Anything
+ * drawn there hits the main target before the graph's "clear" pass executes and is wiped again, so
+ * the registered renderer only suppresses the vanilla End sky and flags the frame. The actual
+ * drawing happens in {@link WorldRenderEvents#AFTER_SETUP}, which fires inside the executing main
+ * pass - after the clear and the (cancelled) sky pass, right before opaque terrain is drawn.
+ * <p>
+ * The camera rotation lives on {@code RenderSystem}'s model-view stack rather than in a
+ * {@link PoseStack}, so the meshes are transformed by {@link WorldRenderContext#positionMatrix()}
+ * (the matrix vanilla's {@code renderEndSky} gets via {@code RenderSystem.getModelViewMatrix()}).
+ */
 public class BetterEndSkyRenderer implements DimensionRenderingRegistry.SkyRenderer {
     private record SkyMesh(GpuBuffer buffer, int indexCount) {
     }
@@ -62,6 +79,13 @@ public class BetterEndSkyRenderer implements DimensionRenderingRegistry.SkyRende
     private Vector3f axis4;
 
     private boolean initialised;
+    private boolean pending;
+
+    public static void register() {
+        BetterEndSkyRenderer renderer = new BetterEndSkyRenderer();
+        DimensionRenderingRegistry.registerSkyRenderer(Level.END, renderer);
+        WorldRenderEvents.AFTER_SETUP.register(renderer::renderPending);
+    }
 
     private void initialise() {
         if (!initialised) {
@@ -81,13 +105,45 @@ public class BetterEndSkyRenderer implements DimensionRenderingRegistry.SkyRende
 
     @Override
     public void render(WorldRenderContext context) {
-        if (context.world() == null || context.matrixStack() == null) {
+        pending = true;
+    }
+
+    // BCLib on this version has no fog renderer, so BackgroundInfo.blindness is never written. Read the
+    // effect directly: fully blind hides the sky, the last second of the effect fades it back in (like
+    // vanilla's blindness fog).
+    private static float getBlindness(WorldRenderContext context) {
+        float blindness = BackgroundInfo.blindness;
+        if (context.camera().getEntity() instanceof LivingEntity living) {
+            final MobEffectInstance effect = living.getEffect(MobEffects.BLINDNESS);
+            if (effect != null) {
+                blindness = Math.max(
+                        blindness,
+                        effect.isInfiniteDuration() || effect.getDuration() > 20 ? 1F : effect.getDuration() / 20F
+                );
+            }
+        }
+        return blindness;
+    }
+
+    private void renderPending(WorldRenderContext context) {
+        if (!pending) {
+            return;
+        }
+        pending = false;
+
+        if (context.world() == null) {
+            return;
+        }
+
+        final float blindness = getBlindness(context);
+        if (blindness >= 1F) {
             return;
         }
 
         initialise();
 
-        PoseStack matrices = context.matrixStack();
+        PoseStack matrices = new PoseStack();
+        matrices.mulPose(context.positionMatrix());
 
         float time = ((context.world().getDayTime() + context
                 .tickCounter()
@@ -95,7 +151,7 @@ public class BetterEndSkyRenderer implements DimensionRenderingRegistry.SkyRende
         float time2 = time * 2;
         float time3 = time * 3;
 
-        float blindA = 1F - BackgroundInfo.blindness;
+        float blindA = 1F - blindness;
         float blind02 = blindA * 0.2f;
         float blind06 = blindA * 0.6f;
 

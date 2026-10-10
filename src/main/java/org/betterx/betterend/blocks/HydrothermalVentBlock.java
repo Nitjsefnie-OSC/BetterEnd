@@ -50,7 +50,9 @@ public class HydrothermalVentBlock extends Block implements EntityBlock, LiquidB
 
     public HydrothermalVentBlock(BlockBehaviour.Properties props) {
         super(props);
-        this.registerDefaultState(defaultBlockState().setValue(WATERLOGGED, true).setValue(ACTIVATED, false));
+        // Not waterlogged by default: a vent placed without an explicit state (commands, structures) would
+        // otherwise leave a water source behind when broken. World generation sets it from the fluid.
+        this.registerDefaultState(defaultBlockState().setValue(WATERLOGGED, false).setValue(ACTIVATED, false));
     }
 
     @Override

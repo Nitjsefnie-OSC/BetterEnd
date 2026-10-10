@@ -8,7 +8,6 @@ import org.betterx.bclib.util.BlocksHelper;
 import org.betterx.betterend.particle.InfusionParticleType;
 import org.betterx.betterend.registry.EndBlocks;
 import org.betterx.betterend.registry.EndItems;
-import org.betterx.ui.ColorUtil;
 import de.ambertation.wover.block.api.BlockProperties;
 import de.ambertation.wover.block.api.BlockProperties.TripleShape;
 
@@ -196,7 +195,7 @@ public class RespawnObeliskBlock extends Block {
                 ((ServerLevel) level).sendParticles(particle, px, py1, pz, 20, 0.14, 0.5, 0.14, 0.1);
                 ((ServerLevel) level).sendParticles(particle, px, py2, pz, 20, 0.14, 0.3, 0.14, 0.1);
             }
-            level.playSound(null, px, py, py, SoundEvents.RESPAWN_ANCHOR_SET_SPAWN, SoundSource.BLOCKS, 1F, 1F);
+            level.playSound(null, px, py, pz, SoundEvents.RESPAWN_ANCHOR_SET_SPAWN, SoundSource.BLOCKS, 1F, 1F);
             if (!player.isCreative()) {
                 itemStack.shrink(6);
             }

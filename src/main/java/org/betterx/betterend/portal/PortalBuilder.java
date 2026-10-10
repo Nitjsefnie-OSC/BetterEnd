@@ -14,6 +14,7 @@ import org.betterx.betterend.rituals.EternalRitual;
 import net.minecraft.BlockUtil;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.SectionPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.TicketType;
 import net.minecraft.util.Mth;
@@ -74,6 +75,16 @@ public class PortalBuilder {
     public final static Block FRAME = EndStoneBlocks.FLAVOLITE_RUNED_ETERNAL;
     public final static Block PORTAL = EndFunctionalBlocks.END_PORTAL_BLOCK;
     public static int SPIRAL_SEARCH_RADIUS = 128;
+    /**
+     * Columns this close (in blocks, Chebyshev) to the start of {@link #createPortal} may load or generate
+     * their chunks, like vanilla's {@code PortalForcer.createPortal} (radius 16). Beyond it, out to
+     * {@link #SPIRAL_SEARCH_RADIUS}, only columns in chunks that are already loaded are probed: forcing every
+     * chunk of the full 257x257 search area (289 chunks) to generate synchronously stalled the server
+     * thread for minutes and tripped the watchdog (#572, #376, #482, #530).
+     */
+    public static int GENERATE_SEARCH_RADIUS = 16;
+    /** How far {@link #canHostFrame} and the column scan reach sideways from a probed column. */
+    private static final int PROBE_FOOTPRINT = 4;
     private final ServerLevel targetLevel;
     private final Level sourceLevel;
 
@@ -235,10 +246,27 @@ public class PortalBuilder {
                 this.targetLevel.getMinY() + this.targetLevel.getLogicalHeight()
         ) - 1;
 
+        final int genMinChunkX = SectionPos.blockToSectionCoord(startPosition.getX() - GENERATE_SEARCH_RADIUS - PROBE_FOOTPRINT);
+        final int genMaxChunkX = SectionPos.blockToSectionCoord(startPosition.getX() + GENERATE_SEARCH_RADIUS + PROBE_FOOTPRINT);
+        final int genMinChunkZ = SectionPos.blockToSectionCoord(startPosition.getZ() - GENERATE_SEARCH_RADIUS - PROBE_FOOTPRINT);
+        final int genMaxChunkZ = SectionPos.blockToSectionCoord(startPosition.getZ() + GENERATE_SEARCH_RADIUS + PROBE_FOOTPRINT);
+
         BlockPos.MutableBlockPos currentPos = startPosition.mutable();
         for (BlockPos.MutableBlockPos testPosition : BlockPos.spiralAround(
                 startPosition, SPIRAL_SEARCH_RADIUS, Direction.EAST, Direction.SOUTH
         )) {
+            // The spiral visits square rings in order, so every later column is at least this far away
+            // horizontally. Once that alone can't beat the best full spot, nothing later can replace it.
+            final int ring = Math.max(
+                    Math.abs(testPosition.getX() - startPosition.getX()),
+                    Math.abs(testPosition.getZ() - startPosition.getZ())
+            );
+            if (d != -1.0 && (double) ring * ring >= d) break;
+            if (ring > GENERATE_SEARCH_RADIUS && !this.isColumnLoaded(
+                    testPosition.getX(), testPosition.getZ(),
+                    genMinChunkX, genMaxChunkX, genMinChunkZ, genMaxChunkZ
+            )) continue;
+
             final int levelHeight = Math.min(
                     maxHeight,
                     this.targetLevel.getHeight(
@@ -351,6 +379,22 @@ public class PortalBuilder {
                 ? currentState.getValue(EndPortalBlock.PORTAL)
                 : -1;
         return portalID;
+    }
+
+    private boolean isColumnLoaded(
+            int x, int z,
+            int genMinChunkX, int genMaxChunkX, int genMinChunkZ, int genMaxChunkZ
+    ) {
+        for (int dx = -PROBE_FOOTPRINT; dx <= PROBE_FOOTPRINT; dx += 2 * PROBE_FOOTPRINT) {
+            for (int dz = -PROBE_FOOTPRINT; dz <= PROBE_FOOTPRINT; dz += 2 * PROBE_FOOTPRINT) {
+                final int chunkX = SectionPos.blockToSectionCoord(x + dx);
+                final int chunkZ = SectionPos.blockToSectionCoord(z + dz);
+                if (chunkX >= genMinChunkX && chunkX <= genMaxChunkX && chunkZ >= genMinChunkZ && chunkZ <= genMaxChunkZ)
+                    continue;
+                if (this.targetLevel.getChunkSource().getChunkNow(chunkX, chunkZ) == null) return false;
+            }
+        }
+        return true;
     }
 
     private boolean canPortalReplaceBlock(BlockPos currentPos) {

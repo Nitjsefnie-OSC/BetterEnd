@@ -23,11 +23,9 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.level.Level;
 
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.model.loading.v1.ModelLoadingPlugin;
-import net.fabricmc.fabric.api.client.rendering.v1.DimensionRenderingRegistry;
 
 public class BetterEndClient implements ClientModInitializer {
     @Override
@@ -62,7 +60,7 @@ public class BetterEndClient implements ClientModInitializer {
         // model swap (GeneratorOptions.changeChorusPlant()) once a working replacement is found.
 
         if (Configs.CLIENT_CONFIG.customSky.get()) {
-            DimensionRenderingRegistry.registerSkyRenderer(Level.END, new BetterEndSkyRenderer());
+            BetterEndSkyRenderer.register();
         }
         //TODO: Trinkets integration disabled (dependency commented out in build.gradle)
 //        if (BetterEnd.TRINKETS_CORE.isLoaded()) {
@@ -72,7 +70,9 @@ public class BetterEndClient implements ClientModInitializer {
 
     public static void registerTooltips() {
         ItemTooltipCallback.EVENT.register((player, stack, context, lines) -> {
-            if (stack.getItem() instanceof CrystaliteArmor) {
+            // Same tag hasFullSet consults, so the "Set bonus" line follows whatever a pack has put in
+            // it - including the Crystalite elytra, which is why it now advertises its membership too.
+            if (stack.is(EndTags.CRYSTALITE_SET)) {
                 boolean hasSet = false;
                 if (player != null) {
                     hasSet = CrystaliteArmor.hasFullSet(player);

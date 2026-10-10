@@ -1,11 +1,20 @@
 {
-    "variants": {
-        "shape=light_bottom": { "model": "betterend:block/lumecorn_light_bottom" },
-        "shape=light_middle": { "model": "betterend:block/lumecorn_light_middle" },
-        "shape=light_top_middle": { "model": "betterend:block/lumecorn_light_top_middle" },
-        "shape=light_top": { "model": "betterend:block/lumecorn_light_top" },
-        "shape=middle": { "model": "betterend:block/lumecorn_middle" },
-        "shape=bottom_big": { "model": "betterend:block/lumecorn_roots_big" },
-        "shape=bottom_small": { "model": "betterend:block/lumecorn_roots_small" }
-    }
+    "multipart": [
+        { "when": { "shape": "light_bottom" }, "apply": { "model": "betterend:block/lumecorn_light_bottom" } },
+        { "when": { "shape": "light_middle" }, "apply": { "model": "betterend:block/lumecorn_light_middle" } },
+        { "when": { "shape": "light_top_middle" }, "apply": { "model": "betterend:block/lumecorn_light_top_middle" } },
+        { "when": { "shape": "light_top" }, "apply": { "model": "betterend:block/lumecorn_light_top" } },
+        { "when": { "shape": "middle" }, "apply": { "model": "betterend:block/lumecorn_middle" } },
+        { "when": { "shape": "bottom_big" }, "apply": { "model": "betterend:block/lumecorn_roots_big" } },
+        { "when": { "shape": "bottom_small" }, "apply": { "model": "betterend:block/lumecorn_roots_small" } },
+        {
+            "when": { "shape": "middle|bottom_small" },
+            "apply": [
+                { "model": "betterend:block/lumecorn_petal_0" },
+                { "model": "betterend:block/lumecorn_petal_1" },
+                { "model": "betterend:block/lumecorn_petal_2" },
+                { "model": "betterend:block/lumecorn_petal_3" }
+            ]
+        }
+    ]
 }

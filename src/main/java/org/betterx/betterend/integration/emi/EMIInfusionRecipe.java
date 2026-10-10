@@ -2,7 +2,7 @@ package org.betterx.betterend.integration.emi;
 
 //import org.betterx.betterend.BetterEnd;
 //import org.betterx.betterend.recipe.builders.InfusionRecipe;
-//import org.betterx.ui.ColorUtil;
+//import de.ambertation.wunderlib.utils.ColorUtilARGB32;
 //
 //import net.minecraft.client.Minecraft;
 //import net.minecraft.network.chat.Component;
@@ -32,14 +32,14 @@ package org.betterx.betterend.integration.emi;
 //    );
 //
 //    public final Component[] ORIENTATIONS = {
-//            Component.translatable("betterend.infusion.north").setStyle(Style.EMPTY.withColor(ColorUtil.GRAY)),
-//            Component.translatable("betterend.infusion.north_east").setStyle(Style.EMPTY.withColor(ColorUtil.GRAY)),
-//            Component.translatable("betterend.infusion.east").setStyle(Style.EMPTY.withColor(ColorUtil.GRAY)),
-//            Component.translatable("betterend.infusion.south_east").setStyle(Style.EMPTY.withColor(ColorUtil.GRAY)),
-//            Component.translatable("betterend.infusion.south").setStyle(Style.EMPTY.withColor(ColorUtil.GRAY)),
-//            Component.translatable("betterend.infusion.south_west").setStyle(Style.EMPTY.withColor(ColorUtil.GRAY)),
-//            Component.translatable("betterend.infusion.west").setStyle(Style.EMPTY.withColor(ColorUtil.GRAY)),
-//            Component.translatable("betterend.infusion.north_west").setStyle(Style.EMPTY.withColor(ColorUtil.GRAY)),
+//            Component.translatable("betterend.infusion.north").setStyle(Style.EMPTY.withColor(ColorUtilARGB32.GRAY)),
+//            Component.translatable("betterend.infusion.north_east").setStyle(Style.EMPTY.withColor(ColorUtilARGB32.GRAY)),
+//            Component.translatable("betterend.infusion.east").setStyle(Style.EMPTY.withColor(ColorUtilARGB32.GRAY)),
+//            Component.translatable("betterend.infusion.south_east").setStyle(Style.EMPTY.withColor(ColorUtilARGB32.GRAY)),
+//            Component.translatable("betterend.infusion.south").setStyle(Style.EMPTY.withColor(ColorUtilARGB32.GRAY)),
+//            Component.translatable("betterend.infusion.south_west").setStyle(Style.EMPTY.withColor(ColorUtilARGB32.GRAY)),
+//            Component.translatable("betterend.infusion.west").setStyle(Style.EMPTY.withColor(ColorUtilARGB32.GRAY)),
+//            Component.translatable("betterend.infusion.north_west").setStyle(Style.EMPTY.withColor(ColorUtilARGB32.GRAY)),
 //    };
 //    private final ResourceLocation id;
 //    private final List<EmiIngredient> input;
@@ -111,7 +111,7 @@ package org.betterx.betterend.integration.emi;
 //        widgets.add(new SlotWidget(input.get(0), cx - halfSize, cy - halfSize));
 //
 //        FormattedCharSequence str = FormattedCharSequence.forward("N", Style.EMPTY);
-//        widgets.addText(str, cx - Minecraft.getInstance().font.width(str) / 2, 4, ColorUtil.WHITE, true);
+//        widgets.addText(str, cx - Minecraft.getInstance().font.width(str) / 2, 4, ColorUtilARGB32.WHITE, true);
 //        double a = Math.PI;
 //        for (int i = 1; i < input.size(); i++) {
 //            widgets.add(new SlotWidget(

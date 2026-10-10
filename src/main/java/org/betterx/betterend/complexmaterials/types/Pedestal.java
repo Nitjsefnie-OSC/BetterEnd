@@ -1,13 +1,13 @@
 package org.betterx.betterend.complexmaterials.types;
 
+import de.ambertation.wover.block.api.render.BlockRenderTraits;
 import org.betterx.betterend.blocks.EndPedestal;
 import static org.betterx.betterend.blocks.FlowerPotBlock.POT_LIGHT;
 import org.betterx.betterend.complexmaterials.StoneMaterial;
 import org.betterx.betterend.registry.EndTags;
 import de.ambertation.wover.block.api.BlockDefinition;
 import de.ambertation.wover.block.api.BlockRegistry;
-import de.ambertation.wover.block.api.client.trait.BlockModelTrait;
-import de.ambertation.wover.block.api.client.trait.ClientBlockTraits;
+import de.ambertation.wover.block.api.model.BlockModelBinding;
 import de.ambertation.wover.block.api.trait.BlockRecipeTrait;
 import de.ambertation.wover.block.api.trait.BlockTraitLookup;
 import de.ambertation.wover.block.api.trait.BlockTraits;
@@ -28,7 +28,7 @@ public class Pedestal extends SlotFromDefinition {
 
     public static BlockDefinition<?, ?> asPedestal(BlockDefinition<?, ?> def) {
         return def.lightLevel(state -> state.getValue(POT_LIGHT) * 5)
-                  .addTrait(ClientBlockTraits.RENDER_LAYER.cutout());
+                  .addTrait(BlockRenderTraits.RENDER_LAYER.cutout());
     }
 
     @Override
@@ -71,7 +71,7 @@ public class Pedestal extends SlotFromDefinition {
     }
 
     @Override
-    protected BlockModelTrait buildModel(BlockSet<?> set, BlockTraitLookup traitLookup) {
+    protected BlockModelBinding buildModel(BlockSet<?> set, BlockTraitLookup traitLookup) {
         return EndPedestal.buildModel(set, traitLookup);
     }
 }

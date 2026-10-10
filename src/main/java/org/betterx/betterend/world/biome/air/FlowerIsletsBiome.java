@@ -39,6 +39,13 @@ public class FlowerIsletsBiome extends EndBiome.Config {
                 .music(EndSounds.MUSIC_OPENSPACE)
                 .waterAndFogColor(150, 210, 230)
                 .plantsColor(140, 200, 120)
+                // Deliberate exception to the "BetterEnd biomes weigh 1.25x vanilla" rule (EndBiomeBuilder):
+                // the outer void ring should stay mostly empty vanilla void, with BetterEnd's islands mixed
+                // in. Each of the three BetterEnd void biomes (flower_islets, waterfall_ponds, ice_starfield)
+                // uses 0.4, i.e. 0.5 after the x1.25 factor, against vanilla small_end_islands at WoVer's
+                // default 1.0. Without other mods the void ring is ~2/5 small_end_islands and ~1/5 each
+                // BetterEnd void biome. A void biome of another mod (1.0) shifts this to 2/7 vanilla, 2/7 that
+                // mod and 1/7 each BetterEnd void biome.
                 .genChance(0.4F)
                 .structure(EndStructures.END_BRIDGE)
                 // Self-supporting SDF islands: this void-ring biome grows its own flat-topped

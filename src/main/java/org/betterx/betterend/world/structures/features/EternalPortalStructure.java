@@ -2,7 +2,7 @@ package org.betterx.betterend.world.structures.features;
 
 import org.betterx.bclib.api.v2.levelgen.structures.StructurePlacementType;
 import org.betterx.bclib.api.v2.levelgen.structures.TemplateStructure;
-import org.betterx.bclib.util.StructureHelper;
+import de.ambertation.wover.structure.api.StructureNBT;
 import org.betterx.betterend.BetterEnd;
 import org.betterx.betterend.registry.EndStructures;
 import org.betterx.betterend.world.structures.piece.NBTPiece;
@@ -25,7 +25,7 @@ import java.util.Optional;
 
 public class EternalPortalStructure extends TemplateStructure {
     private static final ResourceLocation STRUCTURE_ID = BetterEnd.C.mk("portal/eternal_portal");
-    private static final StructureTemplate STRUCTURE = StructureHelper.readStructure(STRUCTURE_ID);
+    private static final StructureTemplate STRUCTURE = StructureNBT.readTemplate(STRUCTURE_ID);
 
     public EternalPortalStructure(StructureSettings s) {
         super(s, List.of(

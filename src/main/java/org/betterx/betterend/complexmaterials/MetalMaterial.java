@@ -193,6 +193,22 @@ public class MetalMaterial extends MetalBlockSet<MetalMaterial> implements Mater
             blockDefinition.addTags(harvestTierTag);
         }
 
+        // Chains join the common chain tags (block and item) so other mods - and pack makers - that treat
+        // "a chain" by tag see ours exactly like vanilla's chain, instead of only by class. This Minecraft
+        // version has no vanilla minecraft:chains tag, so only the c: tag applies here.
+        if (slot.equals(CHAIN)) {
+            blockDefinition
+                    .addTags(TagManager.BLOCKS.makeCommonTag("chains"))
+                    .addItemTags(TagManager.ITEMS.makeCommonTag("chains"));
+        }
+
+        // Same for bars: join the common bars tag (there is no vanilla minecraft:bars tag on this version).
+        if (slot.equals(BARS)) {
+            blockDefinition
+                    .addTags(TagManager.BLOCKS.makeCommonTag("bars"))
+                    .addItemTags(TagManager.ITEMS.makeCommonTag("bars"));
+        }
+
         settingsSupplier.accept(blockDefinition);
     }
 

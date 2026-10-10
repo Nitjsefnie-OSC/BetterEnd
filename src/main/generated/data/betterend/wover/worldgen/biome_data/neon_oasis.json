@@ -3,7 +3,7 @@
   "parent": "betterend:dust_wastelands",
   "biome": "betterend:neon_oasis",
   "fogDensity": 2.0,
-  "genChance": 0.5,
+  "genChance": 0.625,
   "generation_data": {
     "intended_placement": "wover:is_end/land"
   },

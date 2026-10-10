@@ -180,7 +180,6 @@ public class CrystalMountainPiece extends MountainPiece {
         Heightmap map = chunk.getOrCreateHeightmapUnprimed(Types.WORLD_SURFACE);
         int sx = chunkPos.getMinBlockX();
         int sz = chunkPos.getMinBlockZ();
-        Heightmap map2 = chunk.getOrCreateHeightmapUnprimed(Types.WORLD_SURFACE_WG);
         for (int x = 0; x < 16; x++) {
             int px = x + sx;
             int px2 = px - center.getX();
@@ -206,7 +205,7 @@ public class CrystalMountainPiece extends MountainPiece {
                         pos.setY(pos.getY() - 1);
                     }
                     minY = pos.getY();
-                    minY = Math.max(minY, map2.getFirstAvailable(x, z));
+                    minY = Math.max(minY, getWorldgenSurface(world, px, pz));
                     if (minY > center.getY() - 8) {
                         float maxY = dist * height * getHeightClamp(world, 12, px, pz);
                         if (maxY > 0) {
@@ -223,9 +222,9 @@ public class CrystalMountainPiece extends MountainPiece {
                             for (int y = minY - 1; y < maxYI; y++) {
                                 pos.setY(y);
                                 if (needCover && y == cover) {
-                                    chunk.setBlockState(pos, top, 3);
+                                    setChunkBlock(chunk, pos, top);
                                 } else {
-                                    chunk.setBlockState(pos, Blocks.END_STONE.defaultBlockState(), 3);
+                                    setChunkBlock(chunk, pos, Blocks.END_STONE.defaultBlockState());
                                 }
 //                                mossPos = pos.above();
 //                                if (needSurroundCover && chunk.getBlockState(mossPos).is(Blocks.AIR)) {
@@ -328,7 +327,7 @@ public class CrystalMountainPiece extends MountainPiece {
                     int localTop = top + Math.round((dirX * x + dirZ * z) / (float) radius * slantBlocks);
                     if (y < localTop) {
                         mut.setZ(wz);
-                        chunk.setBlockState(mut, crystalState, 3);
+                        setChunkBlock(chunk, mut, crystalState);
                     }
                 }
             }

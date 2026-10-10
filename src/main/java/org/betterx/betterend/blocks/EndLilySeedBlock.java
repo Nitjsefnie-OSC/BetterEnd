@@ -4,7 +4,7 @@ package org.betterx.betterend.blocks;
 import org.betterx.betterend.registry.block.EndWaterPlantBlocks;
 import de.ambertation.wover.block.api.BlockProperties.TripleShape;
 import org.betterx.bclib.blocks.UnderwaterPlantWithAgeBlock;
-import org.betterx.bclib.util.BlocksHelper;
+import org.betterx.betterend.util.GrowthPlacer;
 import org.betterx.betterend.registry.EndBlocks;
 import de.ambertation.wover.tag.api.predefined.CommonBlockTags;
 
@@ -23,25 +23,24 @@ public class EndLilySeedBlock extends UnderwaterPlantWithAgeBlock {
     @Override
     public void grow(WorldGenLevel world, RandomSource random, BlockPos pos) {
         if (canGrow(world, pos)) {
-            BlocksHelper.setWithoutUpdate(
-                    world,
+            GrowthPlacer placer = new GrowthPlacer(world);
+            placer.set(
                     pos,
                     EndWaterPlantBlocks.END_LILY.defaultBlockState().setValue(EndLilyBlock.SHAPE, TripleShape.BOTTOM)
             );
             BlockPos up = pos.above();
             while (world.getFluidState(up).isSource()) {
-                BlocksHelper.setWithoutUpdate(
-                        world,
+                placer.set(
                         up,
                         EndWaterPlantBlocks.END_LILY.defaultBlockState().setValue(EndLilyBlock.SHAPE, TripleShape.MIDDLE)
                 );
                 up = up.above();
             }
-            BlocksHelper.setWithoutUpdate(
-                    world,
+            placer.set(
                     up,
                     EndWaterPlantBlocks.END_LILY.defaultBlockState().setValue(EndLilyBlock.SHAPE, TripleShape.TOP)
             );
+            placer.notifyNeighbours();
         }
     }
 

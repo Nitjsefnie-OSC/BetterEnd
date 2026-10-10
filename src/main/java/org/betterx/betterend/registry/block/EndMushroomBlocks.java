@@ -1,5 +1,6 @@
 package org.betterx.betterend.registry.block;
 
+import de.ambertation.wover.block.api.render.BlockRenderTraits;
 import org.betterx.bclib.api.v3.tag.BCLBlockTags;
 import org.betterx.bclib.blocks.LeveledAnvilBlock;
 import org.betterx.bclib.items.BaseAnvilItem;
@@ -33,8 +34,6 @@ import de.ambertation.wover.block.api.DefaultBlockDefinition;
 import de.ambertation.wover.block.api.VanillaBlockDefinition;
 import de.ambertation.wover.block.api.model.ModelTraitLibrary;
 import de.ambertation.wover.core.api.ModCore;
-import de.ambertation.wover.block.api.client.trait.BlockModelTrait;
-import de.ambertation.wover.block.api.client.trait.ClientBlockTraits;
 import de.ambertation.wover.block.api.trait.BlockTraits;
 import de.ambertation.wover.item.api.BlockItemDefinition;
 import de.ambertation.wover.pottable.api.trait.PottablePlantBlockTrait;
@@ -133,7 +132,7 @@ public class EndMushroomBlocks {
     public static final Block SMALL_JELLYSHROOM = EndBlocks.defineBlock("small_jellyshroom", SmallJellyshroomBlock::new)
             .addTrait(PlantBlockTrait.compostableWithColor(MapColor.COLOR_LIGHT_BLUE, false, false))
             .addTrait(VegetationTagTrait.plant())
-            .addTrait(ClientBlockTraits.RENDER_LAYER.cutout())
+            .addTrait(BlockRenderTraits.RENDER_LAYER.cutout())
             .addTrait(BlockTraits.LOOT_TABLE.dropWithSilktouch())
             .addTrait(PottablePlantBlockTrait.any())
             .addTrait(ModelTraitLibrary.externalModel())
@@ -178,7 +177,7 @@ public class EndMushroomBlocks {
 
     public static final Block LUMECORN = EndBlocks.defineBlockOnly("lumecorn", LumecornBlock::new)
             .addTrait(BlockTraits.WOOD_BLOCK)
-            .addTrait(ClientBlockTraits.RENDER_LAYER.cutout())
+            .addTrait(BlockRenderTraits.RENDER_LAYER.cutout())
             .strength(0.5F, 0.5F)
             .addTrait(ModelTraitLibrary.externalModelFlatItem(null))
             .buildAndRegister();
@@ -229,7 +228,7 @@ public class EndMushroomBlocks {
             AmaranitaHymenophoreBlock::new
     )
             .addTrait(BlockTraits.WOOD_BLOCK)
-            .addTrait(ClientBlockTraits.RENDER_LAYER.cutout())
+            .addTrait(BlockRenderTraits.RENDER_LAYER.cutout())
             .addTrait(ModelTraitLibrary.cube())
             .sound(SoundType.WOOD)
             .addTrait(BlockTraits.LOOT_TABLE.dropSelf())

@@ -45,27 +45,32 @@ public abstract class InvertedScatterFeature<FC extends ScatterFeatureConfig> ex
         // unlucky roll - same over-read as ScatterFeature.place(); see WriteZone there for the
         // reasoning.
         final WriteZone zone = WriteZone.of(world);
-        for (int y = maxY; y > minY; y--) {
-            POS.set(center.getX(), y, center.getZ());
-            if (world.getBlockState(POS).isAir() && !world.getBlockState(POS.above()).isAir()) {
-                float r = MHelper.randRange(cfg.radius * 0.5F, cfg.radius, random);
-                int count = MHelper.floor(r * r * MHelper.randRange(0.5F, 1.5F, random));
-                for (int i = 0; i < count; i++) {
-                    float pr = r * (float) Math.sqrt(random.nextFloat());
-                    float theta = random.nextFloat() * MHelper.PI2;
-                    float x = pr * (float) Math.cos(theta);
-                    float z = pr * (float) Math.sin(theta);
+        // VineFeature/SingleInvertedScatterFeature hand the plant picked in canGenerate() to generate() via an
+        // instance field, and this feature instance is shared by all worldgen threads - same race and same
+        // lock as ScatterFeature.place().
+        synchronized (this) {
+            for (int y = maxY; y > minY; y--) {
+                POS.set(center.getX(), y, center.getZ());
+                if (world.getBlockState(POS).isAir() && !world.getBlockState(POS.above()).isAir()) {
+                    float r = MHelper.randRange(cfg.radius * 0.5F, cfg.radius, random);
+                    int count = MHelper.floor(r * r * MHelper.randRange(0.5F, 1.5F, random));
+                    for (int i = 0; i < count; i++) {
+                        float pr = r * (float) Math.sqrt(random.nextFloat());
+                        float theta = random.nextFloat() * MHelper.PI2;
+                        float x = pr * (float) Math.cos(theta);
+                        float z = pr * (float) Math.sin(theta);
 
-                    POS.set(center.getX() + x, center.getY() - 7, center.getZ() + z);
-                    if (!zone.contains(POS)) {
-                        continue;
-                    }
-                    int up = BlocksHelper.upRay(world, POS, 16);
-                    if (up > 14) continue;
-                    POS.setY(POS.getY() + up);
+                        POS.set(center.getX() + x, center.getY() - 7, center.getZ() + z);
+                        if (!zone.contains(POS)) {
+                            continue;
+                        }
+                        int up = BlocksHelper.upRay(world, POS, 16);
+                        if (up > 14) continue;
+                        POS.setY(POS.getY() + up);
 
-                    if (canGenerate(cfg, world, random, center, POS, r)) {
-                        generate(cfg, world, random, POS);
+                        if (canGenerate(cfg, world, random, center, POS, r)) {
+                            generate(cfg, world, random, POS);
+                        }
                     }
                 }
             }

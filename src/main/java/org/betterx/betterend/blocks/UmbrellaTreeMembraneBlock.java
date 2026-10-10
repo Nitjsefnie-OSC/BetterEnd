@@ -1,5 +1,6 @@
 package org.betterx.betterend.blocks;
 
+import de.ambertation.wover.block.api.render.BlockRenderTraits;
 import org.betterx.bclib.util.MHelper;
 import org.betterx.betterend.BetterEnd;
 import org.betterx.betterend.noise.OpenSimplexNoise;
@@ -61,7 +62,7 @@ public class UmbrellaTreeMembraneBlock extends SlimeBlock {
      * exactly the same reason: it is the opaque variant.
      * <p>
      * The render layer is unrelated and unchanged: on this version it comes from the block's explicit
-     * {@code ClientBlockTraits.RENDER_LAYER.translucent()} binding, which puts every state on TRANSLUCENT. An
+     * {@code BlockRenderTraits.RENDER_LAYER.translucent()} binding, which puts every state on TRANSLUCENT. An
      * alpha-255 sprite drawn on that layer is still fully opaque, so {@code _0} reads solid either way. (The
      * per-sprite layer derivation - {@code FaceBakery#computeMaterialTransparency} ->
      * {@code ChunkSectionLayer#byTransparency} - only arrives in 26.1.)

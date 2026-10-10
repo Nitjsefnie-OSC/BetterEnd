@@ -12,6 +12,7 @@ import org.betterx.bclib.util.BlocksHelper;
 import org.betterx.betterend.blocks.BlueVineBlock;
 import org.betterx.betterend.blocks.basis.FurBlock;
 import org.betterx.betterend.registry.EndBlocks;
+import de.ambertation.wover.feature.api.WriteZone;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.BlockPos.MutableBlockPos;
@@ -37,6 +38,39 @@ public class BlockFixer {
 
     public static void fixBlocks(LevelAccessor level, BlockPos start, BlockPos end) {
         fixBlocks(level, start, end, null);
+    }
+
+    /**
+     * {@link #fixBlocks(LevelAccessor, BlockPos, BlockPos)} for a feature that may only touch the given
+     * write zone.
+     * <p>
+     * Clamping the box to the zone is not enough: the scan peeks one block sideways from every column
+     * (fluids check their horizontal neighbours, wall/attached/falling blocks via {@code canSurvive}), and
+     * the chorus flood-fill spreads horizontally without limit. A box ending on the zone edge therefore
+     * still reads one column (or, for chorus, many columns) outside it - the "Detected unsafe terrain read
+     * during worldgen ... (distance: 2)" errors. The scanned box and the chorus fill are both kept one
+     * block inside the zone instead. Outside worldgen ({@link WriteZone#UNBOUNDED}) this is exactly
+     * {@link #fixBlocks(LevelAccessor, BlockPos, BlockPos)}.
+     */
+    public static void fixBlocksInZone(LevelAccessor level, BlockPos start, BlockPos end, WriteZone zone) {
+        if (zone.isUnbounded()) {
+            fixBlocks(level, start, end);
+            return;
+        }
+        final int minX = Math.max(start.getX(), zone.minX() + 1);
+        final int minZ = Math.max(start.getZ(), zone.minZ() + 1);
+        final int maxX = Math.min(end.getX(), zone.maxX() - 1);
+        final int maxZ = Math.min(end.getZ(), zone.maxZ() - 1);
+        if (minX > maxX || minZ > maxZ) return;
+        fixBlocks(
+                level,
+                new BlockPos(minX, start.getY(), minZ),
+                new BlockPos(maxX, end.getY(), maxZ),
+                new BoundingBox(
+                        zone.minX() + 1, Integer.MIN_VALUE / 2, zone.minZ() + 1,
+                        zone.maxX() - 1, Integer.MAX_VALUE / 2, zone.maxZ() - 1
+                )
+        );
     }
 
     /**

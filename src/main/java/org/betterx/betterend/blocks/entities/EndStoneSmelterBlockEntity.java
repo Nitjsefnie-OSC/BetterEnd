@@ -12,6 +12,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
@@ -47,7 +48,9 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import it.unimi.dsi.fastutil.objects.Reference2IntOpenHashMap;
 
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import org.jetbrains.annotations.NotNull;
@@ -57,10 +60,6 @@ import org.jetbrains.annotations.NotNull;
 // we use a MultiRecipeInfo to hold both types of recipes and their inputs. And let
 //proxy function decide witch recipe to use based on the input type.
 record BlastingRecipeInfo(SingleRecipeInput input, RecipeHolder<? extends AbstractCookingRecipe> holder) {
-    public int growsResultBy() {
-        return 1;
-    }
-
     public int burnTimeMultiplicator() {
         return 2;
     }
@@ -71,10 +70,6 @@ record BlastingRecipeInfo(SingleRecipeInput input, RecipeHolder<? extends Abstra
 }
 
 record AlloyingRecipeInfo(AlloyingRecipeInput input, RecipeHolder<? extends AlloyingRecipe> holder) {
-    public int growsResultBy() {
-        return 3;
-    }
-
     public int burnTimeMultiplicator() {
         return 1;
     }
@@ -116,10 +111,6 @@ class MultiRecipeInfo {
 
     public boolean isBlasting() {
         return blasting != null;
-    }
-
-    public int growsResultBy() {
-        return isBlasting() ? blasting.growsResultBy() : alloying.growsResultBy();
     }
 
     public int burnTimeMultiplicator() {
@@ -516,7 +507,7 @@ public class EndStoneSmelterBlockEntity extends BaseContainerBlockEntity impleme
         if (recipeInfo != null) {
             ItemStack resultItem
                     = recipeInfo.holder().value().assemble(recipeInfo.input(), access);
-            createResultItem(inventory, resultItem, recipeInfo.growsResultBy());
+            createResultItem(inventory, resultItem);
 
             inputState.inputA().shrink(1);
             inputState.inputB().shrink(1);
@@ -535,7 +526,7 @@ public class EndStoneSmelterBlockEntity extends BaseContainerBlockEntity impleme
     ) {
         if (recipeInfo != null) {
             ItemStack resultItem = recipeInfo.holder().value().assemble(recipeInfo.input(), access);
-            createResultItem(inventory, resultItem, recipeInfo.growsResultBy());
+            createResultItem(inventory, resultItem);
 
             if (inputState.singleInput().is(Blocks.WET_SPONGE.asItem())
                     && !inventory.get(EndStoneSmelterMenu.FUEL_SLOT).isEmpty()
@@ -550,12 +541,18 @@ public class EndStoneSmelterBlockEntity extends BaseContainerBlockEntity impleme
         }
     }
 
-    private static void createResultItem(NonNullList<ItemStack> inventory, ItemStack resultItem, int growBy) {
+    /**
+     * Every craft is worth the recipe's own result count - the count an empty result slot is seeded
+     * with below, and the count recipe viewers show. The "same item in both input slots" bonus
+     * (ceil(2.5 x count)) is baked into those recipes by their {@code outputCount}, so it must not be
+     * applied a second time here.
+     */
+    private static void createResultItem(NonNullList<ItemStack> inventory, ItemStack resultItem) {
         ItemStack storedResults = inventory.get(EndStoneSmelterMenu.RESULT_SLOT);
         if (storedResults.isEmpty()) {
             inventory.set(EndStoneSmelterMenu.RESULT_SLOT, resultItem.copy());
         } else if (ItemStack.isSameItemSameComponents(storedResults, resultItem)) {
-            storedResults.grow(growBy);
+            storedResults.grow(resultItem.getCount());
         }
     }
 
@@ -579,7 +576,7 @@ public class EndStoneSmelterBlockEntity extends BaseContainerBlockEntity impleme
     ) {
         if (recipeInfo.holder() != null && inputState.hasBothInputs()) {
             ItemStack resultItem = recipeInfo.holder().value().assemble(recipeInfo.input(), lookup);
-            return canStore(inventory, maxStackSize, resultItem, 3);
+            return canStore(inventory, maxStackSize, resultItem);
         } else {
             return false;
         }
@@ -594,7 +591,7 @@ public class EndStoneSmelterBlockEntity extends BaseContainerBlockEntity impleme
     ) {
         if (recipeInfo.holder() != null && inputState.hasOneInput()) {
             ItemStack resultItem = recipeInfo.holder().value().assemble(recipeInfo.input(), lookup);
-            return canStore(inventory, maxStackSize, resultItem, 1);
+            return canStore(inventory, maxStackSize, resultItem);
         } else {
             return false;
         }
@@ -603,8 +600,7 @@ public class EndStoneSmelterBlockEntity extends BaseContainerBlockEntity impleme
     private static boolean canStore(
             NonNullList<ItemStack> inventory,
             int maxStackSize,
-            ItemStack resultItem,
-            int growBy
+            ItemStack resultItem
     ) {
         if (resultItem.isEmpty()) {
             return false;
@@ -615,7 +611,7 @@ public class EndStoneSmelterBlockEntity extends BaseContainerBlockEntity impleme
             } else if (!ItemStack.isSameItemSameComponents(storedResults, resultItem)) {
                 return false;
             } else {
-                int newCount = storedResults.getCount() + growBy;
+                int newCount = storedResults.getCount() + resultItem.getCount();
                 return newCount < maxStackSize
                         && newCount < storedResults.getMaxStackSize()
                         || newCount < resultItem.getMaxStackSize();
@@ -718,6 +714,31 @@ public class EndStoneSmelterBlockEntity extends BaseContainerBlockEntity impleme
                 fuelStack.getItem(),
                 fuelValues.burnDuration(fuelStack)
         ) * recipeInfo.burnTimeMultiplicator();
+    }
+
+    /**
+     * Every item the smelter accepts as fuel, with the number of ticks one item burns for in an alloying
+     * recipe (blasting burns twice as long but also cooks twice as fast), sorted by burn time. This is the
+     * list recipe viewers show: every fuel of {@code fuelValues} that burns for more than 2000 ticks (blaze
+     * rods, dried kelp blocks, coal and charcoal blocks, lava buckets, ...), the same rule
+     * {@link #canUseAsFuel} applies, plus everything added through {@link #registerFuel}. Pass the level's
+     * {@link Level#fuelValues()}, which exists on both sides.
+     */
+    public static Map<Item, Integer> smelterFuels(FuelValues fuelValues) {
+        final Map<Item, Integer> fuels = new HashMap<>();
+        for (Item item : fuelValues.fuelItems()) {
+            final int ticks = fuelValues.burnDuration(new ItemStack(item));
+            if (ticks > 2000) fuels.put(item, ticks);
+        }
+        fuels.putAll(AVAILABLE_FUELS);
+
+        final Map<Item, Integer> sorted = new LinkedHashMap<>();
+        fuels.entrySet()
+             .stream()
+             .sorted(Map.Entry.<Item, Integer>comparingByValue()
+                              .thenComparing(e -> BuiltInRegistries.ITEM.getKey(e.getKey()).toString()))
+             .forEach(e -> sorted.put(e.getKey(), e.getValue()));
+        return sorted;
     }
 
     public static void registerFuel(ItemLike fuel, int time) {

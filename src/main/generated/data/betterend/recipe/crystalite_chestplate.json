@@ -21,8 +21,15 @@
         },
         {
           "type": "minecraft:armor_toughness",
-          "amount": 1.2000000476837158,
+          "amount": 3.200000047683716,
           "id": "betterend:toughness_boost_chestplate",
+          "operation": "add_value",
+          "slot": "chest"
+        },
+        {
+          "type": "minecraft:knockback_resistance",
+          "amount": 0.10000000149011612,
+          "id": "betterend:knockback_boost_chestplate",
           "operation": "add_value",
           "slot": "chest"
         }

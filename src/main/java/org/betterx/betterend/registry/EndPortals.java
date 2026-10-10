@@ -1,9 +1,9 @@
 package org.betterx.betterend.registry;
 
+import de.ambertation.wunderlib.utils.ColorUtilARGB32;
 import org.betterx.bclib.util.JsonFactory;
 import org.betterx.bclib.util.MHelper;
 import org.betterx.betterend.BetterEnd;
-import org.betterx.ui.ColorUtil;
 
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
@@ -83,6 +83,12 @@ public class EndPortals {
     }
 
     public static int getColor(int state) {
+        // The block state range is at least 0..1 even with a single configured portal, and it can also
+        // outlive a shrunk portals.json - a debug stick or an old world can therefore hand us an id
+        // without a configured portal. Fall back to the first portal instead of crashing the renderer.
+        if (state < 0 || state >= portals.length) {
+            return portals[0].color;
+        }
         return portals[state].color;
     }
 
@@ -134,7 +140,7 @@ public class EndPortals {
         PortalInfo(ResourceLocation dimension, ResourceLocation item, int r, int g, int b) {
             this.dimension = dimension;
             this.item = item;
-            this.color = ColorUtil.color(r, g, b);
+            this.color = ColorUtilARGB32.color(r, g, b);
         }
 
         ServerLevel getWorld(MinecraftServer server) {

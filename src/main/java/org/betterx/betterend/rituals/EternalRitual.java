@@ -495,8 +495,12 @@ public class EternalRitual {
     }
 
     public CompoundTag toTag(CompoundTag tag) {
-        tag.store("center", BlockPos.CODEC, center);
-        tag.putString("axis", axis.getName());
+        if (center != null) {
+            tag.store("center", BlockPos.CODEC, center);
+        }
+        if (axis != null) {
+            tag.putString("axis", axis.getName());
+        }
         tag.putBoolean("active", active);
         if (targetWorldId != null) {
             tag.putString("key_item", targetWorldId.toString());
@@ -509,7 +513,7 @@ public class EternalRitual {
 
     public void fromTag(CompoundTag tag) {
         axis = Direction.Axis.byName(tag.getStringOr("axis", ""));
-        center = tag.read("center", BlockPos.CODEC).orElse(BlockPos.ZERO);
+        center = tag.read("center", BlockPos.CODEC).orElse(null);
         active = tag.getBooleanOr("active", false);
         if (tag.contains("exit")) {
             exit = tag.read("exit", BlockPos.CODEC).orElse(BlockPos.ZERO);

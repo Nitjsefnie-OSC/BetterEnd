@@ -1,10 +1,12 @@
 package org.betterx.betterend.blocks;
 
 import org.betterx.betterend.blocks.entities.FlowerPotBlockEntity;
+import org.betterx.betterend.client.models.EndModelKeys;
 import org.betterx.betterend.client.models.EndModels;
-import de.ambertation.wover.block.api.client.trait.BlockModelTrait;
-import de.ambertation.wover.block.api.client.trait.ClientBlockTraits;
-import de.ambertation.wover.core.api.ModCore;
+import de.ambertation.wover.block.api.client.model.ClientBlockModelRegistry;
+import de.ambertation.wover.block.api.client.trait.BlockModelTrait.ModelFactory;
+import de.ambertation.wover.block.api.model.BlockModelBinding;
+import de.ambertation.wover.block.api.model.ModelKey;
 import de.ambertation.wover.pottable.api.PottablePlant;
 import de.ambertation.wover.pottable.api.PottablePlantRegistry;
 import de.ambertation.wover.pottable.api.PottableSoil;
@@ -232,36 +234,54 @@ public class FlowerPotBlock extends Block implements EntityBlock {
      * verifying that orphaned method would crash server startup. Keeping the lambda in a separate,
      * never-unconditionally-loaded class file avoids that.
      */
-    public static BlockModelTrait buildModel() {
-        return ModCore.isDatagen() ? ClientModel.build() : null;
+    public static BlockModelBinding buildModel() {
+        return BlockModelBinding.of(MODEL, null);
+    }
+
+    private static final ModelKey<Void> MODEL = EndModelKeys.key("flower_pot_block");
+
+    /**
+     * Registers the client generators behind this class's model keys. Called from the mod's
+     * {@code wover.client.traits} entrypoint.
+     */
+    @Environment(EnvType.CLIENT)
+    public static void registerClientModels() {
+        ClientModel.register();
     }
 
     @Environment(EnvType.CLIENT)
     private static class ClientModel {
-        private static BlockModelTrait build() {
-            return ClientBlockTraits.MODEL.with(
-                    (key, block, generator) -> {
-                        final ResourceLocation texture = TextureMapping.getBlockTexture(block);
-                        final ResourceLocation location = EndModels.FLOWER_POT.create(
-                                block,
-                                new TextureMapping().put(TextureSlot.TEXTURE, texture),
-                                generator.modelOutput()
-                        );
-                        final var variant = BlockModelGenerators.plainVariant(location);
-                        generator.acceptBlockState(
-                                MultiVariantGenerator
-                                        .dispatch(block)
-                                        .with(PropertyDispatch.initial(POT_LIGHT)
-                                                              .select(0, variant)
-                                                              .select(1, variant)
-                                                              .select(2, variant)
-                                                              .select(3, variant))
-                        );
-                        // Render the pot item as the 3D block model (same approach as
-                        // umbrella_tree_membrane), not a flat sprite. Delegates the item model to the
-                        // block model generated just above.
-                        generator.delegateItemModel(block, location);
-                    });
+        private static void register() {
+            ClientBlockModelRegistry.register(
+                    MODEL,
+                    (key, block, generator, payload) -> build().provideBlockModels(key, block, generator)
+            );
+        }
+
+
+        private static ModelFactory build() {
+            return (key, block, generator) -> {
+                final ResourceLocation texture = TextureMapping.getBlockTexture(block);
+                final ResourceLocation location = EndModels.FLOWER_POT.create(
+                        block,
+                        new TextureMapping().put(TextureSlot.TEXTURE, texture),
+                        generator.modelOutput()
+                );
+                final var variant = BlockModelGenerators.plainVariant(location);
+                generator.acceptBlockState(
+                        MultiVariantGenerator
+                                .dispatch(block)
+                                .with(PropertyDispatch.initial(POT_LIGHT)
+                                                      .select(0, variant)
+                                                      .select(1, variant)
+                                                      .select(2, variant)
+                                                      .select(3, variant))
+                );
+                // Render the pot item as the 3D block model (same approach as
+                // umbrella_tree_membrane), not a flat sprite. Delegates the item model to the
+                // block model generated just above.
+                generator.delegateItemModel(block, location);
+            };
         }
     }
 
