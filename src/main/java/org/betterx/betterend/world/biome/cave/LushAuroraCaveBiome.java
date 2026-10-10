@@ -1,6 +1,7 @@
 package org.betterx.betterend.world.biome.cave;
 
 
+import org.betterx.betterend.blocks.CaveMossBlock;
 import org.betterx.betterend.registry.block.EndTerrainBlocks;
 import org.betterx.bclib.interfaces.SurfaceMaterialProvider;
 import org.betterx.betterend.registry.EndParticles;
@@ -9,6 +10,7 @@ import org.betterx.betterend.world.biome.EndBiome;
 import org.betterx.betterend.world.biome.EndBiomeBuilder;
 import org.betterx.betterend.world.biome.EndBiomeKey;
 import de.ambertation.wover.biome.api.BiomeKey;
+import de.ambertation.wover.block.api.BlockProperties.TripleShape;
 import de.ambertation.wover.biome.api.data.BiomeGenerationDataContainer;
 
 import com.mojang.serialization.MapCodec;
@@ -53,7 +55,7 @@ public class LushAuroraCaveBiome extends EndCaveBiome.Config<LushAuroraCaveBiome
 
         @Override
         public BlockState getCeil(BlockPos pos) {
-            return EndTerrainBlocks.CAVE_MOSS.defaultBlockState();
+            return EndTerrainBlocks.CAVE_MOSS.defaultBlockState().setValue(CaveMossBlock.SHAPE, TripleShape.TOP);
         }
     }
 

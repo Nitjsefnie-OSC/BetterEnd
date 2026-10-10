@@ -326,7 +326,6 @@
   "biome.betterend.amber_land": "Terras de Âmbar",
   "biome.betterend.blossoming_spires": "Pináculos em Flor",
   "block.betterend.amber_grass": "Grama de Âmbar",
-  "block.betterend.amber_grass_path": "Caminho de grama de Âmbar",
   "block.betterend.tenanea_bark": "Madeira de Tenanea",
   "block.betterend.tenanea_barrel": "Barril  de Tenanea",
   "block.betterend.tenanea_bookshelf": "Estante de livros de Tenanea",
@@ -488,7 +487,6 @@
   "block.betterend.lanceleaf": "Lanceleaf",
   "block.betterend.lanceleaf_seed": "Semente de Lanceleaf",
   "block.betterend.hydralux": "Hydralux",
-  "block.betterend.helix_tree_luminophor": "Árvore de Helix Luminophor",
 
   "block.betterend.glowing_pillar_leaves": "Folhas de pilar luminoso",
   "block.betterend.glowing_pillar_luminophor": "Pilar luminoso de Luminophor",
@@ -518,8 +516,6 @@
   "block.betterend.pythadendron_composter": "Composteira de Pythadendron",
   "block.betterend.tenanea_composter": "Composteira de Tenanea",
 
-  "biome.betterend.old_bulbis_gardens": "Jardins Antigos Bulbis",
-  "block.betterend.ivis_moss": "Musgo Ivis",
   "block.betterend.ivis_vine": "Trepadeiras Ivis",
   "block.betterend.silk_moth_nest": "Ninho de Mariposa de Seda",
 
@@ -580,14 +576,11 @@
   "block.betterend.jellyshroom_trapdoor": "Alçapão de Cogumelo Gelatinoso",
 
 
-  "biome.betterend.eterial_grove": "Arvoredos Eterial",
   "block.betterend.umbrella_tree_sapling": "Muda de Árvore Guarda-chuva",
   "item.betterend.umbrella_cluster_juice": "Suco do Cacho de árvore guarda-chuva",
   "block.betterend.blossom_berry_seed": "Semente de Flor de Baga",
   "item.betterend.blossom_berry": "Flor de Baga",
 
-  "biome.betterend.nightshade_redwoods": "Madeiras Vermelhas da Sombra Noturna",
-  "block.betterend.nightshade_moss": "Musgo da Sombra Noturna",
 
   "biome.betterend.glowing_grasslands": "Prados Brilhantes",
   "block.betterend.blooming_cooksonia": "Flor Cooksonia",
@@ -698,7 +691,6 @@
   "block.betterend.lamellarium": "Lamellario",
   "block.betterend.large_amaranita_mushroom": "Cogumelo grande de Amaranita",
   "block.betterend.lutebus": "Lutebus",
-  "block.betterend.mossy_bone": "Osso Musgoso",
   "block.betterend.mossy_obsidian": "Obsidiana Musgosa",
   "block.betterend.orango": "Laranjo",
   "block.betterend.rutiscus": "Rutiscus",
@@ -727,7 +719,6 @@
   "block.betterend.chorus_mushroom_seed": "Semente de Cogumelo do coro",
   "block.betterend.end_stone_stalactite": "Estalactite de Pedra do End",
   "block.betterend.end_stone_stalactite_cavemoss": "Estalactite de Pedra do End de Musgo Cavernoso",
-  "block.betterend.pearlberry_seed": "Semente de Pérola",
   "block.betterend.rubinea": "Rubinea",
   "block.betterend.sandy_jadestone": "Pedra de Jade Arenosa",
   "block.betterend.sandy_jadestone_brick": "Tijolos de Pedra de Jade Arenosa",

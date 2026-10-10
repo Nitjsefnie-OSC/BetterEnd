@@ -1,10 +1,12 @@
 package org.betterx.betterend.testmod.gametest;
 
+import org.betterx.betterend.BetterEnd;
 import org.betterx.betterend.registry.EndTags;
 import org.betterx.betterend.registry.item.EndEquipmentItems;
 
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -147,6 +149,70 @@ public class CrystaliteArmorGameTest {
             return;
         }
         helper.succeed();
+    }
+
+    /**
+     * Crystalite is an endgame set and has to out-protect vanilla's best: a full set must compute to
+     * strictly more armor and strictly more toughness than a full netherite set, and at least the same
+     * knockback resistance. It used to tie netherite on armor (20) and sit far below it on toughness
+     * (4.8 against 12). The upper bound keeps the tier order: Aeternium stays the strongest BetterEnd
+     * set, so Crystalite must not overtake it on any of the three values.
+     */
+    @GameTest
+    public void fullCrystaliteSetBeatsNetherite(GameTestHelper helper) {
+        final List<Piece> aeternium = List.of(
+                new Piece("aeternium_helmet", item("aeternium_helmet"), EquipmentSlot.HEAD),
+                new Piece("aeternium_chestplate", item("aeternium_chestplate"), EquipmentSlot.CHEST),
+                new Piece("aeternium_leggings", item("aeternium_leggings"), EquipmentSlot.LEGS),
+                new Piece("aeternium_boots", item("aeternium_boots"), EquipmentSlot.FEET)
+        );
+        final List<String> failures = new ArrayList<>();
+
+        for (Holder<Attribute> attribute : List.of(
+                Attributes.ARMOR,
+                Attributes.ARMOR_TOUGHNESS,
+                Attributes.KNOCKBACK_RESISTANCE
+        )) {
+            final String name = attribute.getRegisteredName();
+            final double crystaliteSet = setValue(crystalite(), attribute);
+            final double netheriteSet = setValue(netherite(), attribute);
+            final double aeterniumSet = setValue(aeternium, attribute);
+
+            if (netheriteSet <= 0.0) {
+                failures.add("control: a full netherite set measured no " + name + " - the test is broken");
+            }
+            final boolean strict = !attribute.is(Attributes.KNOCKBACK_RESISTANCE);
+            if (strict ? crystaliteSet <= netheriteSet : crystaliteSet < netheriteSet) {
+                failures.add("full Crystalite set gives " + crystaliteSet + " " + name
+                        + ", full netherite set " + netheriteSet
+                        + (strict ? " - Crystalite must be strictly better" : " - Crystalite must not be worse"));
+            }
+            if (crystaliteSet > aeterniumSet) {
+                failures.add("full Crystalite set gives " + crystaliteSet + " " + name
+                        + ", above the full Aeternium set's " + aeterniumSet + " - Aeternium is the top tier");
+            }
+        }
+
+        if (!failures.isEmpty()) {
+            helper.fail(Component.literal(
+                    "Crystalite armor tier regression:\n - " + String.join("\n - ", failures)
+            ));
+            return;
+        }
+        helper.succeed();
+    }
+
+    private static Item item(String path) {
+        return BuiltInRegistries.ITEM.getValue(BetterEnd.C.mk(path));
+    }
+
+    /** What a full set contributes to {@code attribute}, every piece worn in its own slot. */
+    private static double setValue(List<Piece> pieces, Holder<Attribute> attribute) {
+        double total = 0.0;
+        for (Piece piece : pieces) {
+            total += modifierValue(piece.item(), attribute, piece.slot());
+        }
+        return total;
     }
 
     /**

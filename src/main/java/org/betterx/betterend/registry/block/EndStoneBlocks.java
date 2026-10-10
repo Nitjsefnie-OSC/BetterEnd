@@ -1,5 +1,6 @@
 package org.betterx.betterend.registry.block;
 
+import de.ambertation.wover.block.api.render.BlockRenderTraits;
 import org.betterx.bclib.api.v3.tag.BCLBlockTags;
 import org.betterx.bclib.blocks.LeveledAnvilBlock;
 import org.betterx.bclib.items.BaseAnvilItem;
@@ -33,8 +34,6 @@ import de.ambertation.wover.block.api.DefaultBlockDefinition;
 import de.ambertation.wover.block.api.VanillaBlockDefinition;
 import de.ambertation.wover.block.api.model.ModelTraitLibrary;
 import de.ambertation.wover.core.api.ModCore;
-import de.ambertation.wover.block.api.client.trait.BlockModelTrait;
-import de.ambertation.wover.block.api.client.trait.ClientBlockTraits;
 import de.ambertation.wover.block.api.trait.BlockTraits;
 import de.ambertation.wover.item.api.BlockItemDefinition;
 import de.ambertation.wover.pottable.api.trait.PottablePlantBlockTrait;
@@ -140,7 +139,10 @@ public class EndStoneBlocks {
     public static final Block BRIMSTONE = EndBlocks.defineBlock("brimstone", BrimstoneBlock::new)
             .replacePropertiesWithCopy(Blocks.END_STONE)
             .addTrait(BlockTraits.STONE_BLOCK)
+            // After STONE_BLOCK on purpose: its strength(2, 6) default would otherwise replace end stone's.
+            .strength(Blocks.END_STONE.defaultDestroyTime(), Blocks.END_STONE.getExplosionResistance())
             .addTrait(ModelTraitLibrary.externalModel())
+            .addTrait(BlockTraits.LOOT_TABLE.dropSelf())
             .mapColor(MapColor.COLOR_BROWN)
             .randomTicks()
             .buildAndRegister();
@@ -148,7 +150,7 @@ public class EndStoneBlocks {
     public static final Block SULPHUR_CRYSTAL = EndBlocks.defineBlock("sulphur_crystal", SulphurCrystalBlock::new)
             .addTrait(BlockTraits.MINEABLE_WITH.needsPickAxe())
             .addTrait(SurvivesOnBlockTrait.withTag(EndTags.SURVIVES_ON_BRIMSTONE))
-            .addTrait(ClientBlockTraits.RENDER_LAYER.cutout())
+            .addTrait(BlockRenderTraits.RENDER_LAYER.cutout())
             .addTrait(BlockTraits.LOOT_TABLE.with(
                     (tableKey, blockKey, block, provider) -> SulphurCrystalBlock.buildLoot(block, provider)
             ))
@@ -218,7 +220,10 @@ public class EndStoneBlocks {
     public static final Block MISSING_TILE = EndBlocks.defineBlock("missing_tile", Block::new)
             .replacePropertiesWithCopy(Blocks.END_STONE)
             .addTrait(BlockTraits.STONE_BLOCK)
+            // After STONE_BLOCK on purpose: its strength(2, 6) default would otherwise replace end stone's.
+            .strength(Blocks.END_STONE.defaultDestroyTime(), Blocks.END_STONE.getExplosionResistance())
             .addTrait(ModelTraitLibrary.cube())
+            .addTrait(BlockTraits.LOOT_TABLE.dropSelf())
             .buildAndRegister();
 
     // Vanilla Stone Sets

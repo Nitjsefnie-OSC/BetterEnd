@@ -2,6 +2,7 @@
   "type": "betterend:biome",
   "biome": "betterend:sulphur_springs",
   "fogDensity": 1.5,
+  "genChance": 1.25,
   "generation_data": {
     "intended_placement": "wover:is_end/land"
   },

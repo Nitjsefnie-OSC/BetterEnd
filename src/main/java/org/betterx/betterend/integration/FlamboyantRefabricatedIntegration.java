@@ -1,16 +1,19 @@
 package org.betterx.betterend.integration;
 
+import de.ambertation.wunderlib.utils.ColorUtilARGB32;
 
 import org.betterx.betterend.registry.block.EndDecorBlocks;
 import org.betterx.bclib.integration.ModIntegration;
 import org.betterx.bclib.trait.block.PlantLikeBlockTrait;
 import org.betterx.betterend.BetterEnd;
 import org.betterx.betterend.blocks.HydraluxPetalColoredBlock;
+import org.betterx.betterend.client.models.EndModelKeys;
 import org.betterx.betterend.complexmaterials.ColoredMaterial;
 import org.betterx.betterend.registry.EndBlocks;
-import org.betterx.ui.ColorUtil;
-import de.ambertation.wover.block.api.client.trait.BlockModelTrait;
-import de.ambertation.wover.block.api.client.trait.ClientBlockTraits;
+import de.ambertation.wover.block.api.client.model.ClientBlockModelRegistry;
+import de.ambertation.wover.block.api.client.trait.BlockModelTrait.ModelFactory;
+import de.ambertation.wover.block.api.model.BlockModelBinding;
+import de.ambertation.wover.block.api.model.ModelKey;
 import de.ambertation.wover.core.api.ModCore;
 
 import net.minecraft.world.level.ItemLike;
@@ -60,17 +63,28 @@ public class FlamboyantRefabricatedIntegration extends ModIntegration {
                 true,
                 // Same nature-tab marker as the built-in tinted petals in EndDecorBlocks, so these land
                 // beside their untinted source block instead of the catch-all blocks tab.
-                (def) -> def.addTrait(ModCore.isDatagen() ? ClientModel.build() : null)
+                (def) -> def.addTrait(BlockModelBinding.of(MODEL, null))
                             .addTrait(PlantLikeBlockTrait.withDefault())
         );
     }
 
     private void addColor(String hex, String name, Map<Integer, String> colors, Map<Integer, ItemLike> dyes) {
-        int color = ColorUtil.color(hex);
+        int color = ColorUtilARGB32.color(hex);
         colors.put(color, name);
         dyes.put(color, getItem(name + "_dye"));
 
         System.out.println(name + " " + color + " " + new Color(color));
+    }
+
+    private static final ModelKey<Void> MODEL = EndModelKeys.key("flamboyant_refabricated_integration");
+
+    /**
+     * Registers the client generators behind this class's model keys. Called from the mod's
+     * {@code wover.client.traits} entrypoint.
+     */
+    @Environment(EnvType.CLIENT)
+    public static void registerClientModels() {
+        ClientModel.register();
     }
 
     /**
@@ -82,10 +96,16 @@ public class FlamboyantRefabricatedIntegration extends ModIntegration {
      */
     @Environment(EnvType.CLIENT)
     private static class ClientModel {
-        private static BlockModelTrait build() {
-            return ClientBlockTraits.MODEL.with(
-                    (key, block, generator) -> HydraluxPetalColoredBlock.provideBlockModel(generator, block)
+        private static void register() {
+            ClientBlockModelRegistry.register(
+                    MODEL,
+                    (key, block, generator, payload) -> build().provideBlockModels(key, block, generator)
             );
+        }
+
+
+        private static ModelFactory build() {
+            return (key, block, generator) -> HydraluxPetalColoredBlock.provideBlockModel(generator, block);
         }
     }
 }

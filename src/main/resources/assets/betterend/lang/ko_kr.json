@@ -326,7 +326,6 @@
 	"biome.betterend.amber_land": "호박 지대",
 	"biome.betterend.blossoming_spires": "만발한 첨탑",
 	"block.betterend.amber_grass": "호박 잔디",
-	"block.betterend.amber_grass_path": "호박 잔디 길",
 	"block.betterend.tenanea_bark": "테나니아나무",
 	"block.betterend.tenanea_barrel": "테나니아나무 통",
 	"block.betterend.tenanea_bookshelf": "테나니아나무 책장",
@@ -488,7 +487,6 @@
 	"block.betterend.lanceleaf": "창엽",
 	"block.betterend.lanceleaf_seed": "창엽 씨앗",
 	"block.betterend.hydralux": "하이드라럭스",
-	"block.betterend.helix_tree_luminophor": "나선형 나무 발광체",
 	
 	"block.betterend.glowing_pillar_leaves": "발광 기둥 잎",
 	"block.betterend.glowing_pillar_luminophor": "발광 기둥 발광체",
@@ -518,8 +516,6 @@
 	"block.betterend.pythadendron_composter": "피타덴드론나무 퇴비통",
 	"block.betterend.tenanea_composter": "테나니아나무 퇴비통",
 	
-	"biome.betterend.old_bulbis_gardens": "오래된 구근 정원",
-	"block.betterend.ivis_moss": "이비스 이끼",
 	"block.betterend.ivis_vine": "이비스 덩굴",
 	"block.betterend.silk_moth_nest": "누에나방 둥지",
 	
@@ -579,14 +575,11 @@
 	"block.betterend.jellyshroom_stripped_log": "껍질 벗긴 젤리버섯 원목",
 	"block.betterend.jellyshroom_trapdoor": "젤리버섯 다락문",
 	
-	"biome.betterend.eterial_grove": "에테리얼 숲",
 	"block.betterend.umbrella_tree_sapling": "우산 나무 묘목",
 	"item.betterend.umbrella_cluster_juice": "우산 송이 주스",
 	"block.betterend.blossom_berry_seed": "만발한 열매 씨앗",
 	"item.betterend.blossom_berry": "만발한 열매",
 	
-	"biome.betterend.nightshade_redwoods": "밤그림자 삼나무 숲",
-	"block.betterend.nightshade_moss": "밤그림자 이끼",
 	
 	"biome.betterend.glowing_grasslands": "빛나는 초원",
 	"block.betterend.blooming_cooksonia": "만발한 쿡소니아",
@@ -697,7 +690,6 @@
 	"block.betterend.lamellarium": "라멜라리엄",
 	"block.betterend.large_amaranita_mushroom": "큰 아마라니타 버섯",
 	"block.betterend.lutebus": "루테버스",
-	"block.betterend.mossy_bone": "이끼 낀 뼈",
 	"block.betterend.mossy_obsidian": "이끼 낀 흑요석",
 	"block.betterend.orango": "오랑고",
 	"block.betterend.rutiscus": "루티스커스",
@@ -726,7 +718,6 @@
 	"block.betterend.chorus_mushroom_seed": "후렴 버섯 씨앗",
 	"block.betterend.end_stone_stalactite": "엔드 돌 종유석",
 	"block.betterend.end_stone_stalactite_cavemoss": "동굴 이끼가 덮인 엔드 돌 종유석",
-	"block.betterend.pearlberry_seed": "펄베리 씨앗",
 	"block.betterend.rubinea": "루비네아",
 	"block.betterend.sandy_jadestone": "모래색 옥석",
 	"block.betterend.sandy_jadestone_brick": "모래색 옥석 벽돌",

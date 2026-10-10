@@ -34,12 +34,10 @@ public class BetterEnd implements ModInitializer {
     public static final String MOD_ID = C.namespace;
     public static final Logger LOGGER = C.LOG;
 
-    public static final ModCore BYG = ModCore.create("byg");
     public static final ModCore NOURISH = ModCore.create("nourish");
     public static final ModCore FLAMBOYANT = ModCore.create("flamboyant");
     public static final ModCore PATCHOULI = ModCore.create("patchouli");
     public static final ModCore HYDROGEN = ModCore.create("hydrogen");
-    public static final Identifier BYG_ADDITIONS_PACK = C.addDatapack(BYG);
     public static final Identifier NOURISH_ADDITIONS_PACK = C.addDatapack(NOURISH);
     public static final Identifier FLAMBOYANT_ADDITIONS_PACK = C.addDatapack(FLAMBOYANT);
     public static final Identifier PATCHOULI_ADDITIONS_PACK = C.addDatapack(PATCHOULI);
@@ -72,6 +70,7 @@ public class BetterEnd implements ModInitializer {
         EndBiomes.register();
         EndTags.register();
         EndBlocks.ensureStaticallyLoaded();
+        EndBlockEntities.addLateRegisteredBlocks();
         EndItems.ensureStaticallyLoaded();
         EndTemplates.ensureStaticallyLoaded();
         EndEnchantments.ensureStaticallyLoaded();

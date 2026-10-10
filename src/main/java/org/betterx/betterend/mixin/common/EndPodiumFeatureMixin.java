@@ -1,6 +1,6 @@
 package org.betterx.betterend.mixin.common;
 
-import org.betterx.bclib.util.StructureHelper;
+import de.ambertation.wover.structure.api.StructureNBT;
 import org.betterx.betterend.BetterEnd;
 import org.betterx.betterend.world.generator.GeneratorOptions;
 import de.ambertation.wover.state.api.WorldConfig;
@@ -52,7 +52,7 @@ public class EndPodiumFeatureMixin {
             String path = active
                     ? "portal/end_portal_active"
                     : "portal/end_portal_inactive";
-            StructureTemplate structure = StructureHelper.readStructure(BetterEnd.C.mk(path));
+            StructureTemplate structure = StructureNBT.readTemplate(BetterEnd.C.mk(path));
             Vec3i size = structure.getSize();
             blockPos = blockPos.offset(-(size.getX() >> 1), -3, -(size.getZ() >> 1));
             structure.placeInWorld(world, blockPos, blockPos, new StructurePlaceSettings(), random, 2);

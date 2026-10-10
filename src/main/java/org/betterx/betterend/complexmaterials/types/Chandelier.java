@@ -1,14 +1,14 @@
 package org.betterx.betterend.complexmaterials.types;
 
 
+import de.ambertation.wover.block.api.render.BlockRenderTraits;
 import org.betterx.betterend.registry.item.EndResourceItems;
 import org.betterx.betterend.blocks.ChandelierBlock;
 import org.betterx.betterend.complexmaterials.MetalMaterial;
 import org.betterx.betterend.registry.EndItems;
 import de.ambertation.wover.block.api.BlockDefinition;
 import de.ambertation.wover.block.api.BlockRegistry;
-import de.ambertation.wover.block.api.client.trait.BlockModelTrait;
-import de.ambertation.wover.block.api.client.trait.ClientBlockTraits;
+import de.ambertation.wover.block.api.model.BlockModelBinding;
 import de.ambertation.wover.block.api.trait.BlockRecipeTrait;
 import de.ambertation.wover.block.api.trait.BlockTraitLookup;
 import de.ambertation.wover.block.api.trait.BlockTraits;
@@ -38,7 +38,7 @@ public class Chandelier extends SlotFromDefinition {
     @Override
     protected void addSlotSpecificDefinitions(BlockSet<?> set, BlockDefinition<?, ?> def) {
         super.addSlotSpecificDefinitions(set, def);
-        def.addTrait(ClientBlockTraits.RENDER_LAYER.cutout());
+        def.addTrait(BlockRenderTraits.RENDER_LAYER.cutout());
         def.lightLevel((bs) -> 15)
            .noCollission()
            .noOcclusion()
@@ -62,7 +62,7 @@ public class Chandelier extends SlotFromDefinition {
     }
 
     @Override
-    protected BlockModelTrait buildModel(BlockSet<?> set, BlockTraitLookup traitLookup) {
+    protected BlockModelBinding buildModel(BlockSet<?> set, BlockTraitLookup traitLookup) {
         return ChandelierBlock.buildModel(set, traitLookup);
     }
 

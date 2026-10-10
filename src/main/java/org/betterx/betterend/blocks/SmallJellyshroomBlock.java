@@ -3,11 +3,11 @@ package org.betterx.betterend.blocks;
 import org.betterx.bclib.blocks.BaseAttachedBlock;
 import org.betterx.bclib.util.BlocksHelper;
 import org.betterx.betterend.registry.features.EndConfiguredVegetation;
-import de.ambertation.wover.tag.api.predefined.CommonBlockTags;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
@@ -57,8 +57,9 @@ public class SmallJellyshroomBlock extends BaseAttachedBlock implements Bonemeal
 
     @Override
     public boolean isValidBonemealTarget(LevelReader world, BlockPos pos, BlockState state) {
-        return state.getValue(FACING) == Direction.UP && world.getBlockState(pos.below())
-                                                              .is(CommonBlockTags.END_STONES);
+        // Must match JellyshroomFeature's own ground check (minecraft:nylium): performBonemeal removes the
+        // small shroom before placing the big one, so on any other ground bone meal used to delete it.
+        return state.getValue(FACING) == Direction.UP && world.getBlockState(pos.below()).is(BlockTags.NYLIUM);
     }
 
     @Override

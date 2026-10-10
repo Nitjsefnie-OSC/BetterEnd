@@ -9,7 +9,6 @@ import org.betterx.betterend.item.material.ToolsWithHeadsSet;
 import org.betterx.betterend.registry.EndItems;
 import org.betterx.betterend.registry.EndTemplates;
 import de.ambertation.wover.block.api.BlockDefinition;
-import de.ambertation.wover.block.api.client.trait.ClientBlockTraits;
 import de.ambertation.wover.block.api.trait.BlockTraits;
 import de.ambertation.wover.complex.api.equipment.ArmorTier;
 import de.ambertation.wover.complex.api.equipment.ToolTier;
@@ -23,6 +22,7 @@ import de.ambertation.wover.tag.api.TagManager;
 import de.ambertation.wover.tag.api.event.context.ItemTagBootstrapContext;
 import de.ambertation.wover.tag.api.event.context.TagBootstrapContext;
 
+import net.minecraft.tags.BlockItemTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
@@ -192,6 +192,21 @@ public class MetalMaterial extends MetalBlockSet<MetalMaterial> implements Mater
         // review does tier - gets it explicitly at its own registration site instead.
         if (harvestTierTag != null && !slot.equals(ANVIL)) {
             blockDefinition.addTags(harvestTierTag);
+        }
+
+        // Chains join the vanilla and common chain tags (block and item) so other mods - and pack makers - that
+        // treat "a chain" by tag see ours exactly like vanilla's iron/copper chains, instead of only by class.
+        if (slot.equals(CHAIN)) {
+            blockDefinition
+                    .addTags(BlockItemTags.CHAINS.block(), TagManager.BLOCKS.makeCommonTag("chains"))
+                    .addItemTags(BlockItemTags.CHAINS.item(), TagManager.ITEMS.makeCommonTag("chains"));
+        }
+
+        // Same for bars: join the vanilla and common bars tags next to iron and copper bars.
+        if (slot.equals(BARS)) {
+            blockDefinition
+                    .addTags(BlockItemTags.BARS.block(), TagManager.BLOCKS.makeCommonTag("bars"))
+                    .addItemTags(BlockItemTags.BARS.item(), TagManager.ITEMS.makeCommonTag("bars"));
         }
 
         settingsSupplier.accept(blockDefinition);

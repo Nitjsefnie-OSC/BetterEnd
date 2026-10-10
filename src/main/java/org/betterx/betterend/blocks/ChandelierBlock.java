@@ -1,11 +1,13 @@
 package org.betterx.betterend.blocks;
 
 import org.betterx.bclib.blocks.BaseAttachedBlock;
+import org.betterx.betterend.client.models.EndModelKeys;
 import org.betterx.betterend.client.models.EndModels;
-import de.ambertation.wover.block.api.client.trait.BlockModelTrait;
-import de.ambertation.wover.block.api.client.trait.ClientBlockTraits;
+import de.ambertation.wover.block.api.client.model.ClientBlockModelRegistry;
+import de.ambertation.wover.block.api.client.trait.BlockModelTrait.ModelFactory;
+import de.ambertation.wover.block.api.model.BlockModelBinding;
+import de.ambertation.wover.block.api.model.ModelKey;
 import de.ambertation.wover.block.api.trait.BlockTraitLookup;
-import de.ambertation.wover.core.api.ModCore;
 import de.ambertation.wover.sets.api.blocks.BlockSet;
 
 import net.minecraft.client.data.models.BlockModelGenerators;
@@ -57,82 +59,100 @@ public class ChandelierBlock extends BaseAttachedBlock.Metal {
      * annotation from its enclosing method, so leaving it here would strand vanilla client-only
      * type references in a class file the server actually has to verify.
      */
-    public static BlockModelTrait buildModel(BlockSet<?> set, BlockTraitLookup traitLookup) {
-        return ModCore.isDatagen() ? ClientModel.build() : null;
+    public static BlockModelBinding buildModel(BlockSet<?> set, BlockTraitLookup traitLookup) {
+        return BlockModelBinding.of(MODEL, null);
+    }
+
+    private static final ModelKey<Void> MODEL = EndModelKeys.key("chandelier_block");
+
+    /**
+     * Registers the client generators behind this class's model keys. Called from the mod's
+     * {@code wover.client.traits} entrypoint.
+     */
+    @Environment(EnvType.CLIENT)
+    public static void registerClientModels() {
+        ClientModel.register();
     }
 
     @Environment(EnvType.CLIENT)
     private static class ClientModel {
-        private static BlockModelTrait build() {
-            return ClientBlockTraits.MODEL.with(
-                    (key, block, generator) -> {
-                        final var baseTexture = TextureMapping.getBlockTexture(block).sprite();
-                        final var mapping = new TextureMapping()
-                                .put(EndModels.WALL, new Material(baseTexture.withSuffix("_wall")))
-                                .put(EndModels.FLOOR, new Material(baseTexture.withSuffix("_floor")))
-                                .put(EndModels.CEIL, new Material(baseTexture.withSuffix("_ceil")));
+        private static void register() {
+            ClientBlockModelRegistry.register(
+                    MODEL,
+                    (key, block, generator, payload) -> build().provideBlockModels(key, block, generator)
+            );
+        }
 
-                        final var modelCeil = EndModels.CHANDELIER_CEIL.createWithSuffix(
-                                block,
-                                "_ceil",
-                                mapping,
-                                generator.vanillaGenerator.modelOutput
+
+        private static ModelFactory build() {
+            return (key, block, generator) -> {
+                final var baseTexture = TextureMapping.getBlockTexture(block).sprite();
+                final var mapping = new TextureMapping()
+                        .put(EndModels.WALL, new Material(baseTexture.withSuffix("_wall")))
+                        .put(EndModels.FLOOR, new Material(baseTexture.withSuffix("_floor")))
+                        .put(EndModels.CEIL, new Material(baseTexture.withSuffix("_ceil")));
+
+                final var modelCeil = EndModels.CHANDELIER_CEIL.createWithSuffix(
+                        block,
+                        "_ceil",
+                        mapping,
+                        generator.vanillaGenerator.modelOutput
+                );
+                final var modelWall = EndModels.CHANDELIER_WALL.createWithSuffix(
+                        block,
+                        "_wall",
+                        mapping,
+                        generator.vanillaGenerator.modelOutput
+                );
+                final var modelFloor = EndModels.CHANDELIER_FLOOR.createWithSuffix(
+                        block,
+                        "_floor",
+                        mapping,
+                        generator.vanillaGenerator.modelOutput
+                );
+
+                final var facingDispatch = PropertyDispatch
+                        .modify(BaseAttachedBlock.FACING)
+                        .select(
+                                Direction.DOWN,
+                                (variant) -> BlockModelGenerators.plainModel(modelCeil)
+                        )
+                        .select(
+                                Direction.UP,
+                                (variant) -> BlockModelGenerators.plainModel(modelFloor)
+                        )
+                        .select(
+                                Direction.EAST,
+                                (variant) -> BlockModelGenerators.Y_ROT_270.apply(
+                                        BlockModelGenerators.plainModel(modelWall))
+                        )
+                        .select(
+                                Direction.SOUTH,
+                                (variant) -> BlockModelGenerators.plainModel(modelWall)
+                        )
+                        .select(
+                                Direction.WEST,
+                                (variant) -> BlockModelGenerators.Y_ROT_90.apply(
+                                        BlockModelGenerators.plainModel(modelWall))
+                        )
+                        .select(
+                                Direction.NORTH,
+                                (variant) -> BlockModelGenerators.Y_ROT_180.apply(
+                                        BlockModelGenerators.plainModel(modelWall))
                         );
-                        final var modelWall = EndModels.CHANDELIER_WALL.createWithSuffix(
-                                block,
-                                "_wall",
-                                mapping,
-                                generator.vanillaGenerator.modelOutput
-                        );
-                        final var modelFloor = EndModels.CHANDELIER_FLOOR.createWithSuffix(
-                                block,
-                                "_floor",
-                                mapping,
-                                generator.vanillaGenerator.modelOutput
-                        );
-
-                        final var facingDispatch = PropertyDispatch
-                                .modify(BaseAttachedBlock.FACING)
-                                .select(
-                                        Direction.DOWN,
-                                        (variant) -> BlockModelGenerators.plainModel(modelCeil)
-                                )
-                                .select(
-                                        Direction.UP,
-                                        (variant) -> BlockModelGenerators.plainModel(modelFloor)
-                                )
-                                .select(
-                                        Direction.EAST,
-                                        (variant) -> BlockModelGenerators.Y_ROT_270.apply(
-                                                BlockModelGenerators.plainModel(modelWall))
-                                )
-                                .select(
-                                        Direction.SOUTH,
-                                        (variant) -> BlockModelGenerators.plainModel(modelWall)
-                                )
-                                .select(
-                                        Direction.WEST,
-                                        (variant) -> BlockModelGenerators.Y_ROT_90.apply(
-                                                BlockModelGenerators.plainModel(modelWall))
-                                )
-                                .select(
-                                        Direction.NORTH,
-                                        (variant) -> BlockModelGenerators.Y_ROT_180.apply(
-                                                BlockModelGenerators.plainModel(modelWall))
-                                );
 
 
-                        generator.acceptBlockState(
-                                MultiVariantGenerator.dispatch(block, BlockModelGenerators.plainVariant(modelCeil))
-                                                     .with(facingDispatch)
-                        );
+                generator.acceptBlockState(
+                        MultiVariantGenerator.dispatch(block, BlockModelGenerators.plainVariant(modelCeil))
+                                             .with(facingDispatch)
+                );
 
-                        // Flat inventory sprite from the dedicated item/<name>.png art instead of the 3D
-                        // ceiling block model: chandeliers are thin/complex blocks that read better as a flat
-                        // item icon. (There is no block/<name>.png, only the _wall/_floor/_ceil variants, so
-                        // the flat item must be pointed at the item texture explicitly.)
-                        generator.createFlatItem(block, TextureMapping.getItemTexture(block.asItem()).sprite());
-                    });
+                // Flat inventory sprite from the dedicated item/<name>.png art instead of the 3D
+                // ceiling block model: chandeliers are thin/complex blocks that read better as a flat
+                // item icon. (There is no block/<name>.png, only the _wall/_floor/_ceil variants, so
+                // the flat item must be pointed at the item texture explicitly.)
+                generator.createFlatItem(block, TextureMapping.getItemTexture(block.asItem()).sprite());
+            };
         }
     }
 

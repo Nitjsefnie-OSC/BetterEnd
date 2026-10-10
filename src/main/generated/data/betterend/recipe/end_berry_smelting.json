@@ -1,0 +1,8 @@
+{
+  "type": "minecraft:smelting",
+  "category": "food",
+  "ingredient": "betterend:shadow_berry_raw",
+  "result": {
+    "id": "betterend:shadow_berry_cooked"
+  }
+}

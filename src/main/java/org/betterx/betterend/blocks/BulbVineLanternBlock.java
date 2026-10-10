@@ -3,10 +3,13 @@ package org.betterx.betterend.blocks;
 import org.betterx.bclib.client.models.BCLModels;
 import org.betterx.betterend.BetterEnd;
 import org.betterx.betterend.blocks.basis.EndLanternBlock;
-import de.ambertation.wover.block.api.client.trait.BlockModelTrait;
+import org.betterx.betterend.client.models.EndModelKeys;
+import de.ambertation.wover.block.api.client.model.ClientBlockModelRegistry;
+import de.ambertation.wover.block.api.client.trait.BlockModelTrait.ModelFactory;
 import de.ambertation.wover.block.api.client.trait.ClientBlockTraits;
+import de.ambertation.wover.block.api.model.BlockModelBinding;
+import de.ambertation.wover.block.api.model.ModelKey;
 import de.ambertation.wover.block.api.trait.BlockTraitLookup;
-import de.ambertation.wover.core.api.ModCore;
 import de.ambertation.wover.sets.api.blocks.BlockSet;
 
 import net.minecraft.client.data.models.BlockModelGenerators;
@@ -57,53 +60,71 @@ public class BulbVineLanternBlock extends EndLanternBlock {
      * type references in a class file the server actually has to verify. See PathBlockTrait/
      * StoneLanternBlock for the same fix applied elsewhere.
      */
-    public static BlockModelTrait buildModel(BlockSet<?> set, BlockTraitLookup traitLookup) {
-        return ModCore.isDatagen() ? ClientModel.build() : null;
+    public static BlockModelBinding buildModel(BlockSet<?> set, BlockTraitLookup traitLookup) {
+        return BlockModelBinding.of(MODEL, null);
+    }
+
+    private static final ModelKey<Void> MODEL = EndModelKeys.key("bulb_vine_lantern_block");
+
+    /**
+     * Registers the client generators behind this class's model keys. Called from the mod's
+     * {@code wover.client.traits} entrypoint.
+     */
+    @Environment(EnvType.CLIENT)
+    public static void registerClientModels() {
+        ClientModel.register();
     }
 
     @Environment(EnvType.CLIENT)
     private static class ClientModel {
-        private static BlockModelTrait build() {
-            return ClientBlockTraits.MODEL.with(
-                    (key, block, generator) -> {
-                        //get id of this block from registry
-                        final var id = BuiltInRegistries.BLOCK.getKey(block);
+        private static void register() {
+            ClientBlockModelRegistry.register(
+                    MODEL,
+                    (key, block, generator, payload) -> build().provideBlockModels(key, block, generator)
+            );
+        }
 
-                        final var mapping = new TextureMapping()
-                                .put(BCLModels.GLOW, new Material(BetterEnd.C.mk("bulb_vine_lantern_bulb").withPrefix("block/")))
-                                .put(BCLModels.METAL, new Material(BetterEnd.C.mk(getMetalTexture(id)).withPrefix("block/")));
 
-                        final var floorModel = BCLModels.BULB_LANTERN_FLOOR.createWithSuffix(
-                                block,
-                                "_floor",
-                                mapping,
-                                generator.vanillaGenerator.modelOutput
+        private static ModelFactory build() {
+            return (key, block, generator) -> {
+                //get id of this block from registry
+                final var id = BuiltInRegistries.BLOCK.getKey(block);
+
+                final var mapping = new TextureMapping()
+                        .put(BCLModels.GLOW, new Material(BetterEnd.C.mk("bulb_vine_lantern_bulb").withPrefix("block/")))
+                        .put(BCLModels.METAL, new Material(BetterEnd.C.mk(getMetalTexture(id)).withPrefix("block/")));
+
+                final var floorModel = BCLModels.BULB_LANTERN_FLOOR.createWithSuffix(
+                        block,
+                        "_floor",
+                        mapping,
+                        generator.vanillaGenerator.modelOutput
+                );
+                final var ceilModel = BCLModels.BULB_LANTERN_CEIL.create(
+                        block,
+                        mapping,
+                        generator.vanillaGenerator.modelOutput
+                );
+
+                final var floorCeilDispatch = PropertyDispatch
+                        .modify(IS_FLOOR)
+                        .select(
+                                true,
+                                (variant) -> BlockModelGenerators.plainModel(floorModel)
+                        )
+                        .select(
+                                false,
+                                (variant) -> BlockModelGenerators.plainModel(ceilModel)
                         );
-                        final var ceilModel = BCLModels.BULB_LANTERN_CEIL.create(
-                                block,
-                                mapping,
-                                generator.vanillaGenerator.modelOutput
-                        );
 
-                        final var floorCeilDispatch = PropertyDispatch
-                                .modify(IS_FLOOR)
-                                .select(
-                                        true,
-                                        (variant) -> BlockModelGenerators.plainModel(floorModel)
-                                )
-                                .select(
-                                        false,
-                                        (variant) -> BlockModelGenerators.plainModel(ceilModel)
-                                );
-
-                        generator.acceptBlockState(MultiVariantGenerator
-                                .dispatch(block, BlockModelGenerators.plainVariant(ceilModel))
-                                .with(floorCeilDispatch));
-                        // The colored variants declare ClientBlockTraits.ITEM_TINT (bulb_vine_lantern_bulb is
-                        // near-grayscale and tinted via "tintindex": 0), so this delegation emits their tint;
-                        // the uncolored lanterns carry no such trait and get a plain item model.
-                        generator.delegateItemModel(block, floorModel);
-                    });
+                generator.acceptBlockState(MultiVariantGenerator
+                        .dispatch(block, BlockModelGenerators.plainVariant(ceilModel))
+                        .with(floorCeilDispatch));
+                // The colored variants declare ClientBlockTraits.ITEM_TINT (bulb_vine_lantern_bulb is
+                // near-grayscale and tinted via "tintindex": 0), so this delegation emits their tint;
+                // the uncolored lanterns carry no such trait and get a plain item model.
+                generator.delegateItemModel(block, floorModel);
+            };
         }
     }
 }

@@ -20,10 +20,20 @@ import net.minecraft.tags.TagKey;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.levelgen.GenerationStep;
 
+import java.util.Locale;
+
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class EndBiomeBuilder extends WoverBiomeBuilder.AbstractWoverBiomeBuilder<EndBiomeBuilder> {
+    /**
+     * Every BetterEnd Biome competes with a slightly higher weight than vanilla Biomes and Biomes of other mods,
+     * which use WoVer's default {@code genChance} of {@code 1.0}. The factor is applied to every
+     * {@code genChance} (top-level, sub- and edge-biomes alike), so the weights between BetterEnd Biomes stay
+     * as configured.
+     */
+    private static final float GEN_CHANCE_FACTOR = 1.25f;
+
     protected boolean hasCave = false;
     protected SurfaceMaterialProvider surface;
     protected BiomeFactory biomeFactory;
@@ -77,7 +87,7 @@ public class EndBiomeBuilder extends WoverBiomeBuilder.AbstractWoverBiomeBuilder
             @NotNull String name
     ) {
         return new EndBiomeKey<>(
-                BetterEnd.C.id(name.replace(' ', '_').toLowerCase()),
+                BetterEnd.C.id(name.replace(' ', '_').toLowerCase(Locale.ROOT)),
                 null
         );
     }
@@ -88,14 +98,14 @@ public class EndBiomeBuilder extends WoverBiomeBuilder.AbstractWoverBiomeBuilder
             @Nullable EndBiomeKey<PC, ?> parentOrNull
     ) {
         return new EndBiomeKey<>(
-                BetterEnd.C.id(name.replace(' ', '_').toLowerCase()),
+                BetterEnd.C.id(name.replace(' ', '_').toLowerCase(Locale.ROOT)),
                 parentOrNull
         );
     }
 
     @Override
     public void registerBiomeData(BootstrapContext<BiomeData> dataContext) {
-        final EndBiome biome = biomeFactory.instantiateBiome(fogDensity, key, new BiomeGenerationDataContainer(parameters, intendedPlacement), terrainHeight, genChance, edgeSize, vertical, edge, parent, hasCave, surface);
+        final EndBiome biome = biomeFactory.instantiateBiome(fogDensity, key, new BiomeGenerationDataContainer(parameters, intendedPlacement), terrainHeight, genChance * GEN_CHANCE_FACTOR, edgeSize, vertical, edge, parent, hasCave, surface);
         biome.datagenSetup(dataContext);
         dataContext.register(key.dataKey, biome);
     }

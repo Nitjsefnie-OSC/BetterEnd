@@ -19,6 +19,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -171,6 +172,88 @@ public class InfusionTableGameTest {
                   }
                   requireDone(helper, player, "infusion_finished", failures);
                   failIfAny(helper, "Infusion ritual regression", failures);
+              })
+              .thenSucceed();
+    }
+
+    /**
+     * Issue #484: the enchanted membrane "reverted" to a phantom membrane a few seconds after being taken
+     * off the pedestal - the signature of a result that only ever existed on the client and was then
+     * overwritten by the server's authoritative state. Asserts the craft on the server itself, then takes
+     * the result with an empty hand (the real pickup path) and checks it is still an enchanted membrane
+     * in the player's inventory well after the pickup.
+     */
+    @GameTest(maxTicks = 300)
+    public void enchantedMembraneStaysEnchantedAfterPickup(GameTestHelper helper) {
+        final ServerPlayer player = MockPlayers.inLevel(helper, CENTER.east(4));
+
+        for (var point : InfusionRitual.getMap()) {
+            final BlockPos pos = CENTER.relative(Direction.EAST, point.x).relative(Direction.NORTH, point.y);
+            helper.setBlock(pos, EndStoneBlocks.FLAVOLITE.getBlock(StoneMaterial.PEDESTAL));
+        }
+        helper.setBlock(CENTER, EndFunctionalBlocks.INFUSION_PEDESTAL);
+
+        for (InfusionRecipe.CatalystSlot slot : List.of(
+                InfusionRecipe.CatalystSlot.NORTH, InfusionRecipe.CatalystSlot.EAST,
+                InfusionRecipe.CatalystSlot.SOUTH, InfusionRecipe.CatalystSlot.WEST
+        )) {
+            final var point = InfusionRitual.getMap()[slot.index];
+            final BlockPos pos = CENTER.relative(Direction.EAST, point.x).relative(Direction.NORTH, point.y);
+            useOn(helper, player, pos, new ItemStack(EndResourceItems.CRYSTAL_SHARDS));
+        }
+        useOn(helper, player, CENTER, new ItemStack(Items.PHANTOM_MEMBRANE));
+
+        if (!(helper.getLevel().getBlockEntity(helper.absolutePos(CENTER)) instanceof InfusionPedestalEntity pedestal)) {
+            throw helper.assertionException(Component.literal(
+                    "infusion_pedestal did not create an InfusionPedestalEntity"
+            ));
+        }
+        if (!pedestal.hasRitual() || !pedestal.getRitual().hasRecipe()) {
+            failIfAny(helper, "Enchanted membrane regression (#484)", List.of(
+                    "no recipe matched after inserting 4 crystal shards and a phantom membrane - expected"
+                            + " betterend:enchanted_membrane to match"
+            ));
+        }
+
+        helper.startSequence()
+              .thenIdle(85) // recipe time is 75 ticks
+              .thenExecute(() -> {
+                  final ItemStack result = pedestal.getItem(0);
+                  if (!result.is(EndResourceItems.ENCHANTED_MEMBRANE)) {
+                      failIfAny(helper, "Enchanted membrane regression (#484)", List.of(
+                              "server-side central pedestal holds " + result + " after 85 ticks, expected"
+                                      + " enchanted_membrane"
+                      ));
+                  }
+                  for (int i = 0; i < player.getInventory().getContainerSize(); i++) {
+                      player.getInventory().setItem(i, ItemStack.EMPTY);
+                  }
+                  // Empty hand on a full pedestal hands the item back.
+                  useOn(helper, player, CENTER, ItemStack.EMPTY);
+              })
+              .thenIdle(100) // the report says it reverted "a few seconds" after pickup
+              .thenExecute(() -> {
+                  final List<String> failures = new ArrayList<>();
+                  int enchanted = 0;
+                  int plain = 0;
+                  for (int i = 0; i < player.getInventory().getContainerSize(); i++) {
+                      final ItemStack stack = player.getInventory().getItem(i);
+                      if (stack.is(EndResourceItems.ENCHANTED_MEMBRANE)) enchanted += stack.getCount();
+                      if (stack.is(Items.PHANTOM_MEMBRANE)) plain += stack.getCount();
+                  }
+                  if (enchanted != 1) {
+                      failures.add("player holds " + enchanted + " enchanted_membrane after pickup, expected 1");
+                  }
+                  if (plain != 0) {
+                      failures.add("player holds " + plain + " phantom_membrane after pickup - the result reverted");
+                  }
+                  if (!pedestal.isEmpty()) {
+                      failures.add("central pedestal still holds " + pedestal.getItem(0) + " after pickup");
+                  }
+                  if (pedestal.getRitual().hasRecipe()) {
+                      failures.add("ritual restarted a recipe on the now-empty pedestal");
+                  }
+                  failIfAny(helper, "Enchanted membrane regression (#484)", failures);
               })
               .thenSucceed();
     }

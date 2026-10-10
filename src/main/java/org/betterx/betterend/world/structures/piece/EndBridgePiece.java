@@ -181,21 +181,21 @@ public class EndBridgePiece extends BasePiece {
                 boolean deckPlaced = false;
                 POS.set(x, deckY, z);
                 if (!erodeDeck && (landing || isReplaceable(chunk.getBlockState(POS)))) {
-                    chunk.setBlockState(POS, deckMaterial(colRandom), 3);
+                    setChunkBlock(chunk, POS, deckMaterial(colRandom));
                     deckPlaced = true;
                 }
 
                 // ---- Underside (1 block thick) ---------------------------------------------------
                 POS.setY(deckY - 1);
                 if (!erodeUnderside && isReplaceable(chunk.getBlockState(POS))) {
-                    chunk.setBlockState(POS, deckMaterial(colRandom), 3);
+                    setChunkBlock(chunk, POS, deckMaterial(colRandom));
                 }
 
                 // ---- Landing seating (fill one more block down onto terrain) ---------------------
                 if (landing) {
                     POS.setY(deckY - 2);
                     if (isReplaceable(chunk.getBlockState(POS))) {
-                        chunk.setBlockState(POS, deckMaterial(colRandom), 3);
+                        setChunkBlock(chunk, POS, deckMaterial(colRandom));
                     }
                 }
 
@@ -205,7 +205,7 @@ public class EndBridgePiece extends BasePiece {
                 if (!landing && deckPlaced && span.isEdge(x, z)) {
                     POS.setY(deckY + 1);
                     if (colRandom.nextFloat() >= RAILING_GAP_CHANCE && isReplaceable(chunk.getBlockState(POS))) {
-                        chunk.setBlockState(POS, RAILING, 3);
+                        setChunkBlock(chunk, POS, RAILING);
                     }
                 }
 
@@ -225,7 +225,7 @@ public class EndBridgePiece extends BasePiece {
                         for (int y = deckY - 2; y > terrainTop; y--) {
                             POS.setY(y);
                             if (isReplaceable(chunk.getBlockState(POS))) {
-                                chunk.setBlockState(POS, deckMaterial(colRandom), 3);
+                                setChunkBlock(chunk, POS, deckMaterial(colRandom));
                             }
                         }
                     }

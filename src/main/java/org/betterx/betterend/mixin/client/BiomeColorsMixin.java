@@ -1,19 +1,16 @@
 package org.betterx.betterend.mixin.client;
 
+import de.ambertation.wunderlib.utils.ColorUtilARGB32;
 
 import org.betterx.betterend.registry.block.EndStoneBlocks;
 import org.betterx.bclib.util.MHelper;
 import org.betterx.betterend.config.Configs;
-import org.betterx.betterend.registry.EndBlocks;
-import org.betterx.ui.ColorUtil;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.BiomeColors;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.BlockPos.MutableBlockPos;
 import net.minecraft.client.renderer.block.BlockAndTintGetter;
-
-import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.world.level.block.state.BlockState;
 
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -26,31 +23,38 @@ import java.util.Comparator;
 
 @Mixin(BiomeColors.class)
 public class BiomeColorsMixin {
-    private static final int POISON_COLOR = ColorUtil.color(92, 160, 78);
-    private static final int STREAM_COLOR = ColorUtil.color(105, 213, 244);
+    private static final int POISON_COLOR = ColorUtilARGB32.color(92, 160, 78);
+    private static final int STREAM_COLOR = ColorUtilARGB32.color(105, 213, 244);
     private static final Point[] OFFSETS;
-    private static final boolean HAS_SODIUM;
 
     @Inject(method = "getAverageWaterColor", at = @At("RETURN"), cancellable = true)
     private static void be_getWaterColor(BlockAndTintGetter world, BlockPos pos, CallbackInfoReturnable<Integer> info) {
-        if (Configs.CLIENT_CONFIG.sulfurWaterColor.get()) {
-            BlockAndTintGetter view = HAS_SODIUM ? Minecraft.getInstance().level : world;
+        if (world == null || !Configs.CLIENT_CONFIG.sulfurWaterColor.get()) return;
+
+        // Always read from the getter we were handed. Chunk meshing (vanilla's RenderSectionRegion,
+        // Sodium's LevelSlice) runs on worker threads against a thread-confined snapshot that covers
+        // at least 2 blocks around the section. Reading the live ClientLevel from there races the
+        // network thread's chunk updates and crashes with "Missing Palette entry" (#519).
+        // Third-party getters (e.g. Distant Horizons' LOD tint getter) may not support block lookups
+        // at all; in that case we keep the vanilla biome colour instead of breaking the tint (#581).
+        try {
             MutableBlockPos mut = new MutableBlockPos();
             mut.setY(pos.getY());
             for (int i = 0; i < OFFSETS.length; i++) {
                 mut.setX(pos.getX() + OFFSETS[i].x);
                 mut.setZ(pos.getZ() + OFFSETS[i].y);
-                if ((view.getBlockState(mut).is(EndStoneBlocks.BRIMSTONE))) {
+                BlockState state = world.getBlockState(mut);
+                if (state != null && state.is(EndStoneBlocks.BRIMSTONE)) {
                     info.setReturnValue(i < 4 ? POISON_COLOR : STREAM_COLOR);
                     return;
                 }
             }
+        } catch (RuntimeException ignored) {
+            // keep the vanilla water colour
         }
     }
 
     static {
-        HAS_SODIUM = FabricLoader.getInstance().isModLoaded("sodium");
-
         int index = 0;
         OFFSETS = new Point[20];
         for (int x = -2; x < 3; x++) {

@@ -3,7 +3,6 @@ package org.betterx.betterend.blocks;
 import org.betterx.bclib.blocks.BaseVineBlock;
 import org.betterx.bclib.util.MHelper;
 import org.betterx.betterend.registry.EndParticles;
-import org.betterx.ui.ColorUtil;
 
 import net.minecraft.client.color.block.BlockTintSource;
 import net.minecraft.client.renderer.block.BlockAndTintGetter;

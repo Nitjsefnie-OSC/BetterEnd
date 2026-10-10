@@ -1,5 +1,7 @@
 package org.betterx.betterend.registry.block;
 
+import de.ambertation.wover.block.api.render.BlockRenderTraits;
+import de.ambertation.wunderlib.utils.ColorUtilARGB32;
 
 import org.betterx.betterend.registry.item.EndResourceItems;
 import org.betterx.bclib.api.v3.tag.BCLBlockTags;
@@ -17,7 +19,6 @@ import org.betterx.bclib.blocks.BaseTerrainBlock;
 import org.betterx.bclib.blocks.BasePlantWithAgeBlock;
 import org.betterx.bclib.trait.block.*;
 import org.betterx.betterend.BetterEnd;
-import org.betterx.ui.ColorUtil;
 import org.betterx.betterend.blocks.*;
 import org.betterx.betterend.blocks.EndPortalBlock;
 import org.betterx.betterend.blocks.basis.*;
@@ -36,8 +37,6 @@ import de.ambertation.wover.block.api.DefaultBlockDefinition;
 import de.ambertation.wover.block.api.VanillaBlockDefinition;
 import de.ambertation.wover.block.api.model.ModelTraitLibrary;
 import de.ambertation.wover.core.api.ModCore;
-import de.ambertation.wover.block.api.client.trait.BlockModelTrait;
-import de.ambertation.wover.block.api.client.trait.ClientBlockTraits;
 import de.ambertation.wover.block.api.render.TinterKeys;
 import de.ambertation.wover.block.api.trait.BlockTraits;
 import de.ambertation.wover.item.api.BlockItemDefinition;
@@ -79,10 +78,10 @@ public class EndCrystalBlocks {
      */
     public static final TinterKeys.PaletteCycle AURORA_PALETTE = new TinterKeys.PaletteCycle(
             List.of(
-                    ColorUtil.color(247, 77, 161),
-                    ColorUtil.color(120, 184, 255),
-                    ColorUtil.color(120, 255, 168),
-                    ColorUtil.color(243, 58, 255)
+                    ColorUtilARGB32.color(247, 77, 161),
+                    ColorUtilARGB32.color(120, 184, 255),
+                    ColorUtilARGB32.color(120, 255, 168),
+                    ColorUtilARGB32.color(243, 58, 255)
             ),
             TinterKeys.PaletteCycle.IndexMode.SUM_XYZ,
             0F
@@ -92,11 +91,17 @@ public class EndCrystalBlocks {
             .strength(1F)
             .noOcclusion()
             .lightLevel(bs -> 15)
+            // Glass-like, as it was built before its props left the constructor.
+            .sound(SoundType.GLASS)
+            .isValidSpawn(Blocks::never)
+            .isRedstoneConductor(Blocks::never)
+            .isSuffocating(Blocks::never)
+            .isViewBlocking(Blocks::never)
             .addTrait(BlockTraits.MINEABLE_WITH.needsPickAxe())
             .addTrait(BlockTraits.MINEABLE_WITH.needsHammer())
-            .addTrait(ClientBlockTraits.RENDER_LAYER.translucent())
+            .addTrait(BlockRenderTraits.RENDER_LAYER.translucent())
             // Near-grayscale texture colorized by the block tint - the item model needs it baked in.
-            .addTrait(ClientBlockTraits.TINT.worldAndItem(TinterKeys.PALETTE_CYCLE, () -> AURORA_PALETTE))
+            .addTrait(BlockRenderTraits.TINT.worldAndItem(TinterKeys.PALETTE_CYCLE, () -> AURORA_PALETTE))
             .addTrait(ModelTraitLibrary.externalModel())
             .addTrait(BlockTraits.LOOT_TABLE.with(
                     (tableKey, blockKey, block, provider) ->
@@ -111,12 +116,14 @@ public class EndCrystalBlocks {
             SmaragdantCrystalShardBlock::new
     )
             .mapColor(MapColor.COLOR_GREEN)
+            // The stone strength it was built with before its props left the constructor.
+            .strength(1.5F, 6.0F)
             .lightLevel(bs -> 15)
             .sound(SoundType.AMETHYST_CLUSTER)
             .requiresCorrectToolForDrops()
             .noCollission()
             .addTrait(BlockTraits.MINEABLE_WITH.needsPickAxe())
-            .addTrait(ClientBlockTraits.RENDER_LAYER.cutout())
+            .addTrait(BlockRenderTraits.RENDER_LAYER.cutout())
             .addTrait(BlockTraits.LOOT_TABLE.dropSelf())
             .addTrait(WeightedCrossModelTrait.propertyDispatch(SmaragdantCrystalShardBlock.FACING, List.of(
                             WeightedCrossModelTrait.Case.of(Direction.UP, List.of(
@@ -146,6 +153,11 @@ public class EndCrystalBlocks {
             .strength(1F)
             .noOcclusion()
             .sound(SoundType.AMETHYST)
+            // Glass-like, as it was built before its props left the constructor.
+            .isValidSpawn(Blocks::never)
+            .isRedstoneConductor(Blocks::never)
+            .isSuffocating(Blocks::never)
+            .isViewBlocking(Blocks::never)
             .addTrait(BlockTraits.MINEABLE_WITH.needsPickAxe())
             .addTrait(BlockTraits.LOOT_TABLE.dropSelf())
             .addTrait(EndModelTraits.rotatedPillar(() -> BetterEnd.C.mk("block/smaragdant_crystal")))

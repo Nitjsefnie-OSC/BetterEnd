@@ -80,12 +80,6 @@ public class BetterEndDatagen extends WoverDataGenEntryPoint {
             }
         });
 
-        //Add providers for the byg integration
-//        addDatapack(BetterEnd.BYG_ADDITIONS_PACK)
-//                .addMultiProvider(BYGFeatureProvider::new)
-//                .addProvider(BYGBlockTagsProvider::new)
-//                .addMultiProvider(BYGBiomeProvider::new);
-
         //Add providers for the nourish integration
         addDatapack(BetterEnd.NOURISH_ADDITIONS_PACK)
                 .addProvider(NourishItemTagProvider::new);

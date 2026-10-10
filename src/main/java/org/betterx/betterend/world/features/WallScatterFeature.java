@@ -46,19 +46,27 @@ public abstract class WallScatterFeature<FC extends ScatterFeatureConfig> extend
         int minZ = zone.clampZ(center.getZ() - cfg.radius);
         int maxZ = zone.clampZ(center.getZ() + cfg.radius);
 
-        MutableBlockPos mut = new MutableBlockPos();
-        for (int x = minX; x <= maxX; x++) {
-            mut.setX(x);
-            for (int y = -cfg.radius; y <= cfg.radius; y++) {
-                mut.setY(py + y);
-                for (int z = minZ; z <= maxZ; z++) {
-                    mut.setZ(z);
-                    if (random.nextInt(4) == 0 && world.isEmptyBlock(mut) && !overLakeWater(world, mut)) {
-                        shuffle(random);
-                        for (Direction dir : DIR) {
-                            if (canGenerate(cfg, world, random, mut, dir)) {
-                                generate(cfg, world, random, mut, dir);
-                                break;
+        // WallPlantFeature keeps the plant chosen in canGenerate() in a field for generate() to use, and the
+        // feature instance is shared by every worldgen thread. Unsynchronized, a second thread could swap
+        // that field between the two calls, and FACING was set on a block without it (#477). Same lock as
+        // ScatterFeature.place(). The direction order is shuffled in a per-call copy: the static DIR used
+        // to be shuffled in place by every thread at once, which could lose a direction for good.
+        final Direction[] dirs = DIR.clone();
+        synchronized (this) {
+            MutableBlockPos mut = new MutableBlockPos();
+            for (int x = minX; x <= maxX; x++) {
+                mut.setX(x);
+                for (int y = -cfg.radius; y <= cfg.radius; y++) {
+                    mut.setY(py + y);
+                    for (int z = minZ; z <= maxZ; z++) {
+                        mut.setZ(z);
+                        if (random.nextInt(4) == 0 && world.isEmptyBlock(mut) && !overLakeWater(world, mut)) {
+                            shuffle(random, dirs);
+                            for (Direction dir : dirs) {
+                                if (canGenerate(cfg, world, random, mut, dir)) {
+                                    generate(cfg, world, random, mut, dir);
+                                    break;
+                                }
                             }
                         }
                     }
@@ -92,12 +100,12 @@ public abstract class WallScatterFeature<FC extends ScatterFeatureConfig> extend
         return false;
     }
 
-    private void shuffle(RandomSource random) {
+    private static void shuffle(RandomSource random, Direction[] dirs) {
         for (int i = 0; i < 4; i++) {
             int j = random.nextInt(4);
-            Direction d = DIR[i];
-            DIR[i] = DIR[j];
-            DIR[j] = d;
+            Direction d = dirs[i];
+            dirs[i] = dirs[j];
+            dirs[j] = d;
         }
     }
 }

@@ -44,13 +44,16 @@ public class EndArmorMaterial {
             .humanoidEquipmentAsset()
             .buildAndRegister();
 
+    // Sits between vanilla netherite (3/8/6/3, 3.0 toughness per piece, 20/12 for the set) and
+    // AETERNIUM (24/14): a full set gives 21 armor and 12.8 toughness, on top of the leggings' +4 max
+    // health and the set effects. Defense order is boots, leggings, chestplate, helmet, body.
     public static final Holder<ArmorMaterial> CRYSTALITE = CustomArmorMaterial
             .start(BetterEnd.C.mk("crystalite"))
-            .defense(3, 6, 8, 3, 24)
+            .defense(3, 7, 8, 3, 24)
             .durability(33)
             .enchantmentValue(30)
             .equipSound(SoundEvents.ARMOR_EQUIP_DIAMOND)
-            .toughness(1.2f)
+            .toughness(3.2f)
             .knockbackResistance(0.1f)
             .createRepairIngredient()
             .humanoidEquipmentAsset()
@@ -78,11 +81,11 @@ public class EndArmorMaterial {
 
     public static final Holder<ArmorMaterial> CRYSTALITE_ELYTRA = CustomArmorMaterial
             .start(BetterEnd.C.mk("elytra_crystalite"))
-            .defense(3, 6, 8, 3, 24)
+            .defense(3, 7, 8, 3, 24)
             .durability(33)
             .enchantmentValue(30)
             .equipSound(SoundEvents.ARMOR_EQUIP_DIAMOND)
-            .toughness(1.2f)
+            .toughness(3.2f)
             .knockbackResistance(0.1f)
             .repairIngredient(CRYSTALITE.value().repairIngredient())
             .wingsEquipmentAsset(BetterEnd.C.mk("elytra_crystalite"))

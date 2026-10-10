@@ -5,7 +5,6 @@ import de.ambertation.wover.block.api.BlockDefinition;
 import de.ambertation.wover.block.api.BlockRegistry;
 import de.ambertation.wover.block.api.model.BlockModelBinding;
 import de.ambertation.wover.block.api.model.ModelTraitLibrary;
-import de.ambertation.wover.block.api.client.trait.BlockModelTrait;
 import de.ambertation.wover.block.api.trait.BlockTraitLookup;
 import de.ambertation.wover.block.api.trait.BlockTraits;
 import de.ambertation.wover.sets.api.blocks.BlockSet;

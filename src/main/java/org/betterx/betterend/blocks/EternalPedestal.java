@@ -1,9 +1,9 @@
 package org.betterx.betterend.blocks;
 
+import de.ambertation.wunderlib.utils.ColorUtilARGB32;
 
 import org.betterx.betterend.registry.block.EndStoneBlocks;
 import de.ambertation.wunderlib.math.Float3;
-import de.ambertation.wunderlib.ui.ColorHelper;
 import org.betterx.bclib.interfaces.ClientLevelAccess;
 import org.betterx.betterend.BetterEnd;
 import org.betterx.betterend.blocks.basis.PedestalBlock;
@@ -102,13 +102,19 @@ public class EternalPedestal extends PedestalBlock {
                             pos,
                             updatedState.setValue(ACTIVATED, true).setValue(HAS_LIGHT, true)
                     );
-                    if (pedestal.hasRitual()) {
+                    //a ritual without a center (no partner pedestal was found when it was created) can never
+                    //activate, so look for the structure again instead of reusing it
+                    if (pedestal.hasRitual() && pedestal.getRitual().getCenter() != null) {
                         if (pedestal.getRitual().getWorld() == null) pedestal.getRitual().setWorld(sourceLevel);
                         pedestal.getRitual().checkStructure(player);
                     } else {
                         EternalRitual ritual = new EternalRitual(sourceLevel, pos);
-                        pedestal.linkRitual(ritual);
-                        ritual.checkStructure(player);
+                        if (ritual.getCenter() != null) {
+                            pedestal.linkRitual(ritual);
+                            ritual.checkStructure(player);
+                        } else {
+                            pedestal.linkRitual(null);
+                        }
                     }
                 }
             }
@@ -255,7 +261,7 @@ public class EternalPedestal extends PedestalBlock {
                                 .sub(start)
                                 .normalized()
                                 .mul(powerUp ? 0.2 : 0.05);
-                        float[] color = ColorHelper.toFloatArrayRGBA(EternalCrystalRenderer.colors(PedestalItemRenderer.getGemAge()));
+                        float[] color = ColorUtilARGB32.toFloatArrayRGBA(EternalCrystalRenderer.colors(PedestalItemRenderer.getGemAge()));
 
                         if (powerUp) {
                             for (int i = 0; i < 30; i++) {
@@ -324,6 +330,7 @@ public class EternalPedestal extends PedestalBlock {
         ClientHooks.tickVision(level, blockPos, randomSource);
     }
 
+    @Environment(EnvType.CLIENT)
     private static MultiVariant createVariants(
             WoverBlockModelGenerators generator,
             TextureMapping mapping,

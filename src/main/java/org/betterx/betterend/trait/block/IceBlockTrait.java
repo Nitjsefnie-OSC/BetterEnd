@@ -1,9 +1,9 @@
 package org.betterx.betterend.trait.block;
 
+import de.ambertation.wover.block.api.render.BlockRenderTraits;
 import org.betterx.betterend.BetterEnd;
 import de.ambertation.wover.block.api.BlockDefinition;
 import de.ambertation.wover.block.api.model.ModelTraitLibrary;
-import de.ambertation.wover.block.api.client.trait.ClientBlockTraits;
 import de.ambertation.wover.block.api.trait.BlockTraitKey;
 import de.ambertation.wover.block.api.trait.BlockTraits;
 import de.ambertation.wover.block.api.trait.GenericBlockTrait;
@@ -36,7 +36,7 @@ public class IceBlockTrait extends BlockTraitImpl<Block, GenericBlockTrait> {
         definition
                 .replacePropertiesWithCopy(baseIceBlock)
                 .addTags(MineableTags.PICKAXE)
-                .addTrait(ClientBlockTraits.RENDER_LAYER.translucent())
+                .addTrait(BlockRenderTraits.RENDER_LAYER.translucent())
                 .addTrait(BlockTraits.LOOT_TABLE.dropWithSilktouch())
                 .addTrait(ModelTraitLibrary.cube());
     }

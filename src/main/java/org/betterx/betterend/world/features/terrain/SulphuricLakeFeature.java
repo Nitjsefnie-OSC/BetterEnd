@@ -249,11 +249,11 @@ public class SulphuricLakeFeature extends DefaultFeature {
     private void makeShards(WorldGenLevel world, WriteZone zone, BlockPos pos, RandomSource random) {
         for (Direction dir : BlocksHelper.DIRECTIONS) {
             BlockPos side;
-            if (random.nextInt(16) == 0 && world.getBlockState((side = clampedRelative(zone, pos, dir))).is(Blocks.WATER)) {
-                BlockState state = EndStoneBlocks.SULPHUR_CRYSTAL.defaultBlockState()
-                                                            .setValue(SulphurCrystalBlock.WATERLOGGED, true)
-                                                            .setValue(SulphurCrystalBlock.FACING, dir)
-                                                            .setValue(SulphurCrystalBlock.AGE, random.nextInt(3));
+            BlockState replaced;
+            if (random.nextInt(16) == 0 && (replaced = world.getBlockState((side = clampedRelative(zone, pos, dir)))).is(Blocks.WATER)) {
+                BlockState state = SulphurCrystalBlock.naturalState(
+                        EndStoneBlocks.SULPHUR_CRYSTAL.defaultBlockState(), replaced, dir, random.nextInt(3)
+                );
                 BlocksHelper.setWithoutUpdate(world, side, state);
             }
         }

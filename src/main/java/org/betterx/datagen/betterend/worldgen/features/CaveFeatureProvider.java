@@ -4,6 +4,7 @@ package org.betterx.datagen.betterend.worldgen.features;
 import org.betterx.betterend.registry.block.EndCrystalBlocks;
 import org.betterx.betterend.registry.block.EndPlantBlocks;
 import org.betterx.betterend.registry.block.EndStoneBlocks;
+import org.betterx.betterend.blocks.CaveMossBlock;
 import org.betterx.betterend.registry.block.EndTerrainBlocks;
 import org.betterx.betterend.registry.block.EndVineBlocks;
 import org.betterx.betterend.registry.features.EndConfiguredCaveFeatures;
@@ -13,6 +14,7 @@ import org.betterx.betterend.world.features.bushes.BushFeatureConfig;
 import org.betterx.betterend.world.features.terrain.StalactiteFeatureConfig;
 import org.betterx.betterend.world.features.terrain.caves.CaveSurfaceCoatConfig;
 import org.betterx.betterend.world.features.terrain.caves.StalactiteClusterConfig;
+import de.ambertation.wover.block.api.BlockProperties.TripleShape;
 import de.ambertation.wover.core.api.ModCore;
 import de.ambertation.wover.datagen.api.provider.multi.WoverFeatureProvider;
 import de.ambertation.wover.feature.api.configured.ConfiguredFeatureManager;
@@ -175,7 +177,10 @@ public class CaveFeatureProvider extends WoverFeatureProvider {
         // HolderSet<Block> instead of a TagKey<Block>; resolve the tag through the bootstrap lookup.
         return new VegetationPatchConfiguration(
                 context.lookup(Registries.BLOCK).getOrThrow(CommonBlockTags.END_STONES),
-                BlockStateProvider.simple(EndTerrainBlocks.CAVE_MOSS),
+                // Ceiling moss is the flipped (shape=top) variant, so its moss face points down into the cave.
+                BlockStateProvider.simple(surface == CaveSurface.CEILING
+                        ? EndTerrainBlocks.CAVE_MOSS.defaultBlockState().setValue(CaveMossBlock.SHAPE, TripleShape.TOP)
+                        : EndTerrainBlocks.CAVE_MOSS.defaultBlockState()),
                 vegetation,
                 surface,
                 ConstantInt.of(1),

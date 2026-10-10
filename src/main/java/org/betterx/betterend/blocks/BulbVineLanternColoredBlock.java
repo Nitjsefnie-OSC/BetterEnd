@@ -1,7 +1,7 @@
 package org.betterx.betterend.blocks;
 
+import de.ambertation.wunderlib.utils.ColorUtilARGB32;
 import org.betterx.bclib.util.BlocksHelper;
-import org.betterx.ui.ColorUtil;
 
 import net.minecraft.client.color.block.BlockTintSource;
 import net.minecraft.world.level.block.state.BlockBehaviour;
@@ -19,8 +19,8 @@ public class BulbVineLanternColoredBlock extends BulbVineLanternBlock {
         final int b = color & 255;
         final int g = (color >> 8) & 255;
         final int r = (color >> 16) & 255;
-        final float[] hsv = ColorUtil.RGBtoHSB(r, g, b, new float[3]);
-        return ColorUtil.HSBtoRGB(hsv[0], hsv[1], hsv[1] > 0.2 ? 1 : hsv[2]);
+        final float[] hsv = ColorUtilARGB32.RGBtoHSB(r, g, b, new float[3]);
+        return ColorUtilARGB32.HSBtoRGB(hsv[0], hsv[1], hsv[1] > 0.2 ? 1 : hsv[2]);
     }
 
     public BulbVineLanternColoredBlock(BlockBehaviour.Properties settings) {

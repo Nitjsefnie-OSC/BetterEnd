@@ -2,7 +2,7 @@ package org.betterx.betterend.world.structures.piece;
 
 import org.betterx.bclib.util.MHelper;
 import org.betterx.bclib.util.StructureErode;
-import org.betterx.bclib.util.StructureHelper;
+import de.ambertation.wover.structure.api.StructureNBT;
 import org.betterx.betterend.registry.EndStructures;
 import org.betterx.betterend.world.biome.EndBiome;
 
@@ -21,6 +21,7 @@ import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.level.levelgen.structure.pieces.StructurePieceSerializationContext;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
+import net.minecraft.world.phys.Vec3;
 
 public class NBTPiece extends BasePiece {
     private Identifier structureID;
@@ -44,7 +45,7 @@ public class NBTPiece extends BasePiece {
         this.structure = structure;
         this.rotation = Rotation.getRandom(random);
         this.mirror = Mirror.values()[random.nextInt(3)];
-        this.pos = StructureHelper.offsetPos(pos, structure, rotation, mirror);
+        this.pos = offsetPos(pos, structure, rotation, mirror);
         this.erosion = erosion;
         this.cover = cover;
         makeBoundingBox();
@@ -74,7 +75,7 @@ public class NBTPiece extends BasePiece {
         erosion = tag.getIntOr("erosion", 0);
         pos = tag.read("pos", BlockPos.CODEC).orElse(BlockPos.ZERO);
         cover = tag.getBooleanOr("cover", false);
-        structure = StructureHelper.readStructure(structureID);
+        structure = StructureNBT.readTemplate(structureID);
     }
 
     @Override
@@ -110,6 +111,29 @@ public class NBTPiece extends BasePiece {
     }
 
     private void makeBoundingBox() {
-        this.boundingBox = StructureHelper.getStructureBounds(pos, structure, rotation, mirror);
+        this.boundingBox = getStructureBounds(pos, structure, rotation, mirror);
+    }
+
+    /** The origin that centers {@code structure} on {@code pos} horizontally, for the given transform. */
+    private static BlockPos offsetPos(BlockPos pos, StructureTemplate structure, Rotation rotation, Mirror mirror) {
+        Vec3 offset = StructureTemplate.transform(
+                Vec3.atCenterOf(structure.getSize()),
+                mirror,
+                rotation,
+                BlockPos.ZERO
+        );
+        return pos.offset((int) (-offset.x * 0.5), 0, (int) (-offset.z * 0.5));
+    }
+
+    private static BoundingBox getStructureBounds(
+            BlockPos pos,
+            StructureTemplate structure,
+            Rotation rotation,
+            Mirror mirror
+    ) {
+        Vec3i max = structure.getSize();
+        Vec3 min = StructureTemplate.transform(Vec3.atCenterOf(structure.getSize()), mirror, rotation, BlockPos.ZERO);
+        max = max.offset((int) -min.x, (int) -min.y, (int) -min.z);
+        return BoundingBox.fromCorners(pos.offset((int) min.x, (int) min.y, (int) min.z), max.offset(pos));
     }
 }

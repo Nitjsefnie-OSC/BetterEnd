@@ -5,6 +5,7 @@ import org.betterx.betterend.BetterEnd;
 import org.betterx.betterend.registry.EndBlocks;
 import de.ambertation.wover.block.api.DefaultBlockDefinition;
 import de.ambertation.wover.block.api.render.BlockRenderTraits;
+import de.ambertation.wover.block.api.trait.BlockTraits;
 import de.ambertation.wover.core.api.ModCore;
 import de.ambertation.wover.recipe.api.RecipeBuilder;
 import de.ambertation.wover.tag.api.event.context.ItemTagBootstrapContext;
@@ -118,7 +119,12 @@ public class ColoredMaterial implements MaterialManager.Material {
                                                                          colorTransform == null
                                                                                  ? color
                                                                                  : colorTransform.applyAsInt(color)
-                                                                 ));
+                                                                 ))
+                                                                 // replacePropertiesWithCopy() does not carry
+                                                                 // the source's loot table over (the copied
+                                                                 // drops key resolves to this block's own id),
+                                                                 // so every tinted block needs its own (#370).
+                                                                 .addTrait(BlockTraits.LOOT_TABLE.dropSelf());
             if (customizer != null) {
                 customizer.accept(definition);
             }
