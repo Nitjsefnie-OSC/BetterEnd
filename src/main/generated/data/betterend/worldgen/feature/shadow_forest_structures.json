@@ -1,8 +1,6 @@
 {
   "type": "betterend:building_list_feature",
-  "default": {
-    "Name": "betterend:shadow_grass"
-  },
+  "default": "betterend:shadow_grass",
   "structures": [
     {
       "offset_y": 0,

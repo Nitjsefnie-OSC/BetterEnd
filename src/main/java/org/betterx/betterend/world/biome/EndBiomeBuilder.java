@@ -19,23 +19,34 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.levelgen.GenerationStep;
-import net.minecraft.world.level.levelgen.SurfaceRules;
 import net.minecraft.world.level.levelgen.placement.CaveSurface;
+import net.minecraft.world.level.levelgen.material.condition.MaterialCondition;
+import net.minecraft.world.level.levelgen.material.MaterialRules;
+
+import java.util.Locale;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class EndBiomeBuilder extends WoverBiomeBuilder.AbstractWoverBiomeBuilder<EndBiomeBuilder> {
     /**
+     * Every BetterEnd Biome competes with a slightly higher weight than vanilla Biomes and Biomes of other mods,
+     * which use WoVer's default {@code genChance} of {@code 1.0}. The factor is applied to every
+     * {@code genChance} (top-level, sub- and edge-biomes alike), so the weights between BetterEnd Biomes stay
+     * as configured.
+     */
+    private static final float GEN_CHANCE_FACTOR = 1.25f;
+
+    /**
      * Replacement for {@code SurfaceRules.ON_FLOOR}, which Minecraft 26.3 deleted.
      * <p>
      * 26.3 moved these four constants out of Java and into the new
      * {@code minecraft:worldgen/material_condition} <b>datapack</b> registry (see
      * {@code net.minecraft.data.worldgen.material.VanillaMaterialConditions}). We deliberately do
-     * <b>not</b> resolve them through {@link SurfaceRules#getCondition(net.minecraft.core.HolderGetter,
+     * <b>not</b> resolve them through {@link MaterialRules#getCondition(net.minecraft.core.HolderGetter,
      * ResourceKey)}, for the same two reasons WoVer's {@code SurfaceRuleBuilderImpl} inlines them:
      * <ul>
-     * <li>resolving the key needs a {@code HolderGetter<ConditionSource>}, and the biome configs build
+     * <li>resolving the key needs a {@code HolderGetter<MaterialCondition>}, and the biome configs build
      * their rules eagerly - in static initialisers and in {@code surface()} - outside any registry
      * bootstrap;</li>
      * <li>a holder reference would make every rule BetterEnd emits depend on a vanilla data file that a
@@ -46,26 +57,26 @@ public class EndBiomeBuilder extends WoverBiomeBuilder.AbstractWoverBiomeBuilder
      * {@code stoneDepthCheck(0, false, FLOOR)}, {@code stoneDepthCheck(0, true, FLOOR)},
      * {@code stoneDepthCheck(0, false, CEILING)} and {@code stoneDepthCheck(0, true, CEILING)}.
      */
-    public static final SurfaceRules.ConditionSource ON_FLOOR
-            = SurfaceRules.stoneDepthCheck(0, false, CaveSurface.FLOOR);
+    public static final MaterialCondition ON_FLOOR
+            = MaterialRules.stoneDepthCheck(0, false, CaveSurface.FLOOR);
 
     /**
      * Replacement for the deleted {@code SurfaceRules.UNDER_FLOOR}. See {@link #ON_FLOOR}.
      */
-    public static final SurfaceRules.ConditionSource UNDER_FLOOR
-            = SurfaceRules.stoneDepthCheck(0, true, CaveSurface.FLOOR);
+    public static final MaterialCondition UNDER_FLOOR
+            = MaterialRules.stoneDepthCheck(0, true, CaveSurface.FLOOR);
 
     /**
      * Replacement for the deleted {@code SurfaceRules.ON_CEILING}. See {@link #ON_FLOOR}.
      */
-    public static final SurfaceRules.ConditionSource ON_CEILING
-            = SurfaceRules.stoneDepthCheck(0, false, CaveSurface.CEILING);
+    public static final MaterialCondition ON_CEILING
+            = MaterialRules.stoneDepthCheck(0, false, CaveSurface.CEILING);
 
     /**
      * Replacement for the deleted {@code SurfaceRules.UNDER_CEILING}. See {@link #ON_FLOOR}.
      */
-    public static final SurfaceRules.ConditionSource UNDER_CEILING
-            = SurfaceRules.stoneDepthCheck(0, true, CaveSurface.CEILING);
+    public static final MaterialCondition UNDER_CEILING
+            = MaterialRules.stoneDepthCheck(0, true, CaveSurface.CEILING);
 
     protected boolean hasCave = false;
     protected SurfaceMaterialProvider surface;
@@ -93,7 +104,7 @@ public class EndBiomeBuilder extends WoverBiomeBuilder.AbstractWoverBiomeBuilder
     }
 
     EndBiomeBuilder configure(EndBiome.Config biomeConfig) {
-        // 26.3: SurfaceRules.isBiome resolves its keys into a HolderSet eagerly, so
+        // 26.3: MaterialRules.isBiome resolves its keys into a HolderSet eagerly, so
         // SurfaceRuleBuilder.build() gained a HolderGetter<Biome> parameter. The lookup is only
         // consulted when a biome filter was set on the builder - which none of BetterEnd's
         // SurfaceMaterialProviders do - but the bootstrap context we were constructed with provides a
@@ -120,7 +131,7 @@ public class EndBiomeBuilder extends WoverBiomeBuilder.AbstractWoverBiomeBuilder
             @NotNull String name
     ) {
         return new EndBiomeKey<>(
-                BetterEnd.C.id(name.replace(' ', '_').toLowerCase()),
+                BetterEnd.C.id(name.replace(' ', '_').toLowerCase(Locale.ROOT)),
                 null
         );
     }
@@ -131,14 +142,14 @@ public class EndBiomeBuilder extends WoverBiomeBuilder.AbstractWoverBiomeBuilder
             @Nullable EndBiomeKey<PC, ?> parentOrNull
     ) {
         return new EndBiomeKey<>(
-                BetterEnd.C.id(name.replace(' ', '_').toLowerCase()),
+                BetterEnd.C.id(name.replace(' ', '_').toLowerCase(Locale.ROOT)),
                 parentOrNull
         );
     }
 
     @Override
     public void registerBiomeData(BootstrapContext<BiomeData> dataContext) {
-        final EndBiome biome = biomeFactory.instantiateBiome(fogDensity, key, new BiomeGenerationDataContainer(parameters, intendedPlacement), terrainHeight, genChance, edgeSize, vertical, edge, parent, hasCave, surface);
+        final EndBiome biome = biomeFactory.instantiateBiome(fogDensity, key, new BiomeGenerationDataContainer(parameters, intendedPlacement), terrainHeight, genChance * GEN_CHANCE_FACTOR, edgeSize, vertical, edge, parent, hasCave, surface);
         biome.datagenSetup(dataContext);
         dataContext.register(key.dataKey, biome);
     }

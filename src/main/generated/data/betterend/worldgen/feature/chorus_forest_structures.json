@@ -1,8 +1,6 @@
 {
   "type": "betterend:building_list_feature",
-  "default": {
-    "Name": "betterend:chorus_nylium"
-  },
+  "default": "betterend:chorus_nylium",
   "structures": [
     {
       "offset_y": 0,

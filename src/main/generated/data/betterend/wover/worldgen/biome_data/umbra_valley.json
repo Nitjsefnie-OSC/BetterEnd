@@ -1,20 +1,15 @@
 {
   "type": "betterend:biome",
   "biome": "betterend:umbra_valley",
+  "genChance": 1.25,
   "generation_data": {
     "intended_placement": "wover:is_end/land"
   },
   "has_caves": true,
   "surface": {
-    "alt": {
-      "Name": "betterend:pallidium_full"
-    },
+    "alt": "betterend:pallidium_full",
     "floor_rule": false,
-    "top": {
-      "Name": "betterend:umbralith"
-    },
-    "under": {
-      "Name": "betterend:umbralith"
-    }
+    "top": "betterend:umbralith",
+    "under": "betterend:umbralith"
   }
 }

@@ -4,27 +4,18 @@
     "feature": {
       "type": "minecraft:simple_block",
       "to_place": {
-        "type": "minecraft:weighted_state_provider",
+        "type": "minecraft:weighted",
         "entries": [
           {
-            "data": {
-              "Name": "betterend:jungle_grass"
-            },
+            "data": "betterend:jungle_grass",
             "weight": 100
           },
           {
-            "data": {
-              "Name": "betterend:twisted_umbrella_moss"
-            },
+            "data": "betterend:twisted_umbrella_moss",
             "weight": 100
           },
           {
-            "data": {
-              "Name": "betterend:small_jellyshroom",
-              "Properties": {
-                "facing": "up"
-              }
-            },
+            "data": "betterend:small_jellyshroom",
             "weight": 10
           }
         ]

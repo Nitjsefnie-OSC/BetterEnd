@@ -14,7 +14,7 @@ import net.minecraft.world.level.storage.loot.LootPool;
 import net.minecraft.world.level.storage.loot.entries.NestedLootTable;
 import net.minecraft.world.level.storage.loot.predicates.LocationCheck;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
-import net.minecraft.world.level.storage.loot.providers.number.ConstantValue;
+import net.minecraft.world.level.storage.loot.providers.number.ints.ContextIntProviders;
 
 import java.util.function.BiConsumer;
 import org.jetbrains.annotations.NotNull;
@@ -50,7 +50,7 @@ public class EndLootAdditionProvider extends WoverLootAdditionProvider {
         endCity.forTables(BuiltInLootTables.END_CITY_TREASURE)
                .addPool(LootPool
                        .lootPool()
-                       .setRolls(ConstantValue.exactly(1))
+                       .setRolls(ContextIntProviders.exactly(1))
                        .add(NestedLootTable.lootTableReference(lootTable(lookup, LootTableUtil.END_CITY_EXTRA))));
 
         consumer.accept(modCore.id("end_city_treasure"), endCity);
@@ -69,7 +69,7 @@ public class EndLootAdditionProvider extends WoverLootAdditionProvider {
                .addPool(LootPool
                        .lootPool()
                        .when(inEnd)
-                       .setRolls(ConstantValue.exactly(1.0F))
+                       .setRolls(ContextIntProviders.exactly(1))
                        .add(NestedLootTable
                                .lootTableReference(lootTable(lookup, LootTableUtil.FISHING_FISH))
                                .setWeight(85)

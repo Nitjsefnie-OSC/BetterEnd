@@ -13,7 +13,7 @@ import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.entity.state.HumanoidRenderState;
 import net.minecraft.world.entity.HumanoidArm;
 
-public class CrystaliteChestplateModel extends HumanoidModel<HumanoidRenderState> implements CrystaliteArmorRenderer.CopyExtraState {
+public class CrystaliteChestplateModel extends HumanoidModel<HumanoidRenderState> {
 
     public ModelPart leftShoulder;
     public ModelPart rightShoulder;
@@ -116,13 +116,6 @@ public class CrystaliteChestplateModel extends HumanoidModel<HumanoidRenderState
         localBody = modelPart.getChild(PartNames.BODY);
         this.leftShoulder = modelPart.getChild("leftShoulder");
         this.rightShoulder = modelPart.getChild("rightShoulder");
-    }
-
-
-    @Override
-    public void copyExtraState() {
-        this.leftShoulder.loadPose(leftArm.storePose());
-        this.rightShoulder.loadPose(rightArm.storePose());
     }
 
     @Override

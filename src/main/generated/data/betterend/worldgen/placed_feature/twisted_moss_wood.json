@@ -3,12 +3,9 @@
     "type": "betterend:wall_plant_on_log_feature",
     "radius": 6,
     "state": {
-      "type": "minecraft:simple_state_provider",
-      "state": {
-        "Name": "betterend:twisted_moss",
-        "Properties": {
-          "facing": "north"
-        }
+      "id": "betterend:twisted_moss",
+      "properties": {
+        "facing": "north"
       }
     }
   },

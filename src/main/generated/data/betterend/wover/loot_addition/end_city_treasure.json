@@ -10,7 +10,7 @@
               "value": "betterend:chests/end_city_extra"
             }
           ],
-          "rolls": 1.0
+          "rolls": 1
         }
       },
       "target": "minecraft:chests/end_city_treasure"

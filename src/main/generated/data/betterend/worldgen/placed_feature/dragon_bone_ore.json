@@ -5,12 +5,7 @@
     "size": 8,
     "targets": [
       {
-        "state": {
-          "Name": "betterend:dragon_bone_block",
-          "Properties": {
-            "axis": "y"
-          }
-        },
+        "state": "betterend:dragon_bone_block",
         "target": {
           "block": "minecraft:end_stone",
           "predicate_type": "minecraft:block_match"

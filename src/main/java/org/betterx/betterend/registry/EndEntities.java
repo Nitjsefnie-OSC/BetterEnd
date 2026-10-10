@@ -1,10 +1,10 @@
 package org.betterx.betterend.registry;
 
+import de.ambertation.wunderlib.utils.ColorUtilARGB32;
 import org.betterx.bclib.api.v2.spawning.SpawnRuleBuilder;
 import org.betterx.bclib.entity.BCLEntityWrapper;
 import org.betterx.betterend.BetterEnd;
 import org.betterx.betterend.entity.*;
-import org.betterx.ui.ColorUtil;
 
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -27,8 +27,8 @@ public class EndEntities {
             DragonflyEntity::new,
             DragonflyEntity.createMobAttributes(),
             true,
-            ColorUtil.color(32, 42, 176),
-            ColorUtil.color(115, 225, 249)
+            ColorUtilARGB32.color(32, 42, 176),
+            ColorUtilARGB32.color(115, 225, 249)
     );
     public static final BCLEntityWrapper<EndSlimeEntity> END_SLIME = register(
             "end_slime",
@@ -38,8 +38,8 @@ public class EndEntities {
             EndSlimeEntity::new,
             EndSlimeEntity.createMobAttributes(),
             false,
-            ColorUtil.color(28, 28, 28),
-            ColorUtil.color(99, 11, 99)
+            ColorUtilARGB32.color(28, 28, 28),
+            ColorUtilARGB32.color(99, 11, 99)
     );
     public static final BCLEntityWrapper<EndFishEntity> END_FISH = register(
             "end_fish",
@@ -49,8 +49,8 @@ public class EndEntities {
             EndFishEntity::new,
             EndFishEntity.createMobAttributes(),
             true,
-            ColorUtil.color(3, 50, 76),
-            ColorUtil.color(120, 206, 255)
+            ColorUtilARGB32.color(3, 50, 76),
+            ColorUtilARGB32.color(120, 206, 255)
     );
     public static final BCLEntityWrapper<ShadowWalkerEntity> SHADOW_WALKER = register(
             "shadow_walker",
@@ -60,8 +60,8 @@ public class EndEntities {
             ShadowWalkerEntity::new,
             ShadowWalkerEntity.createMobAttributes(),
             true,
-            ColorUtil.color(30, 30, 30),
-            ColorUtil.color(5, 5, 5)
+            ColorUtilARGB32.color(30, 30, 30),
+            ColorUtilARGB32.color(5, 5, 5)
     );
     public static final BCLEntityWrapper<CubozoaEntity> CUBOZOA = register(
             "cubozoa",
@@ -71,8 +71,8 @@ public class EndEntities {
             CubozoaEntity::new,
             CubozoaEntity.createMobAttributes(),
             true,
-            ColorUtil.color(151, 77, 181),
-            ColorUtil.color(93, 176, 238)
+            ColorUtilARGB32.color(151, 77, 181),
+            ColorUtilARGB32.color(93, 176, 238)
     );
     public static final BCLEntityWrapper<SilkMothEntity> SILK_MOTH = register(
             "silk_moth",
@@ -82,8 +82,8 @@ public class EndEntities {
             SilkMothEntity::new,
             SilkMothEntity.createMobAttributes(),
             true,
-            ColorUtil.color(198, 138, 204),
-            ColorUtil.color(242, 220, 236)
+            ColorUtilARGB32.color(198, 138, 204),
+            ColorUtilARGB32.color(242, 220, 236)
     );
 
     public static void register() {

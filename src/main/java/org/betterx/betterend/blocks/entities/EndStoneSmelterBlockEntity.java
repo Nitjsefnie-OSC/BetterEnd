@@ -13,6 +13,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
@@ -46,20 +47,21 @@ import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
-import net.minecraft.world.level.storage.loot.providers.number.NumberProvider;
-import net.minecraft.world.level.storage.loot.providers.number.NumberProviders;
-import net.minecraft.world.level.storage.loot.providers.number.ResolvableNumber;
+import net.minecraft.world.level.storage.loot.providers.number.ints.ContextIntProvider;
+import net.minecraft.world.level.storage.loot.providers.number.ints.ContextIntProviders;
+import net.minecraft.world.level.storage.loot.providers.number.ints.ResolvableInt;
 import net.minecraft.world.phys.Vec3;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import it.unimi.dsi.fastutil.objects.Reference2IntOpenHashMap;
 
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import org.jetbrains.annotations.NotNull;
 
 // This smelter can handle different kinds of recipes. It is made for Alloying recipes,
@@ -67,10 +69,6 @@ import org.jetbrains.annotations.NotNull;
 // we use a MultiRecipeInfo to hold both types of recipes and their inputs. And let
 //proxy function decide witch recipe to use based on the input type.
 record BlastingRecipeInfo(SingleRecipeInput input, RecipeHolder<? extends AbstractCookingRecipe> holder) {
-    public int growsResultBy() {
-        return 1;
-    }
-
     public int burnTimeMultiplicator() {
         return 2;
     }
@@ -81,10 +79,6 @@ record BlastingRecipeInfo(SingleRecipeInput input, RecipeHolder<? extends Abstra
 }
 
 record AlloyingRecipeInfo(AlloyingRecipeInput input, RecipeHolder<? extends AlloyingRecipe> holder) {
-    public int growsResultBy() {
-        return 3;
-    }
-
     public int burnTimeMultiplicator() {
         return 1;
     }
@@ -126,10 +120,6 @@ class MultiRecipeInfo {
 
     public boolean isBlasting() {
         return blasting != null;
-    }
-
-    public int growsResultBy() {
-        return isBlasting() ? blasting.growsResultBy() : alloying.growsResultBy();
     }
 
     public int burnTimeMultiplicator() {
@@ -530,7 +520,7 @@ public class EndStoneSmelterBlockEntity extends BaseContainerBlockEntity impleme
         if (recipeInfo != null) {
             ItemStack resultItem
                     = recipeInfo.holder().value().assemble(recipeInfo.input());
-            createResultItem(inventory, resultItem, recipeInfo.growsResultBy());
+            createResultItem(inventory, resultItem);
 
             inputState.inputA().shrink(1);
             inputState.inputB().shrink(1);
@@ -549,7 +539,7 @@ public class EndStoneSmelterBlockEntity extends BaseContainerBlockEntity impleme
     ) {
         if (recipeInfo != null) {
             ItemStack resultItem = recipeInfo.holder().value().assemble(recipeInfo.input());
-            createResultItem(inventory, resultItem, recipeInfo.growsResultBy());
+            createResultItem(inventory, resultItem);
 
             if (inputState.singleInput().is(Blocks.WET_SPONGE.asItem())
                     && !inventory.get(EndStoneSmelterMenu.FUEL_SLOT).isEmpty()
@@ -564,12 +554,18 @@ public class EndStoneSmelterBlockEntity extends BaseContainerBlockEntity impleme
         }
     }
 
-    private static void createResultItem(NonNullList<ItemStack> inventory, ItemStack resultItem, int growBy) {
+    /**
+     * Every craft is worth the recipe's own result count - the count an empty result slot is seeded
+     * with below, and the count recipe viewers show. The "same item in both input slots" bonus
+     * (ceil(2.5 x count)) is baked into those recipes by their {@code outputCount}, so it must not be
+     * applied a second time here.
+     */
+    private static void createResultItem(NonNullList<ItemStack> inventory, ItemStack resultItem) {
         ItemStack storedResults = inventory.get(EndStoneSmelterMenu.RESULT_SLOT);
         if (storedResults.isEmpty()) {
             inventory.set(EndStoneSmelterMenu.RESULT_SLOT, resultItem.copy());
         } else if (ItemStack.isSameItemSameComponents(storedResults, resultItem)) {
-            storedResults.grow(growBy);
+            storedResults.grow(resultItem.getCount());
         }
     }
 
@@ -593,7 +589,7 @@ public class EndStoneSmelterBlockEntity extends BaseContainerBlockEntity impleme
     ) {
         if (recipeInfo.holder() != null && inputState.hasBothInputs()) {
             ItemStack resultItem = recipeInfo.holder().value().assemble(recipeInfo.input());
-            return canStore(inventory, maxStackSize, resultItem, 3);
+            return canStore(inventory, maxStackSize, resultItem);
         } else {
             return false;
         }
@@ -608,7 +604,7 @@ public class EndStoneSmelterBlockEntity extends BaseContainerBlockEntity impleme
     ) {
         if (recipeInfo.holder() != null && inputState.hasOneInput()) {
             ItemStack resultItem = recipeInfo.holder().value().assemble(recipeInfo.input());
-            return canStore(inventory, maxStackSize, resultItem, 1);
+            return canStore(inventory, maxStackSize, resultItem);
         } else {
             return false;
         }
@@ -617,8 +613,7 @@ public class EndStoneSmelterBlockEntity extends BaseContainerBlockEntity impleme
     private static boolean canStore(
             NonNullList<ItemStack> inventory,
             int maxStackSize,
-            ItemStack resultItem,
-            int growBy
+            ItemStack resultItem
     ) {
         if (resultItem.isEmpty()) {
             return false;
@@ -629,7 +624,7 @@ public class EndStoneSmelterBlockEntity extends BaseContainerBlockEntity impleme
             } else if (!ItemStack.isSameItemSameComponents(storedResults, resultItem)) {
                 return false;
             } else {
-                int newCount = storedResults.getCount() + growBy;
+                int newCount = storedResults.getCount() + resultItem.getCount();
                 return newCount < maxStackSize
                         && newCount < storedResults.getMaxStackSize()
                         || newCount < resultItem.getMaxStackSize();
@@ -722,38 +717,74 @@ public class EndStoneSmelterBlockEntity extends BaseContainerBlockEntity impleme
 
     /**
      * The vanilla cooking-fuel providers that used to resolve to a burn duration above the smelter's
-     * {@code > 2000} threshold: blaze rod (2400), dried kelp block (4001), coal block (16000) and lava bucket
-     * (20000). Everything else vanilla ships stays at or below 1600.
+     * {@code > 2000} threshold, with that vanilla burn duration: blaze rod (2400), dried kelp block (4001),
+     * coal block (16000) and lava bucket (20000). Everything else vanilla ships stays at or below 1600.
      * <p>
      * 26.3 deleted {@code FuelValues} (and {@code Level#fuelValues()}): burn duration is now the
-     * {@code minecraft:cooking_fuel} item component, whose value is a {@link NumberProvider} key that can only
+     * {@code minecraft:cooking_fuel} item component, whose value is a {@link ContextIntProvider} key that can only
      * be resolved against a {@link ServerLevel}'s registries and a loot context. {@link #canUseAsFuel} is asked
      * on both sides (the menu's {@code isFuel}, hopper insertion, {@code canPlaceItem}), so it cannot resolve
-     * anything - it compares the component's provider key against this set instead, which reproduces exactly
-     * the vanilla items that passed the old threshold. Modded fuels that want in should register through
-     * {@link #registerFuel}, as they always could.
+     * anything - it compares the component's provider key against this map instead, which reproduces exactly
+     * the vanilla items that passed the old threshold. Modded fuels that reference one of these providers
+     * (BetterEnd's charcoal block uses the coal block's) are accepted the same way; other modded fuels that
+     * want in should register through {@link #registerFuel}, as they always could.
+     * <p>
+     * The tick counts are only used to <em>display</em> the fuels ({@link #smelterFuels()}, which recipe
+     * viewers read on the client, where the providers cannot be resolved). The smelter itself always burns
+     * for whatever the provider resolves to ({@link #getBurnDuration}).
      */
-    private static final Set<ResourceKey<NumberProvider>> LONG_BURNING_FUELS = Set.of(
-            NumberProviders.COOKING_TIME_BLAZE_ROD,
-            NumberProviders.COOKING_TIME_DRIED_KELP_BLOCK,
-            NumberProviders.COOKING_TIME_COAL_BLOCK,
-            NumberProviders.COOKING_TIME_LAVA_BUCKET
+    private static final Map<ResourceKey<ContextIntProvider>, Integer> LONG_BURNING_FUELS = Map.of(
+            ContextIntProviders.COOKING_TIME_BLAZE_ROD, 2400,
+            ContextIntProviders.COOKING_TIME_DRIED_KELP_BLOCK, 4001,
+            ContextIntProviders.COOKING_TIME_COAL_BLOCK, 16000,
+            ContextIntProviders.COOKING_TIME_LAVA_BUCKET, 20000
     );
 
     public static boolean canUseAsFuel(ItemStack fuelStack) {
-        if (AVAILABLE_FUELS.containsKey(fuelStack.getItem())) return true;
+        return AVAILABLE_FUELS.containsKey(fuelStack.getItem()) || longBurningTicks(fuelStack) != null;
+    }
+
+    /**
+     * The vanilla burn duration of a long-burning fuel, or {@code null} if the stack is not one.
+     */
+    private static Integer longBurningTicks(ItemStack fuelStack) {
         final CookingFuel fuel = fuelStack.get(DataComponents.COOKING_FUEL);
-        // 26.3 turned CookingFuel#burnTime() into a ResolvableNumber - LONG_BURNING_FUELS only ever matches
+        // 26.3 turned CookingFuel#burnTime() into a ResolvableInt - LONG_BURNING_FUELS only ever matches
         // the vanilla tiers, which are all Reference-backed.
-        return fuel != null
-                && fuel.burnTime() instanceof ResolvableNumber.Reference reference
-                && LONG_BURNING_FUELS.contains(reference.key());
+        if (fuel != null && fuel.burnTime() instanceof ResolvableInt.Reference reference) {
+            return LONG_BURNING_FUELS.get(reference.key());
+        }
+        return null;
+    }
+
+    /**
+     * Every item the smelter accepts as fuel, with the number of ticks one item burns for in an alloying
+     * recipe (blasting burns twice as long but also cooks twice as fast), sorted by burn time. This is the
+     * list recipe viewers show: the items whose default {@code minecraft:cooking_fuel} component is one of
+     * the {@link #LONG_BURNING_FUELS}, plus everything added through {@link #registerFuel}. Works on both
+     * sides, it needs no level.
+     */
+    public static Map<Item, Integer> smelterFuels() {
+        final Map<Item, Integer> fuels = new HashMap<>();
+        for (Item item : BuiltInRegistries.ITEM) {
+            final Integer ticks = longBurningTicks(item.getDefaultInstance());
+            if (ticks != null) fuels.put(item, ticks);
+        }
+        fuels.putAll(AVAILABLE_FUELS);
+
+        final Map<Item, Integer> sorted = new LinkedHashMap<>();
+        fuels.entrySet()
+             .stream()
+             .sorted(Map.Entry.<Item, Integer>comparingByValue()
+                              .thenComparing(e -> BuiltInRegistries.ITEM.getKey(e.getKey()).toString()))
+             .forEach(e -> sorted.put(e.getKey(), e.getValue()));
+        return sorted;
     }
 
     /**
      * Burn duration for one fuel item, multiplied by the recipe kind's factor. Explicitly registered fuels
      * ({@link #registerFuel}) keep their fixed tick count; everything else is resolved the way vanilla's
-     * furnace does it in 26.3 - through the {@code minecraft:cooking_fuel} component's {@link NumberProvider},
+     * furnace does it in 26.3 - through the {@code minecraft:cooking_fuel} component's {@link ContextIntProvider},
      * evaluated against this block entity's loot context (which is what makes the datapack-side
      * {@code minecraft:block/fast_cooking} condition able to halve the duration).
      */
@@ -766,7 +797,7 @@ public class EndStoneSmelterBlockEntity extends BaseContainerBlockEntity impleme
     }
 
     private int resolveVanillaBurnDuration(ServerLevel level, ItemStack fuelStack) {
-        return ResolvableNumber.getIntFromItem(
+        return ResolvableInt.getFromItem(
                 fuelStack, DataComponents.COOKING_FUEL, CookingFuel::burnTime, lootContext(level), 0
         );
     }

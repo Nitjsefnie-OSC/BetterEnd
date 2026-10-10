@@ -1,8 +1,10 @@
 package org.betterx.betterend.blocks;
 
+import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.PathBlock;
 import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.minecraft.world.level.block.state.BlockState;
 
 /**
  * A shovel-flattened path over one of the End terrain blocks.
@@ -18,9 +20,27 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
  * {@code PathBlockTrait.withSource(...)} already names as its silk-touch drop), which is also the behaviour
  * change worth noting: trampling {@code end_mycelium_path} now yields {@code end_mycelium} rather than
  * {@code minecraft:dirt}.
+ * <p>
+ * {@link PathBlock#getStateForPlacement} still hard-codes {@code minecraft:dirt} for a path placed directly
+ * under a block (#605), so that case is overridden here to revert to the same block as the tick does.
  */
 public class EndPathBlock extends PathBlock {
+    private final Block source;
+
     public EndPathBlock(Block source, BlockBehaviour.Properties properties) {
         super(source, properties);
+        this.source = source;
+    }
+
+    @Override
+    public BlockState getStateForPlacement(BlockPlaceContext context) {
+        return !this.defaultBlockState().canSurvive(context.getLevel(), context.getClickedPos())
+                ? Block.pushEntitiesUp(
+                this.defaultBlockState(),
+                source.defaultBlockState(),
+                context.getLevel(),
+                context.getClickedPos()
+        )
+                : super.getStateForPlacement(context);
     }
 }

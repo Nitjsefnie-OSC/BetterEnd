@@ -4,6 +4,7 @@ package org.betterx.datagen.betterend.worldgen.features;
 import org.betterx.betterend.registry.block.EndCrystalBlocks;
 import org.betterx.betterend.registry.block.EndPlantBlocks;
 import org.betterx.betterend.registry.block.EndStoneBlocks;
+import org.betterx.betterend.blocks.CaveMossBlock;
 import org.betterx.betterend.registry.block.EndTerrainBlocks;
 import org.betterx.betterend.registry.block.EndVineBlocks;
 import org.betterx.betterend.registry.features.EndConfiguredCaveFeatures;
@@ -19,6 +20,7 @@ import org.betterx.betterend.world.features.terrain.caves.CaveSurfaceCoatConfig;
 import org.betterx.betterend.world.features.terrain.caves.CaveSurfaceCoatFeature;
 import org.betterx.betterend.world.features.terrain.caves.StalactiteClusterConfig;
 import org.betterx.betterend.world.features.terrain.caves.StalactiteClusterFeature;
+import de.ambertation.wover.block.api.BlockProperties.TripleShape;
 import de.ambertation.wover.core.api.ModCore;
 import de.ambertation.wover.datagen.api.provider.multi.WoverFeatureProvider;
 import de.ambertation.wover.feature.api.configured.FeatureContentManager;
@@ -59,7 +61,7 @@ public class CaveFeatureProvider extends WoverFeatureProvider {
 
         EndConfiguredCaveFeatures.SMARAGDANT_CRYSTAL_SHARD
                 .bootstrap(context)
-                .feature(new SingleBlockFeature(BlockStateProvider.simple(EndCrystalBlocks.SMARAGDANT_CRYSTAL_SHARD)))
+                .feature(new SingleBlockFeature(BlockStateProvider.of(EndCrystalBlocks.SMARAGDANT_CRYSTAL_SHARD)))
                 .register();
 
         EndConfiguredCaveFeatures.BIG_AURORA_CRYSTAL.bootstrap(context).register();
@@ -71,7 +73,7 @@ public class CaveFeatureProvider extends WoverFeatureProvider {
 
         EndConfiguredCaveFeatures.CAVE_GRASS
                 .bootstrap(context)
-                .feature(new SingleBlockFeature(BlockStateProvider.simple(EndPlantBlocks.CAVE_GRASS)))
+                .feature(new SingleBlockFeature(BlockStateProvider.of(EndPlantBlocks.CAVE_GRASS)))
                 .register();
 
         EndConfiguredCaveFeatures.RUBINEA
@@ -184,7 +186,10 @@ public class CaveFeatureProvider extends WoverFeatureProvider {
                 // 26.3's VegetationPatchFeature takes the replaceable blocks as a HolderSet rather than
                 // the TagKey the old configuration accepted, so the tag is resolved here.
                 context.lookup(Registries.BLOCK).getOrThrow(CommonBlockTags.END_STONES),
-                BlockStateProvider.simple(EndTerrainBlocks.CAVE_MOSS),
+                // Ceiling moss is the flipped (shape=top) variant, so its moss face points down into the cave.
+                BlockStateProvider.holderOf(surface == CaveSurface.CEILING
+                        ? EndTerrainBlocks.CAVE_MOSS.defaultBlockState().setValue(CaveMossBlock.SHAPE, TripleShape.TOP)
+                        : EndTerrainBlocks.CAVE_MOSS.defaultBlockState()),
                 vegetation,
                 surface,
                 ConstantInt.of(1),

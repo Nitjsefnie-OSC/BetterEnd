@@ -15,7 +15,7 @@ public class StalactiteFeatureConfig {
     public static final MapCodec<StalactiteFeatureConfig> CODEC = RecordCodecBuilder.mapCodec(instance -> instance
             .group(
                     Codec.BOOL.fieldOf("ceiling").forGetter(o -> o.ceiling),
-                    BlockStateProvider.CODEC.fieldOf("states").forGetter(o -> o.block),
+                    BlockStateProvider.DIRECT_CODEC.fieldOf("states").forGetter(o -> o.block),
                     BlockPredicate.CODEC.fieldOf("allowed_ground").forGetter(o -> o.allowedGround)
             )
             .apply(instance, StalactiteFeatureConfig::new));
@@ -28,7 +28,7 @@ public class StalactiteFeatureConfig {
     public StalactiteFeatureConfig(boolean ceiling, Block block, Block... ground) {
         this(
                 ceiling,
-                BlockStateProvider.simple(block),
+                BlockStateProvider.of(block),
                 net.minecraft.world.level.levelgen.blockpredicates.BlockPredicate.matchesBlocks(ground)
         );
     }

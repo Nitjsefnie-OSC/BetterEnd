@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:block",
+  "pools": [
+    {
+      "condition": {
+        "type": "minecraft:survives_explosion"
+      },
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "betterend:terminite_bulb_lantern_black"
+        }
+      ],
+      "rolls": 1
+    }
+  ]
+}

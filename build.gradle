@@ -127,32 +127,32 @@ dependencies {
     // with "Failed to setup Minecraft"). We declare the matching fabric-api ourselves above, so strip theirs.
     def noFabricApi = { exclude group: "net.fabricmc.fabric-api" }
 
-    // WTHIT is disabled for 26.3: no compatible build has been published (it tops out at fabric-19.0.1,
-    // targeting 26.1.x). Re-enable once it ships a 26.3 build (also un-comment wthit_version in
+    // WTHIT is disabled for 26.3: no compatible build has been published (checked for the 26.3 release; it
+    // tops out at fabric-19.0.1, targeting 26.1.x). Re-enable once it ships a 26.3 build (also un-comment wthit_version in
     // gradle.properties and re-add "wthit" to optional_dependencies there).
 //    runtimeOnly("mcp.mobius.waila:wthit:fabric-${project.wthit_version}", noFabricApi) // run against the full jar
 
     //1.19.3 modApi "vazkii.patchouli:Patchouli:${project.patchouli_version}"
     // alsoInclude=false: BetterEnd doesn't bundle BCLib into its own jar.
     gradle.modApiOrLocal(dependencies, ':BCLib', "org.betterx:bclib:${project.bclib_version}", false)
+    // REI stays disabled: REI 26.3.824 targets 26.3 (needs architectury 22.x), but BetterEnd's REI integration
+    // sources (integration/rei) have been commented out since long before 26.x and would need a full port.
 //    compileOnly "me.shedaniel:RoughlyEnoughItems-fabric:${project.rei_version}"
 //    localRuntime "me.shedaniel:RoughlyEnoughItems-api-fabric:${project.rei_version}"
 
+    // Trinkets stays disabled: no 26.3 build exists (CCA has 8.1.0 for 26.3, but is only needed for Trinkets).
     //needed for trinkets, otherwise BetterEnd would require users to install trinkets
     //api "org.ladysnake.cardinal-components-api:cardinal-components-base:${project.cca_version}"
 //    localRuntime "org.ladysnake.cardinal-components-api:cardinal-components-base:${project.cca_version}"
 //    compileOnly "dev.emi:trinkets:${project.trinkets_version}"
 //    localRuntime "dev.emi:trinkets:${project.trinkets_version}"
 
+    // EMI stays disabled: no 26.3 build exists.
 //    compileOnly "dev.emi:emi-fabric:${emi_version}:api"
 //    localRuntime "dev.emi:emi-fabric:${emi_version}"
 
-    // JEI is disabled for 26.3: no compatible build has been published, and JEI's artifact id embeds the
-    // Minecraft version, so there is no `jei-26.3-snapshot-5-fabric*` to resolve at all. Re-enable once JEI
-    // ships a 26.3 build (also un-comment jei_version in gradle.properties and re-add "jei" to
-    // optional_dependencies there).
-//    compileOnly("mezz.jei:jei-${project.minecraft_version}-fabric-api:${project.jei_version}", noFabricApi) // compile against the API
-//    localRuntime("mezz.jei:jei-${project.minecraft_version}-fabric:${project.jei_version}", noFabricApi) // run against the full jar
+    compileOnly("mezz.jei:jei-${project.minecraft_version}-fabric-api:${project.jei_version}", noFabricApi) // compile against the API
+    localRuntime("mezz.jei:jei-${project.minecraft_version}-fabric:${project.jei_version}", noFabricApi) // run against the full jar
 
     localRuntime("com.terraformersmc:modmenu:${project.modmenu_version}", noFabricApi)
 

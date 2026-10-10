@@ -173,8 +173,12 @@ public class ToolsWithHeadsSet extends EquipmentSet {
                                 .build(context)
                 )
         );
+        // The default factory for this slot would also call Item.Properties#tool with the spear's (null) mining
+        // tag, adding a minecraft:tool rule without a tag key and overwriting the spear's attack attributes.
+        // Vanilla spears carry no tool component; the spear properties come from the slot's config trait.
         add(
                 ToolSlot.SPEAR_SLOT,
+                (definition, values) -> new Item(commonToolProperties(definition.getProperties())),
                 ItemTraits.RECIPE_ITEM.with(
                         (key, item, context) -> RecipeBuilder
                                 .smithing(key.identifier(), item)

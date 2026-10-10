@@ -10,6 +10,8 @@ import net.minecraft.world.item.Item;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 
+import java.util.Locale;
+
 public class ArmoredElytra extends Item implements BetterEndElytra {
     private final Identifier wingTexture;
     private final double movementFactor;
@@ -20,7 +22,7 @@ public class ArmoredElytra extends Item implements BetterEndElytra {
             ItemDefinition<?, ?> definition
     ) {
         super(definition.getProperties());
-        final var name = definition.itemKey.identifier().getPath().toLowerCase();
+        final var name = definition.itemKey.identifier().getPath().toLowerCase(Locale.ROOT);
         this.wingTexture = BetterEnd.C.mk("textures/entity/" + name + ".png");
 
         this.movementFactor = movementFactor;

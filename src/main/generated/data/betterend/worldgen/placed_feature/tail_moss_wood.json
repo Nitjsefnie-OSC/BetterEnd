@@ -3,12 +3,9 @@
     "type": "betterend:wall_plant_on_log_feature",
     "radius": 4,
     "state": {
-      "type": "minecraft:simple_state_provider",
-      "state": {
-        "Name": "betterend:tail_moss",
-        "Properties": {
-          "facing": "north"
-        }
+      "id": "betterend:tail_moss",
+      "properties": {
+        "facing": "north"
       }
     }
   },

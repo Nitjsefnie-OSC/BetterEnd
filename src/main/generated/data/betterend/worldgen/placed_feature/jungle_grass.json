@@ -5,10 +5,7 @@
     "radius": 7,
     "raw_heightmap": true,
     "state": {
-      "type": "minecraft:simple_state_provider",
-      "state": {
-        "Name": "betterend:jungle_grass"
-      }
+      "id": "betterend:jungle_grass"
     }
   },
   "placement": [

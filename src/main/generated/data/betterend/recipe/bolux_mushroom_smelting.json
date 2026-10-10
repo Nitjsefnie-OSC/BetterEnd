@@ -1,0 +1,9 @@
+{
+  "type": "minecraft:smelting",
+  "category": "food",
+  "cookingtime": 200,
+  "ingredient": "betterend:bolux_mushroom",
+  "result": {
+    "id": "betterend:bolux_mushroom_cooked"
+  }
+}

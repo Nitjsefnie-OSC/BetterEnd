@@ -14,7 +14,9 @@ import org.betterx.bclib.util.MHelper;
 import org.betterx.bclib.util.SplineHelper;
 import org.betterx.betterend.noise.OpenSimplexNoise;
 import org.betterx.betterend.registry.EndBlocks;
+import org.betterx.betterend.registry.EndTags;
 import de.ambertation.wover.feature.api.WriteZone;
+import de.ambertation.wover.feature.api.features.GrowableFeature;
 import de.ambertation.wover.tag.api.predefined.CommonBlockTags;
 
 import com.mojang.serialization.MapCodec;
@@ -24,6 +26,7 @@ import net.minecraft.core.BlockPos.MutableBlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.LeavesBlock;
 import net.minecraft.world.level.block.state.BlockState;
@@ -34,7 +37,7 @@ import org.joml.Vector3f;
 import java.util.List;
 import java.util.function.Function;
 
-public class LacugroveFeature extends DefaultFeature {
+public class LacugroveFeature extends DefaultFeature implements GrowableFeature {
     public static final MapCodec<LacugroveFeature> CODEC = MapCodec.unit(LacugroveFeature::new);
 
     @Override
@@ -61,7 +64,25 @@ public class LacugroveFeature extends DefaultFeature {
             BlockPos pos
     ) {
         if (!world.getBlockState(pos.below()).is(BlockTags.NYLIUM)) return false;
+        return generate(world, random, pos);
+    }
 
+    /**
+     * Grows the tree from a lacugrove sapling.
+     * <p>
+     * The sapling may be planted on anything in {@link EndTags#SURVIVES_ON_MOSS_OR_DUST}, and endstone dust
+     * is in there but is not nylium - so with only {@link #place}'s worldgen check a sapling on dust took
+     * every bone meal and never grew. The sapling's own soil decides here instead; worldgen keeps its
+     * nylium check, so naturally generated lacugroves are unchanged.
+     */
+    @Override
+    public boolean grow(ServerLevelAccessor level, BlockPos pos, RandomSource random) {
+        if (!(level instanceof WorldGenLevel world)) return false;
+        if (!world.getBlockState(pos.below()).is(EndTags.SURVIVES_ON_MOSS_OR_DUST)) return false;
+        return generate(world, random, pos);
+    }
+
+    private boolean generate(WorldGenLevel world, RandomSource random, BlockPos pos) {
         // size reaches 25, and the trunk/leaf-ball flood-fills and canGenerate probe are otherwise bounded
         // only by their own shape - past the 3x3 chunks a feature may touch. Clip every one to the write
         // zone; see WriteZone.

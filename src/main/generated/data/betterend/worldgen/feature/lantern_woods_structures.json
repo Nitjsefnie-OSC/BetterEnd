@@ -1,8 +1,6 @@
 {
   "type": "betterend:building_list_feature",
-  "default": {
-    "Name": "betterend:rutiscus"
-  },
+  "default": "betterend:rutiscus",
   "structures": [
     {
       "offset_y": 0,

@@ -8,6 +8,7 @@ import org.betterx.bclib.util.BlocksHelper;
 import org.betterx.bclib.util.MHelper;
 import org.betterx.betterend.world.features.terrain.SulphurFloorMix;
 import org.betterx.betterend.blocks.EndBlockProperties;
+import org.betterx.betterend.blocks.HydrothermalVentBlock;
 import org.betterx.betterend.blocks.SulphurCrystalBlock;
 import org.betterx.betterend.noise.OpenSimplexNoise;
 import org.betterx.betterend.registry.EndStructures;
@@ -28,6 +29,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.SpeleothemBlock;
 import net.minecraft.world.level.block.HorizontalDirectionalBlock;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.level.block.state.properties.SpeleothemThickness;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.ChunkGenerator;
@@ -201,7 +203,7 @@ public class SulphuricCavePiece extends BasePiece {
                     if (dist < r * r) {
                         BlockState state = chunk.getBlockState(mut);
                         if (isReplaceable(state)) {
-                            chunk.setBlockState(mut, y < waterLevel ? WATER : CAVE_AIR, 3);
+                            setChunkBlock(chunk, mut, y < waterLevel ? WATER : CAVE_AIR);
                         }
                     } else if (dist < r2 * r2) {
                         BlockState state = chunk.getBlockState(mut);
@@ -211,7 +213,7 @@ public class SulphuricCavePiece extends BasePiece {
                             if (v > 0.4) {
                                 brimstone.add(mut.immutable());
                             } else {
-                                chunk.setBlockState(mut, rock, 3);
+                                setChunkBlock(chunk, mut, rock);
                             }
                         }
                     }
@@ -260,25 +262,32 @@ public class SulphuricCavePiece extends BasePiece {
         }
 
         for (int j = 0; j <= dist; j++) {
-            chunk.setBlockState(mut, EndStoneBlocks.SULPHURIC_ROCK.getBlock(SlotType.SOURCE).defaultBlockState(), 3);
+            setChunkBlock(chunk, mut, EndStoneBlocks.SULPHURIC_ROCK.getBlock(SlotType.SOURCE).defaultBlockState());
             MHelper.shuffle(HORIZONTAL, random);
             for (Direction dir : HORIZONTAL) {
                 BlockPos p = mut.relative(dir);
                 if (random.nextBoolean() && chunk.getBlockState(p).is(Blocks.WATER)) {
-                    chunk.setBlockState(
+                    setChunkBlock(
+                            chunk,
                             p,
-                            EndWallPlantBlocks.TUBE_WORM.defaultBlockState().setValue(HorizontalDirectionalBlock.FACING, dir),
-                            3
+                            EndWallPlantBlocks.TUBE_WORM.defaultBlockState().setValue(HorizontalDirectionalBlock.FACING, dir)
                     );
                 }
             }
             mut.setY(mut.getY() + 1);
         }
-        chunk.setBlockState(mut, EndStoneBlocks.HYDROTHERMAL_VENT.defaultBlockState(), 3);
+        setChunkBlock(
+                chunk,
+                mut,
+                EndStoneBlocks.HYDROTHERMAL_VENT.defaultBlockState().setValue(
+                        HydrothermalVentBlock.WATERLOGGED,
+                        chunk.getFluidState(mut).getType() == Fluids.WATER
+                )
+        );
         mut.setY(mut.getY() + 1);
         state = chunk.getBlockState(mut);
         while (state.is(Blocks.WATER)) {
-            chunk.setBlockState(mut, EndStoneBlocks.VENT_BUBBLE_COLUMN.defaultBlockState(), 3);
+            setChunkBlock(chunk, mut, EndStoneBlocks.VENT_BUBBLE_COLUMN.defaultBlockState());
             world.scheduleTick(mut.immutable(), EndStoneBlocks.VENT_BUBBLE_COLUMN, MHelper.randRange(8, 32, random));
             mut.setY(mut.getY() + 1);
             if (mut.getY() > chunkMaxY) break;
@@ -295,11 +304,11 @@ public class SulphuricCavePiece extends BasePiece {
         if (!state.getValue(EndBlockProperties.ACTIVE) && isBuriedInChunk(chunk, pos) && !facesOpenSpaceInChunk(chunk, pos)) {
             BlockState mixed = SulphurFloorMix.pickByNoise(pos.getX(), pos.getY(), pos.getZ());
             if (mixed != null) {
-                chunk.setBlockState(pos, mixed, 3);
+                setChunkBlock(chunk, pos, mixed);
                 return;
             }
         }
-        chunk.setBlockState(pos, state, 3);
+        setChunkBlock(chunk, pos, state);
         if (state.getValue(EndBlockProperties.ACTIVE)) {
             makeShards(chunk, pos, random);
         }
@@ -402,12 +411,12 @@ public class SulphuricCavePiece extends BasePiece {
             } else {
                 thickness = SpeleothemThickness.MIDDLE;
             }
-            chunk.setBlockState(
+            setChunkBlock(
+                    chunk,
                     mut,
                     Blocks.SULFUR_SPIKE.defaultBlockState()
                           .setValue(SpeleothemBlock.TIP_DIRECTION, tipDirection)
-                          .setValue(SpeleothemBlock.THICKNESS, thickness),
-                    3
+                          .setValue(SpeleothemBlock.THICKNESS, thickness)
             );
         }
     }
@@ -469,12 +478,12 @@ public class SulphuricCavePiece extends BasePiece {
     private void makeShards(ChunkAccess chunk, BlockPos pos, RandomSource random) {
         for (Direction dir : BlocksHelper.DIRECTIONS) {
             BlockPos side;
-            if (random.nextInt(16) == 0 && chunk.getBlockState((side = pos.relative(dir))).is(Blocks.WATER)) {
-                BlockState state = EndStoneBlocks.SULPHUR_CRYSTAL.defaultBlockState()
-                                                            .setValue(SulphurCrystalBlock.WATERLOGGED, true)
-                                                            .setValue(SulphurCrystalBlock.FACING, dir)
-                                                            .setValue(SulphurCrystalBlock.AGE, random.nextInt(3));
-                chunk.setBlockState(side, state, 3);
+            BlockState replaced;
+            if (random.nextInt(16) == 0 && (replaced = chunk.getBlockState((side = pos.relative(dir)))).is(Blocks.WATER)) {
+                BlockState state = SulphurCrystalBlock.naturalState(
+                        EndStoneBlocks.SULPHUR_CRYSTAL.defaultBlockState(), replaced, dir, random.nextInt(3)
+                );
+                setChunkBlock(chunk, side, state);
             }
         }
     }

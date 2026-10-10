@@ -8,10 +8,13 @@ import org.betterx.betterend.registry.EndBlocks;
 import org.betterx.betterend.registry.EndTags;
 import org.betterx.datagen.betterend.recipes.EndCraftingRecipesProvider;
 import org.betterx.bclib.trait.block.TemplateModelTrait;
+import org.betterx.betterend.client.models.EndModelKeys;
+import de.ambertation.wover.block.api.client.model.ClientBlockModelRegistry;
 import de.ambertation.wover.block.api.model.ModelTraitLibrary;
 import de.ambertation.wover.block.api.trait.BlockTraits;
-import de.ambertation.wover.block.api.client.trait.BlockModelTrait;
-import de.ambertation.wover.block.api.client.trait.ClientBlockTraits;
+import de.ambertation.wover.block.api.client.trait.BlockModelTrait.ModelFactory;
+import de.ambertation.wover.block.api.model.BlockModelBinding;
+import de.ambertation.wover.block.api.model.ModelKey;
 import de.ambertation.wover.core.api.ModCore;
 import de.ambertation.wover.recipe.api.CraftingRecipeBuilder;
 import de.ambertation.wover.recipe.api.RecipeBuilder;
@@ -73,6 +76,7 @@ public class CrystalSubblocksMaterial implements MaterialManager.Material {
         polished = EndBlocks.defineBlock(name + "_polished", Block::new)
                              .replacePropertiesWithCopy(source)
                              .addTrait(BlockTraits.MINEABLE_WITH.needsPickAxe())
+                             .addTrait(BlockTraits.LOOT_TABLE.dropSelf())
                              .addTrait(EndModelTraits.unshadedCube())
                              // A full crystal cube: vanilla's amethyst_block sits in slow_bouncy with the stone family.
                              .addTrait(BlockTraits.SULFUR_CUBE_ARCHETYPE.slowBouncy())
@@ -80,6 +84,7 @@ public class CrystalSubblocksMaterial implements MaterialManager.Material {
         tiles = EndBlocks.defineBlock(name + "_tiles", Block::new)
                           .replacePropertiesWithCopy(source)
                           .addTrait(BlockTraits.MINEABLE_WITH.needsPickAxe())
+                          .addTrait(BlockTraits.LOOT_TABLE.dropSelf())
                           .addTrait(EndModelTraits.unshadedCube())
                           // A full crystal cube: vanilla's amethyst_block sits in slow_bouncy with the stone family.
                           .addTrait(BlockTraits.SULFUR_CUBE_ARCHETYPE.slowBouncy())
@@ -95,6 +100,7 @@ public class CrystalSubblocksMaterial implements MaterialManager.Material {
         stairs = EndBlocks.defineBlock(name + "_stairs", p -> new StairBlock(source.defaultBlockState(), p))
                            .replacePropertiesWithCopy(source)
                            .addTrait(BlockTraits.MINEABLE_WITH.needsPickAxe())
+                           .addTrait(BlockTraits.LOOT_TABLE.dropSelf())
                            .addTrait(TemplateModelTrait.stairs(
                                    LIT_STAIRS, LIT_STAIRS_INNER, LIT_STAIRS_OUTER,
                                    BetterEnd.C.mk("block/" + name + "_top"),
@@ -104,22 +110,26 @@ public class CrystalSubblocksMaterial implements MaterialManager.Material {
         slab = EndBlocks.defineBlock(name + "_slab", SlabBlock::new)
                          .replacePropertiesWithCopy(source)
                          .addTrait(BlockTraits.MINEABLE_WITH.needsPickAxe())
+                         .addTrait(BlockTraits.LOOT_TABLE.dropSlab())
                          .addTrait(EndModelTraits.slabFrom(() -> source, () -> BetterEnd.C.mk("block/" + name)))
                          .buildAndRegister();
         wall = EndBlocks.defineBlock(name + "_wall", WallBlock::new)
                          .replacePropertiesWithCopy(source)
                          .addTrait(BlockTraits.MINEABLE_WITH.needsPickAxe())
+                         .addTrait(BlockTraits.LOOT_TABLE.dropSelf())
                          .addTrait(ModelTraitLibrary.externalModel())
                          .buildAndRegister();
         pedestal = EndBlocks.defineBlock(name + "_pedestal", EndPedestal::new)
                              .replacePropertiesWithCopy(source)
                              .addTrait(BlockTraits.MINEABLE_WITH.needsPickAxe())
-                             .addTrait(ModCore.isDatagen() ? ClientModel.buildPedestal(source) : null)
+                             .addTrait(BlockTraits.LOOT_TABLE.dropSelf())
+                             .addTrait(BlockModelBinding.of(MODEL_BUILD_PEDESTAL, new BuildPedestalParams(source)))
                              .addTags(EndTags.PEDESTALS)
                              .buildAndRegister();
         bricks = EndBlocks.defineBlock(name + "_bricks", Block::new)
                            .replacePropertiesWithCopy(source)
                            .addTrait(BlockTraits.MINEABLE_WITH.needsPickAxe())
+                           .addTrait(BlockTraits.LOOT_TABLE.dropSelf())
                            .addTrait(EndModelTraits.unshadedCube())
                            // A full crystal cube: vanilla's amethyst_block sits in slow_bouncy with the stone family.
                            .addTrait(BlockTraits.SULFUR_CUBE_ARCHETYPE.slowBouncy())
@@ -127,6 +137,7 @@ public class CrystalSubblocksMaterial implements MaterialManager.Material {
         brick_stairs = EndBlocks.defineBlock(name + "_bricks_stairs", p -> new StairBlock(bricks.defaultBlockState(), p))
                                  .replacePropertiesWithCopy(bricks)
                                  .addTrait(BlockTraits.MINEABLE_WITH.needsPickAxe())
+                                 .addTrait(BlockTraits.LOOT_TABLE.dropSelf())
                                  .addTrait(TemplateModelTrait.stairs(
                                          LIT_STAIRS, LIT_STAIRS_INNER, LIT_STAIRS_OUTER,
                                          BetterEnd.C.mk("block/" + name + "_bricks"),
@@ -136,11 +147,13 @@ public class CrystalSubblocksMaterial implements MaterialManager.Material {
         brick_slab = EndBlocks.defineBlock(name + "_bricks_slab", SlabBlock::new)
                                .replacePropertiesWithCopy(bricks)
                                .addTrait(BlockTraits.MINEABLE_WITH.needsPickAxe())
-                               .addTrait(ModCore.isDatagen() ? ClientModel.buildSlab(bricks) : null)
+                               .addTrait(BlockTraits.LOOT_TABLE.dropSlab())
+                               .addTrait(BlockModelBinding.of(MODEL_BUILD_SLAB, new BuildSlabParams(bricks)))
                                .buildAndRegister();
         brick_wall = EndBlocks.defineBlock(name + "_bricks_wall", WallBlock::new)
                                .replacePropertiesWithCopy(bricks)
                                .addTrait(BlockTraits.MINEABLE_WITH.needsPickAxe())
+                               .addTrait(BlockTraits.LOOT_TABLE.dropSelf())
                                .addTrait(TemplateModelTrait.wall(
                                        LIT_WALL_POST, LIT_WALL_SIDE, LIT_WALL_SIDE_TALL,
                                        BetterEnd.C.mk("block/" + name + "_bricks")))
@@ -253,6 +266,27 @@ public class CrystalSubblocksMaterial implements MaterialManager.Material {
         EndCraftingRecipesProvider.registerPedestal(context, name + "_pedestal", pedestal, slab, pillar);
     }
 
+    private record BuildSlabParams(Block baseBlock) {
+    }
+
+    private static final ModelKey<BuildSlabParams> MODEL_BUILD_SLAB =
+            EndModelKeys.key("crystal_subblocks_material/build_slab");
+
+    private record BuildPedestalParams(Block source) {
+    }
+
+    private static final ModelKey<BuildPedestalParams> MODEL_BUILD_PEDESTAL =
+            EndModelKeys.key("crystal_subblocks_material/build_pedestal");
+
+    /**
+     * Registers the client generators behind this class's model keys. Called from the mod's
+     * {@code wover.client.traits} entrypoint.
+     */
+    @Environment(EnvType.CLIENT)
+    public static void registerClientModels() {
+        ClientModel.register();
+    }
+
     /**
      * Kept in a separate class file (not just an @Environment(CLIENT)-guarded expression):
      * merely creating this lambda - even without ever invoking it - requires resolving the
@@ -262,19 +296,36 @@ public class CrystalSubblocksMaterial implements MaterialManager.Material {
      */
     @Environment(EnvType.CLIENT)
     private static class ClientModel {
-        private static BlockModelTrait buildSlab(Block baseBlock) {
-            return ClientBlockTraits.MODEL.with(
-                    (key, block, generator) -> generator.createSlab(block, baseBlock)
+        private static void register() {
+            ClientBlockModelRegistry.register(
+                    MODEL_BUILD_SLAB,
+                    (key, block, generator, payload) -> buildSlabFrom(payload)
+                            .provideBlockModels(key, block, generator)
+            );
+            ClientBlockModelRegistry.register(
+                    MODEL_BUILD_PEDESTAL,
+                    (key, block, generator, payload) -> buildPedestalFrom(payload)
+                            .provideBlockModels(key, block, generator)
             );
         }
 
-        private static BlockModelTrait buildPedestal(Block source) {
-            return ClientBlockTraits.MODEL.with(
-                    (key, block, generator) -> PedestalBlock.provideBlockModel(
-                            generator,
-                            EndPedestal.createTextureMapping(source),
-                            block
-                    )
+        private static ModelFactory buildSlabFrom(BuildSlabParams p) {
+            return buildSlab(p.baseBlock());
+        }
+
+        private static ModelFactory buildPedestalFrom(BuildPedestalParams p) {
+            return buildPedestal(p.source());
+        }
+
+        private static ModelFactory buildSlab(Block baseBlock) {
+            return (key, block, generator) -> generator.createSlab(block, baseBlock);
+        }
+
+        private static ModelFactory buildPedestal(Block source) {
+            return (key, block, generator) -> PedestalBlock.provideBlockModel(
+                    generator,
+                    EndPedestal.createTextureMapping(source),
+                    block
             );
         }
     }

@@ -1,6 +1,7 @@
 package org.betterx.betterend.world.features;
 
-import org.betterx.bclib.util.StructureHelper;
+import de.ambertation.wover.structure.api.StructureNBT;
+import org.betterx.betterend.BetterEnd;
 import org.betterx.betterend.util.LootTableUtil;
 import de.ambertation.wover.tag.api.predefined.CommonBlockTags;
 
@@ -9,6 +10,7 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.WorldGenLevel;
@@ -24,6 +26,10 @@ import net.minecraft.world.level.levelgen.structure.templatesystem.StructureProc
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate.StructureBlockInfo;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.jetbrains.annotations.Nullable;
 
 public class BuildingListFeature extends NBTFeature<BuildingListFeatureConfig> {
@@ -108,9 +114,30 @@ public class BuildingListFeature extends NBTFeature<BuildingListFeatureConfig> {
 
         public StructureTemplate getStructure() {
             if (structure == null) {
-                structure = StructureHelper.readStructure(structurePath);
+                structure = readTemplate(structurePath);
             }
             return structure;
+        }
+
+        private static final Pattern TEMPLATE_PATH = Pattern.compile("/data/([a-z0-9_.-]+)/structure/(.+)\\.nbt");
+
+        /**
+         * {@code path} is a classpath path, as the feature JSON stores it. Templates in the usual
+         * {@code /data/<namespace>/structure/} folder go through the shared, cached loader; anything else is
+         * read directly.
+         */
+        @Nullable
+        private static StructureTemplate readTemplate(String path) {
+            final Matcher m = TEMPLATE_PATH.matcher(path);
+            if (m.matches()) {
+                return StructureNBT.readTemplate(Identifier.fromNamespaceAndPath(m.group(1), m.group(2)));
+            }
+            try (InputStream in = BuildingListFeature.class.getResourceAsStream(path)) {
+                return in == null ? null : StructureNBT.readTemplate(in);
+            } catch (IOException e) {
+                BetterEnd.LOGGER.error("Unable to load structure " + path, e);
+                return null;
+            }
         }
     }
 

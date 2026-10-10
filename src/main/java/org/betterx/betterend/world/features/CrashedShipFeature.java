@@ -3,13 +3,15 @@ package org.betterx.betterend.world.features;
 import org.betterx.bclib.api.v2.levelgen.features.features.DefaultFeature;
 import org.betterx.bclib.util.MHelper;
 import org.betterx.bclib.util.StructureErode;
-import org.betterx.bclib.util.StructureHelper;
+import de.ambertation.wover.structure.api.StructureNBT;
 import org.betterx.betterend.util.BlockFixer;
+import de.ambertation.wover.feature.api.WriteZone;
 import de.ambertation.wover.tag.api.predefined.CommonBlockTags;
 
 import com.mojang.serialization.MapCodec;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Vec3i;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.LevelReader;
@@ -27,7 +29,7 @@ import net.minecraft.world.level.chunk.ChunkGenerator;
 
 public class CrashedShipFeature extends NBTFeature<NBTFeatureConfig> {
     private static final StructureProcessor REPLACER;
-    private static final String STRUCTURE_PATH = "/data/minecraft/structure/end_city/ship.nbt";
+    private static final Identifier STRUCTURE_ID = Identifier.withDefaultNamespace("end_city/ship");
     private StructureTemplate structure;
 
     public static final MapCodec<CrashedShipFeature> CODEC = NBTFeatureConfig.CODEC.xmap(CrashedShipFeature::new, f -> f.config);
@@ -51,10 +53,10 @@ public class CrashedShipFeature extends NBTFeature<NBTFeatureConfig> {
         if (structure == null) {
             structure = world
                     .getLevel()
-                    .getStructureManager()
-                    .getOrCreate(Identifier.withDefaultNamespace("end_city/ship"));
+                    .getStructureTemplateManager()
+                    .getOrCreate(STRUCTURE_ID);
             if (structure == null) {
-                structure = StructureHelper.readStructure(STRUCTURE_PATH);
+                structure = StructureNBT.readTemplate(STRUCTURE_ID);
             }
         }
         return structure;
@@ -121,16 +123,19 @@ public class CrashedShipFeature extends NBTFeature<NBTFeatureConfig> {
         center = center.offset((int) (-offset.getX() * 0.5), 0, (int) (-offset.getZ() * 0.5));
 
         BoundingBox structB = structure.getBoundingBox(placementData, center);
-        bounds = StructureHelper.intersectBoxes(bounds, structB);
+        bounds = intersectBoxes(bounds, structB);
 
         addStructureData(placementData);
         structure.placeInWorld(world, center, center, placementData.setBoundingBox(bounds), random, 2);
 
         StructureErode.erodeIntense(world, bounds, random);
-        BlockFixer.fixBlocks(
+        // makeBox() is exactly the 3x3 chunks a feature may touch, and BlockFixer peeks one block sideways
+        // from every column it scans - keep that scan inside the write zone. See WriteZone.
+        BlockFixer.fixBlocksInZone(
                 world,
                 new BlockPos(bounds.minX(), bounds.minY(), bounds.minZ()),
-                new BlockPos(bounds.maxX(), bounds.maxY(), bounds.maxZ())
+                new BlockPos(bounds.maxX(), bounds.maxY(), bounds.maxZ()),
+                WriteZone.of(world)
         );
 
         return true;
@@ -191,5 +196,17 @@ public class CrashedShipFeature extends NBTFeature<NBTFeatureConfig> {
                 return REPLACER_CODEC;
             }
         };
+    }
+
+    private static BoundingBox intersectBoxes(BoundingBox box1, BoundingBox box2) {
+        int x1 = MHelper.max(box1.minX(), box2.minX());
+        int y1 = MHelper.max(box1.minY(), box2.minY());
+        int z1 = MHelper.max(box1.minZ(), box2.minZ());
+
+        int x2 = MHelper.min(box1.maxX(), box2.maxX());
+        int y2 = MHelper.min(box1.maxY(), box2.maxY());
+        int z2 = MHelper.min(box1.maxZ(), box2.maxZ());
+
+        return BoundingBox.fromCorners(new Vec3i(x1, y1, z1), new Vec3i(x2, y2, z2));
     }
 }

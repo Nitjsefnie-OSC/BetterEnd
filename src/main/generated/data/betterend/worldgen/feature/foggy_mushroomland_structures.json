@@ -1,8 +1,6 @@
 {
   "type": "betterend:building_list_feature",
-  "default": {
-    "Name": "betterend:end_moss"
-  },
+  "default": "betterend:end_moss",
   "structures": [
     {
       "offset_y": 0,

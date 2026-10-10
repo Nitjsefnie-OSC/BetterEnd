@@ -13,7 +13,7 @@ import net.minecraft.world.level.levelgen.feature.stateproviders.BlockStateProvi
 public class WallPlantFeatureConfig extends ScatterFeatureConfig {
     public static final MapCodec<WallPlantFeatureConfig> CODEC = RecordCodecBuilder.mapCodec(instance -> instance
             .group(
-                    BlockStateProvider.CODEC.fieldOf("state").forGetter(o -> o.plant),
+                    BlockStateProvider.DIRECT_CODEC.fieldOf("state").forGetter(o -> o.plant),
                     Codec.INT.fieldOf("radius").forGetter(o -> o.radius)
             )
             .apply(
@@ -25,7 +25,7 @@ public class WallPlantFeatureConfig extends ScatterFeatureConfig {
     public final BlockStateProvider plant;
 
     public WallPlantFeatureConfig(Block plant, int radius) {
-        this(BlockStateProvider.simple(plant), radius);
+        this(BlockStateProvider.of(plant), radius);
     }
 
     public WallPlantFeatureConfig(BlockStateProvider plant, int radius) {

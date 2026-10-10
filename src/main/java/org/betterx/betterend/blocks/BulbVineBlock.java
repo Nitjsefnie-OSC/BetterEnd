@@ -28,7 +28,7 @@ import net.minecraft.world.level.storage.loot.predicates.BonusLevelTableConditio
 import net.minecraft.world.level.storage.loot.predicates.ExplosionCondition;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 import net.minecraft.world.level.storage.loot.predicates.MatchBlock;
-import net.minecraft.world.level.storage.loot.providers.number.ConstantValue;
+import net.minecraft.world.level.storage.loot.providers.number.ints.ContextIntProviders;
 
 public class BulbVineBlock extends BaseVineBlock {
     public BulbVineBlock(BlockBehaviour.Properties props) {
@@ -81,9 +81,9 @@ public class BulbVineBlock extends BaseVineBlock {
                 .withPool(
                         LootPool
                                 .lootPool()
-                                .setRolls(ConstantValue.exactly(1.0F))
+                                .setRolls(ContextIntProviders.exactly(1))
                                 .add(LootItem.lootTableItem(EndResourceItems.GLOWING_BULB.asItem())
-                                             .apply(SetItemCountFunction.setCount(ConstantValue.exactly(1)))
+                                             .apply(SetItemCountFunction.setCount(ContextIntProviders.exactly(1)))
                                 )
                                 .when(shearsOrHoeOrSilk)
                                 .when(bottom)
@@ -91,9 +91,9 @@ public class BulbVineBlock extends BaseVineBlock {
                 .withPool(
                         LootPool
                                 .lootPool()
-                                .setRolls(ConstantValue.exactly(1.0F))
+                                .setRolls(ContextIntProviders.exactly(1))
                                 .add(LootItem.lootTableItem(EndVineBlocks.BULB_VINE_SEED.asItem())
-                                             .apply(SetItemCountFunction.setCount(ConstantValue.exactly(1)))
+                                             .apply(SetItemCountFunction.setCount(ContextIntProviders.exactly(1)))
                                              .when(ExplosionCondition.survivesExplosion())
                                              .when(BonusLevelTableCondition.bonusLevelFlatChance(
                                                      provider.fortune(),

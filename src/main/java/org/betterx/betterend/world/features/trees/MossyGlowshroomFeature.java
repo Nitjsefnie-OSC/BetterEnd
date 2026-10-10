@@ -16,7 +16,9 @@ import org.betterx.betterend.blocks.MossyGlowshroomCapBlock;
 import org.betterx.betterend.blocks.basis.FurBlock;
 import org.betterx.betterend.noise.OpenSimplexNoise;
 import org.betterx.betterend.registry.EndBlocks;
+import org.betterx.betterend.registry.EndTags;
 import de.ambertation.wover.feature.api.WriteZone;
+import de.ambertation.wover.feature.api.features.GrowableFeature;
 
 import com.mojang.serialization.MapCodec;
 
@@ -24,6 +26,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.ChunkGenerator;
@@ -33,7 +36,7 @@ import org.joml.Vector3f;
 import java.util.List;
 import java.util.function.Function;
 
-public class MossyGlowshroomFeature extends DefaultFeature {
+public class MossyGlowshroomFeature extends DefaultFeature implements GrowableFeature {
     public static final MapCodec<MossyGlowshroomFeature> CODEC = MapCodec.unit(MossyGlowshroomFeature::new);
 
     @Override
@@ -87,7 +90,26 @@ public class MossyGlowshroomFeature extends DefaultFeature {
     ) {
         BlockState down = world.getBlockState(blockPos.below());
         if (!down.is(EndTerrainBlocks.END_MYCELIUM) && !down.is(EndTerrainBlocks.END_MOSS)) return false;
+        return generate(world, random, blockPos);
+    }
 
+    /**
+     * Grows the mushroom from a mossy glowshroom sapling.
+     * <p>
+     * The sapling may be planted on anything in {@link EndTags#SURVIVES_ON_MOSS_OR_MYCELIUM}, which also
+     * holds the pallidium and sangnum that coat the flower islets - so with only {@link #place}'s worldgen
+     * check a sapling on those took every bone meal and never grew. The sapling's own soil decides here
+     * instead; worldgen keeps its end moss / end mycelium check, so naturally generated glowshrooms are
+     * unchanged.
+     */
+    @Override
+    public boolean grow(ServerLevelAccessor level, BlockPos pos, RandomSource random) {
+        if (!(level instanceof WorldGenLevel world)) return false;
+        if (!world.getBlockState(pos.below()).is(EndTags.SURVIVES_ON_MOSS_OR_MYCELIUM)) return false;
+        return generate(world, random, pos);
+    }
+
+    private boolean generate(WorldGenLevel world, RandomSource random, BlockPos blockPos) {
         // height reaches 25 and the cap's wave/roots geometry adds further spread - both the canGenerate
         // probe and the final flood-fill are otherwise bounded only by their own shape, past the 3x3 chunks
         // a feature may touch. Clip both to the write zone; see WriteZone.

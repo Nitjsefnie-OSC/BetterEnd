@@ -13,7 +13,7 @@ import net.minecraft.world.level.levelgen.feature.stateproviders.BlockStateProvi
 public class VineFeatureConfig extends ScatterFeatureConfig {
     public static final MapCodec<VineFeatureConfig> CODEC = RecordCodecBuilder.mapCodec(instance -> instance
             .group(
-                    BlockStateProvider.CODEC.fieldOf("state").forGetter(o -> o.plant),
+                    BlockStateProvider.DIRECT_CODEC.fieldOf("state").forGetter(o -> o.plant),
                     Codec.INT.fieldOf("radius").forGetter(o -> o.radius),
                     Codec.INT.fieldOf("max_length").forGetter(o -> o.maxLength)
             )
@@ -27,7 +27,7 @@ public class VineFeatureConfig extends ScatterFeatureConfig {
     public final int maxLength;
 
     public VineFeatureConfig(Block vineBlock, int maxLength) {
-        this(BlockStateProvider.simple(vineBlock), 6, maxLength);
+        this(BlockStateProvider.of(vineBlock), 6, maxLength);
     }
 
     public VineFeatureConfig(BlockStateProvider plant, int radius, int maxLength) {

@@ -1,5 +1,6 @@
 package org.betterx.betterend.registry.block;
 
+import de.ambertation.wover.block.api.render.BlockRenderTraits;
 import org.betterx.bclib.api.v3.tag.BCLBlockTags;
 import org.betterx.bclib.blocks.LeveledAnvilBlock;
 import org.betterx.bclib.items.BaseAnvilItem;
@@ -33,8 +34,6 @@ import de.ambertation.wover.block.api.DefaultBlockDefinition;
 import de.ambertation.wover.block.api.VanillaBlockDefinition;
 import de.ambertation.wover.block.api.model.ModelTraitLibrary;
 import de.ambertation.wover.core.api.ModCore;
-import de.ambertation.wover.block.api.client.trait.BlockModelTrait;
-import de.ambertation.wover.block.api.client.trait.ClientBlockTraits;
 import de.ambertation.wover.block.api.trait.BlockTraits;
 import de.ambertation.wover.item.api.BlockItemDefinition;
 import de.ambertation.wover.pottable.api.trait.PottablePlantBlockTrait;
@@ -56,7 +55,6 @@ import net.minecraft.world.level.block.state.BlockBehaviour.OffsetType;
 import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.level.material.PushReaction;
 import net.minecraft.world.level.storage.loot.LootTable;
-import net.minecraft.world.level.storage.loot.providers.number.UniformGenerator;
 
 import java.util.List;
 import java.util.function.Function;
@@ -389,7 +387,7 @@ public class EndPlantBlocks {
     )
             .addTrait(PlantBlockTrait.compostableWithColor(MapColor.COLOR_PINK, false, false))
             .addTrait(VegetationTagTrait.plant())
-            .addTrait(ClientBlockTraits.RENDER_LAYER.cutout())
+            .addTrait(BlockRenderTraits.RENDER_LAYER.cutout())
             .addTrait(BlockTraits.MINEABLE_WITH.needsShears())
             .addTrait(BlockTraits.LOOT_TABLE.dropSelf())
             .addTrait(ModelTraitLibrary.externalModel())
@@ -444,7 +442,7 @@ public class EndPlantBlocks {
             .randomTicks()
             .strength(1.0F)
             .sound(SoundType.BAMBOO)
-            .addTrait(ClientBlockTraits.RENDER_LAYER.cutout())
+            .addTrait(BlockRenderTraits.RENDER_LAYER.cutout())
             .addTrait(BlockTraits.LOOT_TABLE.dropSelf())
             .addTrait(PottablePlantBlockTrait.any())
             .addTrait(ModelTraitLibrary.externalModelDelegatedItem(() -> BetterEnd.C.mk("block/neon_cactus_small")))

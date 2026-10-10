@@ -23,15 +23,15 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 /**
- * BetterEnd builds the End's island terrain in {@link TerrainGenerator#fillSlice} (via
- * {@link NoiseChunkMixin}), which bypasses the vanilla density function. The vanilla
+ * BetterEnd builds the End's island terrain in {@link TerrainGenerator#withIslandTerrain} (via
+ * {@link NoiseBasedChunkGeneratorTerrainMixin}), which replaces the vanilla density function. The vanilla
  * {@code getBaseHeight}/{@code getBaseColumn} (and therefore {@code getFirstOccupiedHeight}) still
  * evaluate that now-unused vanilla density, so structure placement sees a central-island-plus-void
  * world and places structures at the void floor (y = 0) instead of on the real islands.
  * <p>
  * This mixin redirects those two height queries to {@link TerrainGenerator#getSurfaceHeight} - the
- * exact same island density {@code fillSlice} uses - but ONLY when the End target flag is set on the
- * {@link NoiseGeneratorSettings}. That is the very flag {@link NoiseChunkMixin} uses to decide
+ * exact same island density the terrain uses - but ONLY when the End target flag is set on the
+ * {@link NoiseGeneratorSettings}. That is the very flag {@link NoiseBasedChunkGeneratorTerrainMixin} uses to decide
  * whether it replaces the terrain, so the override and the terrain always agree, and the vanilla End
  * / other dimensions are left untouched.
  */
@@ -85,11 +85,14 @@ public abstract class NoiseBasedChunkGeneratorHeightMixin {
     @Unique
     private int be_islandSurfaceY(int x, int z) {
         final NoiseSettings ns = settings.value().noiseSettings();
+        // 26.3 removed NoiseSettings#getCellWidth/getCellHeight; the cell size now lives in the router's
+        // interpolated(...) node, which is also where the island terrain is sampled.
+        final int[] cellSize = TerrainGenerator.islandCellSize(settings.value());
         return TerrainGenerator.getSurfaceHeight(
                 x,
                 z,
-                ns.getCellWidth(),
-                ns.getCellHeight(),
+                cellSize[0],
+                cellSize[1],
                 ns.height(),
                 ns.minY()
         );

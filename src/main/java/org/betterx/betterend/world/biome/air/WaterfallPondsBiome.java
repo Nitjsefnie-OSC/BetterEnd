@@ -44,9 +44,8 @@ public class WaterfallPondsBiome extends EndBiome.Config {
                 .music(EndSounds.MUSIC_WATER)
                 .waterAndFogColor(80, 210, 220)
                 .plantsColor(110, 195, 150)
-                // Waterfall:flower island ratio 1:2 - flower_islets stays at 0.4.
-                // ~1/3 of flower_islets' 0.4 weight in the void picker: flower islands clearly dominate.
-                .genChance(0.13F)
+                // as common as flower_islets and ice_starfield: 1/5 of the void ring, see FlowerIsletsBiome
+                .genChance(0.4F)
                 .structure(EndStructures.END_BRIDGE)
                 // Self-supporting SDF islands: this void-ring biome grows its own flat-topped
                 // end-stone islands (RAW_GENERATION); the pond feature then carves the flat top

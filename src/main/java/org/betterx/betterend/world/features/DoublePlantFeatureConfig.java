@@ -13,8 +13,8 @@ import net.minecraft.world.level.levelgen.feature.stateproviders.BlockStateProvi
 public class DoublePlantFeatureConfig extends ScatterFeatureConfig {
     public static final MapCodec<DoublePlantFeatureConfig> CODEC = RecordCodecBuilder.mapCodec(instance -> instance
             .group(
-                    BlockStateProvider.CODEC.fieldOf("small_state").forGetter(o -> o.smallPlant),
-                    BlockStateProvider.CODEC.fieldOf("large_state").forGetter(o -> o.largePlant),
+                    BlockStateProvider.DIRECT_CODEC.fieldOf("small_state").forGetter(o -> o.smallPlant),
+                    BlockStateProvider.DIRECT_CODEC.fieldOf("large_state").forGetter(o -> o.largePlant),
                     Codec.INT.fieldOf("radius").forGetter(o -> o.radius)
             )
             .apply(
@@ -26,7 +26,7 @@ public class DoublePlantFeatureConfig extends ScatterFeatureConfig {
     public final BlockStateProvider largePlant;
 
     public DoublePlantFeatureConfig(Block smallPlant, Block largePlant, int radius) {
-        this(BlockStateProvider.simple(smallPlant), BlockStateProvider.simple(largePlant), radius);
+        this(BlockStateProvider.of(smallPlant), BlockStateProvider.of(largePlant), radius);
     }
 
     public DoublePlantFeatureConfig(BlockStateProvider smallPlant, BlockStateProvider largePlant, int radius) {

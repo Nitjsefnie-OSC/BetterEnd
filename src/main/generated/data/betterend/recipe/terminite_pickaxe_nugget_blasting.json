@@ -1,5 +1,6 @@
 {
   "type": "minecraft:blasting",
+  "cookingtime": 100,
   "ingredient": "betterend:terminite_pickaxe",
   "result": {
     "id": "betterend:terminite_nugget"

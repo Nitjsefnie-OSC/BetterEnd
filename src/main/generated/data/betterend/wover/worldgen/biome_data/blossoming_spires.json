@@ -2,20 +2,15 @@
   "type": "betterend:biome",
   "biome": "betterend:blossoming_spires",
   "fogDensity": 1.7,
+  "genChance": 1.25,
   "generation_data": {
     "intended_placement": "wover:is_end/land"
   },
   "has_caves": false,
   "surface": {
-    "alt": {
-      "Name": "betterend:pink_moss"
-    },
+    "alt": "betterend:pink_moss",
     "floor_rule": true,
-    "top": {
-      "Name": "betterend:pink_moss"
-    },
-    "under": {
-      "Name": "minecraft:end_stone"
-    }
+    "top": "betterend:pink_moss",
+    "under": "minecraft:end_stone"
   }
 }

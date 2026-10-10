@@ -5,9 +5,7 @@
     "size": 6,
     "targets": [
       {
-        "state": {
-          "Name": "betterend:amber_ore"
-        },
+        "state": "betterend:amber_ore",
         "target": {
           "block": "minecraft:end_stone",
           "predicate_type": "minecraft:block_match"

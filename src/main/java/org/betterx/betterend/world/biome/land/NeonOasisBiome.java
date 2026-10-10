@@ -21,9 +21,9 @@ import net.minecraft.tags.BiomeTags;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.levelgen.SurfaceRules;
-import net.minecraft.world.level.levelgen.SurfaceRules.RuleSource;
+import net.minecraft.world.level.levelgen.material.rule.MaterialRule;
 import net.minecraft.world.level.levelgen.placement.CaveSurface;
+import net.minecraft.world.level.levelgen.material.MaterialRules;
 
 import java.util.List;
 
@@ -70,11 +70,11 @@ public class NeonOasisBiome extends EndBiome.Config {
 
             @Override
             public SurfaceRuleBuilder surface() {
-                RuleSource surfaceBlockRule = new SwitchRuleSource(
+                MaterialRule surfaceBlockRule = new SwitchRuleSource(
                         new SplitNoiseCondition(),
                         List.of(
-                                SurfaceRules.state(EndTerrainBlocks.ENDSTONE_DUST.defaultBlockState()),
-                                SurfaceRules.state(EndTerrainBlocks.END_MOSS.defaultBlockState())
+                                MaterialRules.state(EndTerrainBlocks.ENDSTONE_DUST.defaultBlockState()),
+                                MaterialRules.state(EndTerrainBlocks.END_MOSS.defaultBlockState())
                         )
                 );
                 return super
@@ -83,16 +83,16 @@ public class NeonOasisBiome extends EndBiome.Config {
                         .ceil(Blocks.END_STONE.defaultBlockState())
                         // Top block: the dust/moss oasis mix.
                         .rule(
-                                SurfaceRules.ifTrue(EndBiomeBuilder.ON_FLOOR, surfaceBlockRule),
+                                MaterialRules.ifTrue(EndBiomeBuilder.ON_FLOOR, surfaceBlockRule),
                                 BaseSurfaceRuleBuilder.TOP_SURFACE_PRIORITY
                         )
                         // Same sand-cover depth rules as the desert (DustWastelands): a randomized-
                         // depth dust layer (addSurfaceDepth) sitting on the END_STONE filler below, so
                         // the falling sand always has solid ground under it. Priority must beat the
                         // FILLER (900) - the old 4 sorted after it and never ran.
-                        .rule(SurfaceRules.ifTrue(
-                                SurfaceRules.stoneDepthCheck(2, true, CaveSurface.FLOOR),
-                                SurfaceRules.state(EndTerrainBlocks.ENDSTONE_DUST.defaultBlockState())
+                        .rule(MaterialRules.ifTrue(
+                                MaterialRules.stoneDepthCheck(2, true, CaveSurface.FLOOR),
+                                MaterialRules.state(EndTerrainBlocks.ENDSTONE_DUST.defaultBlockState())
                         ), BaseSurfaceRuleBuilder.SUB_SURFACE_PRIORITY);
             }
         };

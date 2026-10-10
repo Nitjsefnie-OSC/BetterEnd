@@ -1,8 +1,6 @@
 {
   "type": "betterend:building_list_feature",
-  "default": {
-    "Name": "betterend:jungle_moss"
-  },
+  "default": "betterend:jungle_moss",
   "structures": [
     {
       "offset_y": -1,

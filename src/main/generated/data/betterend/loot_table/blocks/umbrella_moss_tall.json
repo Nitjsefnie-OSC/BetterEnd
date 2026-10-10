@@ -10,12 +10,12 @@
           },
           "modifier": {
             "type": "minecraft:set_count",
-            "count": 2.0
+            "count": 2
           },
           "name": "betterend:umbrella_moss_tall"
         }
       ],
-      "rolls": 1.0
+      "rolls": 1
     }
   ]
 }

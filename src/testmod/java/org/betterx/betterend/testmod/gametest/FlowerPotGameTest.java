@@ -1,11 +1,24 @@
 package org.betterx.betterend.testmod.gametest;
 
+import org.betterx.betterend.blocks.FlowerPotBlock;
+import org.betterx.betterend.blocks.entities.FlowerPotBlockEntity;
+import org.betterx.betterend.registry.block.EndSaplingBlocks;
+import org.betterx.betterend.registry.block.EndTerrainBlocks;
+import de.ambertation.wover.test.api.gametest.FluidWashSweep;
+import de.ambertation.wover.test.api.gametest.GameTestAssertions;
 import de.ambertation.wover.test.api.gametest.PottableSweep;
 
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.network.chat.Component;
+import net.minecraft.tags.BlockTags;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import net.fabricmc.fabric.api.gametest.v1.GameTest;
 
@@ -42,5 +55,95 @@ public class FlowerPotGameTest {
             ));
         }
         helper.succeed();
+    }
+
+    /**
+     * #389: the pre-26.x pot encoded plant and soil as block-state integers (4352 states per pot) and
+     * timed out building its state map. Contents now live in the block entity, so every pot variant must
+     * stay at the 4 POT_LIGHT states, get a {@link FlowerPotBlockEntity}, and keep a seated plant
+     * (#542/#447/#489: Dragon Tree Sapling in a Violecite pot showed only a hitbox).
+     */
+    @GameTest
+    public void everyPotVariantHasFewStatesAndKeepsItsContents(GameTestHelper helper) {
+        final BlockPos pos = new BlockPos(1, 1, 1);
+        final List<String> problems = new ArrayList<>();
+        int pots = 0;
+        for (Block block : BuiltInRegistries.BLOCK) {
+            if (!(block instanceof FlowerPotBlock)) continue;
+            pots++;
+            final String id = BuiltInRegistries.BLOCK.getKey(block).toString();
+            final int states = block.getStateDefinition().getPossibleStates().size();
+            if (states > 4) problems.add(id + " has " + states + " block states (expected 4)");
+
+            helper.setBlock(pos, block);
+            if (!(helper.getBlockEntity(pos, FlowerPotBlockEntity.class) instanceof FlowerPotBlockEntity pot)) {
+                problems.add(id + " has no flower pot block entity");
+                continue;
+            }
+            pot.setSoil(Optional.of(EndTerrainBlocks.SHADOW_GRASS.builtInRegistryHolder().key()));
+            pot.setPlant(Optional.of(EndSaplingBlocks.DRAGON_TREE_SAPLING.builtInRegistryHolder().key()));
+            final FlowerPotBlockEntity after = helper.getBlockEntity(pos, FlowerPotBlockEntity.class);
+            if (after == null || after.getPlantBlock().orElse(null) != EndSaplingBlocks.DRAGON_TREE_SAPLING
+                    || after.getSoilBlock().orElse(null) != EndTerrainBlocks.SHADOW_GRASS) {
+                problems.add(id + " lost its seated soil/plant");
+            }
+        }
+        if (pots == 0) problems.add("no FlowerPotBlock registered at all");
+        if (!problems.isEmpty()) {
+            throw helper.assertionException(Component.literal(
+                    "betterend flower pot regression:\n - " + String.join("\n - ", problems)
+            ));
+        }
+        helper.succeed();
+    }
+
+    private static List<Block> pots() {
+        final List<Block> pots = new ArrayList<>();
+        for (Block block : BuiltInRegistries.BLOCK) {
+            if (block instanceof FlowerPotBlock) pots.add(block);
+        }
+        return pots;
+    }
+
+    /**
+     * Every pot is in {@code #minecraft:flower_pots} like vanilla's {@code flower_pot}; on 26.3 that tag is
+     * part of {@code #minecraft:washed_away_by_fluids}, which decides whether fluids may wash a block away.
+     */
+    @GameTest
+    public void potsAreFlowerPots(GameTestHelper helper) {
+        final List<String> failures = new ArrayList<>();
+        final List<Block> pots = pots();
+        if (pots.isEmpty()) failures.add("no FlowerPotBlock registered at all");
+        for (Block pot : pots) {
+            if (!pot.defaultBlockState().is(BlockTags.FLOWER_POTS)) {
+                failures.add(FluidWashSweep.id(pot) + " is not in #minecraft:flower_pots");
+            }
+            if (!pot.defaultBlockState().is(BlockTags.WASHED_AWAY_BY_FLUIDS)) {
+                failures.add(FluidWashSweep.id(pot) + " is not in #minecraft:washed_away_by_fluids");
+            }
+        }
+        GameTestAssertions.failIfAny(helper, "Pots vs #minecraft:flower_pots", failures);
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 200)
+    public void waterWashesPotsAway(GameTestHelper helper) {
+        wash(helper, Blocks.WATER);
+    }
+
+    @GameTest(maxTicks = 200)
+    public void lavaWashesPotsAway(GameTestHelper helper) {
+        wash(helper, Blocks.LAVA);
+    }
+
+    /** Vanilla's flower_pot runs alongside as the control. */
+    private static void wash(GameTestHelper helper, Block fluid) {
+        final List<Block> pots = new ArrayList<>();
+        pots.add(Blocks.FLOWER_POT);
+        pots.addAll(pots());
+        final List<Block> skipped = FluidWashSweep.washEach(helper, fluid, pots, List.of(Blocks.STONE));
+        if (!skipped.isEmpty()) {
+            GameTestAssertions.failIfAny(helper, "Setup", List.of("could not place " + skipped.stream().map(FluidWashSweep::id).toList()));
+        }
     }
 }

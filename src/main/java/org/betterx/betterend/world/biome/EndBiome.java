@@ -25,7 +25,8 @@ import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.levelgen.SurfaceRules;
+import net.minecraft.world.level.levelgen.material.rule.MaterialRule;
+import net.minecraft.world.level.levelgen.material.MaterialRules;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -126,18 +127,18 @@ public class EndBiome extends WoverBiomeData implements SurfaceMaterialProvider 
     public abstract static class Config implements EndBiomeBuilder.BiomeFactory {
         public static final SurfaceMaterialProvider DEFAULT_MATERIAL = new DefaultSurfaceMaterialProvider();
 
-        protected static final SurfaceRules.RuleSource END_STONE = SurfaceRules.state(DefaultSurfaceMaterialProvider.END_STONE);
-        protected static final SurfaceRules.RuleSource END_MOSS = SurfaceRules.state(EndTerrainBlocks.END_MOSS.defaultBlockState());
-        protected static final SurfaceRules.RuleSource ENDSTONE_DUST = SurfaceRules.state(EndTerrainBlocks.ENDSTONE_DUST.defaultBlockState());
-        protected static final SurfaceRules.RuleSource END_MYCELIUM = SurfaceRules.state(EndTerrainBlocks.END_MYCELIUM.defaultBlockState());
-        protected static final SurfaceRules.RuleSource FLAVOLITE = SurfaceRules.state(EndStoneBlocks.FLAVOLITE.getBlock(SlotType.SOURCE).defaultBlockState());
-        protected static final SurfaceRules.RuleSource SULPHURIC_ROCK = SurfaceRules.state(EndStoneBlocks.SULPHURIC_ROCK.getBlock(SlotType.SOURCE).defaultBlockState());
-        protected static final SurfaceRules.RuleSource BRIMSTONE = SurfaceRules.state(EndStoneBlocks.BRIMSTONE.defaultBlockState());
-        protected static final SurfaceRules.RuleSource PALLIDIUM_FULL = SurfaceRules.state(EndTerrainBlocks.PALLIDIUM_FULL.defaultBlockState());
-        protected static final SurfaceRules.RuleSource PALLIDIUM_HEAVY = SurfaceRules.state(EndTerrainBlocks.PALLIDIUM_HEAVY.defaultBlockState());
-        protected static final SurfaceRules.RuleSource PALLIDIUM_THIN = SurfaceRules.state(EndTerrainBlocks.PALLIDIUM_THIN.defaultBlockState());
-        protected static final SurfaceRules.RuleSource PALLIDIUM_TINY = SurfaceRules.state(EndTerrainBlocks.PALLIDIUM_TINY.defaultBlockState());
-        protected static final SurfaceRules.RuleSource UMBRALITH = SurfaceRules.state(EndStoneBlocks.UMBRALITH.getBlock(SlotType.SOURCE).defaultBlockState());
+        protected static final MaterialRule END_STONE = MaterialRules.state(DefaultSurfaceMaterialProvider.END_STONE);
+        protected static final MaterialRule END_MOSS = MaterialRules.state(EndTerrainBlocks.END_MOSS.defaultBlockState());
+        protected static final MaterialRule ENDSTONE_DUST = MaterialRules.state(EndTerrainBlocks.ENDSTONE_DUST.defaultBlockState());
+        protected static final MaterialRule END_MYCELIUM = MaterialRules.state(EndTerrainBlocks.END_MYCELIUM.defaultBlockState());
+        protected static final MaterialRule FLAVOLITE = MaterialRules.state(EndStoneBlocks.FLAVOLITE.getBlock(SlotType.SOURCE).defaultBlockState());
+        protected static final MaterialRule SULPHURIC_ROCK = MaterialRules.state(EndStoneBlocks.SULPHURIC_ROCK.getBlock(SlotType.SOURCE).defaultBlockState());
+        protected static final MaterialRule BRIMSTONE = MaterialRules.state(EndStoneBlocks.BRIMSTONE.defaultBlockState());
+        protected static final MaterialRule PALLIDIUM_FULL = MaterialRules.state(EndTerrainBlocks.PALLIDIUM_FULL.defaultBlockState());
+        protected static final MaterialRule PALLIDIUM_HEAVY = MaterialRules.state(EndTerrainBlocks.PALLIDIUM_HEAVY.defaultBlockState());
+        protected static final MaterialRule PALLIDIUM_THIN = MaterialRules.state(EndTerrainBlocks.PALLIDIUM_THIN.defaultBlockState());
+        protected static final MaterialRule PALLIDIUM_TINY = MaterialRules.state(EndTerrainBlocks.PALLIDIUM_TINY.defaultBlockState());
+        protected static final MaterialRule UMBRALITH = MaterialRules.state(EndStoneBlocks.UMBRALITH.getBlock(SlotType.SOURCE).defaultBlockState());
 
         protected Config() {
         }

@@ -1,5 +1,6 @@
 package org.betterx.betterend.registry.block;
 
+import de.ambertation.wover.block.api.render.BlockRenderTraits;
 import org.betterx.bclib.api.v3.tag.BCLBlockTags;
 import org.betterx.bclib.trait.TraitLists;
 import org.betterx.bclib.blocks.LeveledAnvilBlock;
@@ -34,8 +35,6 @@ import de.ambertation.wover.block.api.DefaultBlockDefinition;
 import de.ambertation.wover.block.api.VanillaBlockDefinition;
 import de.ambertation.wover.block.api.model.ModelTraitLibrary;
 import de.ambertation.wover.core.api.ModCore;
-import de.ambertation.wover.block.api.client.trait.BlockModelTrait;
-import de.ambertation.wover.block.api.client.trait.ClientBlockTraits;
 import de.ambertation.wover.block.api.trait.BlockTrait;
 import de.ambertation.wover.block.api.trait.BlockTraits;
 import de.ambertation.wover.item.api.BlockItemDefinition;
@@ -58,7 +57,6 @@ import net.minecraft.world.level.block.state.BlockBehaviour.OffsetType;
 import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.level.material.PushReaction;
 import net.minecraft.world.level.storage.loot.LootTable;
-import net.minecraft.world.level.storage.loot.providers.number.UniformGenerator;
 
 import java.util.List;
 import java.util.function.Function;
@@ -114,7 +112,7 @@ public class EndWaterPlantBlocks {
             .addTrait(BlockTraits.MINEABLE_WITH.needsHoe())
             .addTrait(CompostableBlockTrait.withDefault())
             .addTrait(BlockTraits.FLAMMABLE.withDefault())
-            .addTrait(ClientBlockTraits.RENDER_LAYER.cutout())
+            .addTrait(BlockRenderTraits.RENDER_LAYER.cutout())
             .addTrait(WeightedCrossModelTrait.property2Dispatch(EndLotusLeafBlock.SHAPE, EndLotusLeafBlock.HORIZONTAL_FACING, List.of(
                             WeightedCrossModelTrait.Case2.of(BlockProperties.TripleShape.BOTTOM, Direction.NORTH, List.of(
                             WeightedCrossModelTrait.cropParent(BetterEnd.C.mk("block/plane_bottom"), BetterEnd.C.mk("block/end_lotus_leaf_center"))
@@ -165,7 +163,7 @@ public class EndWaterPlantBlocks {
             .addTrait(SurvivesOnBlockTrait.withBlocks(EndWoodBlocks.END_LOTUS_STEM))
             .addTrait(CompostableBlockTrait.withDefault())
             .addTrait(BlockTraits.FLAMMABLE.withDefault())
-            .addTrait(ClientBlockTraits.RENDER_LAYER.cutout())
+            .addTrait(BlockRenderTraits.RENDER_LAYER.cutout())
             // No block item exists, so it drops lotus seeds (1-2) via an explicit loot table rather than
             // dropping itself.
             .addTrait(BlockTraits.LOOT_TABLE.with(

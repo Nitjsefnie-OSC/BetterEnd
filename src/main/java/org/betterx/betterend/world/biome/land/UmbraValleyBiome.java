@@ -20,7 +20,7 @@ import de.ambertation.wover.surface.impl.rules.SwitchRuleSource;
 
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.levelgen.SurfaceRules;
+import net.minecraft.world.level.levelgen.material.MaterialRules;
 
 import java.util.List;
 
@@ -78,16 +78,16 @@ public class UmbraValleyBiome extends EndBiome.Config {
             @Override
             public SurfaceRuleBuilder surface() {
                 return super.surface()
-                            .rule(SurfaceRules.ifTrue(
+                            .rule(MaterialRules.ifTrue(
                                     EndBiomeBuilder.ON_FLOOR,
                                     new SwitchRuleSource(
                                             new UmbraSurfaceNoiseCondition(),
                                             List.of(
-                                                    SurfaceRules.state(surfaceMaterial().getAltTopMaterial()),
+                                                    MaterialRules.state(surfaceMaterial().getAltTopMaterial()),
                                                     PALLIDIUM_HEAVY,
                                                     PALLIDIUM_THIN,
                                                     PALLIDIUM_TINY,
-                                                    SurfaceRules.state(surfaceMaterial().getTopMaterial())
+                                                    MaterialRules.state(surfaceMaterial().getTopMaterial())
                                             )
                                     )
                             // Must beat the FILLER priority or the switch is dead and only the filler

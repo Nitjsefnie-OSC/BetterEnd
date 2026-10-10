@@ -31,7 +31,6 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.ChunkGenerator;
-import net.minecraft.world.level.levelgen.Heightmap.Types;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.level.levelgen.structure.pieces.StructurePieceSerializationContext;
 import net.minecraft.world.level.material.FluidState;
@@ -238,7 +237,7 @@ public class LakePiece extends BasePiece {
                         }
                         if (state.is(CommonBlockTags.END_STONES) || state.isAir()) {
                             state = mut.getY() < waterLevel ? WATER : CAVE_AIR;
-                            chunk.setBlockState(mut, state, 3);
+                            setChunkBlock(chunk, mut, state);
                         }
                     } else if (dist <= r3 && mut.getY() < center.getY()) {
                         BlockState state = chunk.getBlockState(mut);
@@ -266,7 +265,7 @@ public class LakePiece extends BasePiece {
                             double edgeT = (dist - r2) / (r3 - r2);
                             double placeChance = edgeT > 0.85 ? 0.2 : edgeT > 0.6 ? 0.5 : 1.0;
                             if (placeChance >= 1.0 || random.nextDouble() < placeChance) {
-                                chunk.setBlockState(mut, state, 3);
+                                setChunkBlock(chunk, mut, state);
                                 // Every placed rim block is filled down to solid ground - the outer
                                 // taper otherwise leaves single blocks floating over air.
                                 fillDownToGround(chunk, mut, mut.getY() - 1);
@@ -364,7 +363,7 @@ public class LakePiece extends BasePiece {
         final BlockState state = chunk.getBlockState(mut);
         if (!state.getFluidState().isEmpty()) return;
         if (!state.isAir() && !BlocksHelper.replaceableOrPlant(state)) return; // terrain reaches the target
-        chunk.setBlockState(mut, shorePatch(world, wx, wz, -0.55), 3);
+        setChunkBlock(chunk, mut, shorePatch(world, wx, wz, -0.55));
         // Fill the shore solidly down to the real ground with end stone so it never floats.
         fillDownToGround(chunk, mut, target - 1);
     }
@@ -402,7 +401,7 @@ public class LakePiece extends BasePiece {
         }
         for (int y = from; y >= groundY; y--) {
             mut.setY(y);
-            chunk.setBlockState(mut, ENDSTONE, 3);
+            setChunkBlock(chunk, mut, ENDSTONE);
         }
         mut.setY(origY);
     }
@@ -441,7 +440,7 @@ public class LakePiece extends BasePiece {
             final BlockState state = chunk.getBlockState(mut);
             if (!state.getFluidState().isEmpty()) break;
             if (!state.isAir() && !BlocksHelper.replaceableOrPlant(state)) break;
-            chunk.setBlockState(mut, ENDSTONE, 3);
+            setChunkBlock(chunk, mut, ENDSTONE);
         }
     }
 
@@ -467,7 +466,7 @@ public class LakePiece extends BasePiece {
         for (int i = 0; i < plants.length; i++) {
             final BlockState plant = plants[(start + i) % plants.length];
             if (plant.canSurvive(world, plantWorld)) {
-                chunk.setBlockState(plantLocal, plant, 3);
+                setChunkBlock(chunk, plantLocal, plant);
                 return;
             }
         }
@@ -538,10 +537,10 @@ public class LakePiece extends BasePiece {
     }
 
     private void makeEndstonePillar(ChunkAccess chunk, MutableBlockPos mut, BlockState terrain) {
-        chunk.setBlockState(mut, terrain, 3);
+        setChunkBlock(chunk, mut, terrain);
         mut.setY(mut.getY() - 1);
         while (!chunk.getFluidState(mut).isEmpty()) {
-            chunk.setBlockState(mut, ENDSTONE, 3);
+            setChunkBlock(chunk, mut, ENDSTONE);
             mut.setY(mut.getY() - 1);
         }
     }
@@ -558,7 +557,7 @@ public class LakePiece extends BasePiece {
             return 0;
         }
 
-        h = world.getHeight(Types.WORLD_SURFACE_WG, pos.getX(), pos.getZ());
+        h = worldgenSurfaceHeight(world, pos.getX(), pos.getZ());
         h = Mth.abs(h - center.getY());
         h = h < 8 ? 1 : 0;
 

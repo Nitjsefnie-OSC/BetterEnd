@@ -39,7 +39,7 @@ import net.fabricmc.fabric.api.gametest.v1.GameTest;
  */
 public class PlantGrowthGameTest {
     private static final BlockPos POS = new BlockPos(1, 2, 1);
-    // isBonemealSuccess is a flat 1/16 roll per call (FeatureSaplingBlock), so this needs real margin -
+    // A random tick advances a FeatureSaplingBlock on a flat 1/16 roll, so this needs real margin -
     // 40 attempts flaked in testing (~8% chance of zero successes at 1/16 odds); 200 leaves a ~1 in
     // 700,000 chance of a false failure.
     private static final int ATTEMPTS = 200;

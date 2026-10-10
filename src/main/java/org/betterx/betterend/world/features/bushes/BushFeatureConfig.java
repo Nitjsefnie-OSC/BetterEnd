@@ -9,8 +9,8 @@ import net.minecraft.world.level.levelgen.feature.stateproviders.BlockStateProvi
 public class BushFeatureConfig {
     public static final MapCodec<BushFeatureConfig> CODEC = RecordCodecBuilder.mapCodec(instance -> instance
             .group(
-                    BlockStateProvider.CODEC.fieldOf("leaves").forGetter(o -> o.leaves),
-                    BlockStateProvider.CODEC.fieldOf("stem").forGetter(o -> o.stem)
+                    BlockStateProvider.DIRECT_CODEC.fieldOf("leaves").forGetter(o -> o.leaves),
+                    BlockStateProvider.DIRECT_CODEC.fieldOf("stem").forGetter(o -> o.stem)
             )
             .apply(instance, BushFeatureConfig::new));
 
@@ -20,8 +20,8 @@ public class BushFeatureConfig {
 
     public BushFeatureConfig(Block leaves, Block stem) {
         this(
-                BlockStateProvider.simple(leaves),
-                BlockStateProvider.simple(stem)
+                BlockStateProvider.of(leaves),
+                BlockStateProvider.of(stem)
         );
     }
 

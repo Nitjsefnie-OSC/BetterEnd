@@ -53,8 +53,8 @@ import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import net.minecraft.world.level.storage.loot.predicates.LocationCheck;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 import net.minecraft.world.level.storage.loot.predicates.LootItemRandomChanceCondition;
-import net.minecraft.world.level.storage.loot.providers.number.ConstantValue;
-import net.minecraft.world.level.storage.loot.providers.number.UniformGenerator;
+import net.minecraft.world.level.storage.loot.providers.number.ints.ContextIntProviders;
+import net.minecraft.world.level.storage.loot.providers.number.floats.ContextFloatProviders;
 
 import java.util.function.BiConsumer;
 import org.jetbrains.annotations.NotNull;
@@ -69,7 +69,7 @@ public class EndChestLootTableProvider extends WoverLootTableProvider {
     private LootPool.Builder endCityGhastTear() {
         return LootPool
                 .lootPool()
-                .setRolls(ConstantValue.exactly(1))
+                .setRolls(ContextIntProviders.exactly(1))
                 .when(LootItemRandomChanceCondition.randomChance(0.2f))
                 .add(LootItem.lootTableItem(Items.GHAST_TEAR));
     }
@@ -77,7 +77,7 @@ public class EndChestLootTableProvider extends WoverLootTableProvider {
     private LootPool.Builder endCityMusicDiscs() {
         return LootPool
                 .lootPool()
-                .setRolls(UniformGenerator.between(0, 3))
+                .setRolls(ContextIntProviders.between(0, 3))
                 .add(LootItem.lootTableItem(EndDiscItems.MUSIC_DISC_STRANGE_AND_ALIEN))
                 .add(LootItem.lootTableItem(EndDiscItems.MUSIC_DISC_GRASPING_AT_STARS))
                 .add(LootItem.lootTableItem(EndDiscItems.MUSIC_DISC_ENDSEEKER))
@@ -89,7 +89,7 @@ public class EndChestLootTableProvider extends WoverLootTableProvider {
     private LootPool.Builder endCitySmithingTemplates() {
         return LootPool
                 .lootPool()
-                .setRolls(UniformGenerator.between(2, 4))
+                .setRolls(ContextIntProviders.between(2, 4))
                 .add(EmptyLootItem.emptyItem().setWeight(12))
                 .add(LootItem.lootTableItem(EndTemplates.NETHERITE_UPGRADE).setWeight(3))
                 .add(LootItem.lootTableItem(EndTemplates.HANDLE_ATTACHMENT).setWeight(2))
@@ -112,7 +112,7 @@ public class EndChestLootTableProvider extends WoverLootTableProvider {
     private LootPool.Builder endCityEndVeilBook(HolderLookup.@NotNull Provider lookup) {
         return LootPool
                 .lootPool()
-                .setRolls(ConstantValue.exactly(1))
+                .setRolls(ContextIntProviders.exactly(1))
                 .when(LootItemRandomChanceCondition.randomChance(0.25f))
                 .add(LootItem.lootTableItem(Items.BOOK)
                              .apply(EnchantRandomlyFunction
@@ -130,7 +130,7 @@ public class EndChestLootTableProvider extends WoverLootTableProvider {
     private LootPool.Builder resonanceBook(HolderLookup.@NotNull Provider lookup, float chance) {
         return LootPool
                 .lootPool()
-                .setRolls(ConstantValue.exactly(1))
+                .setRolls(ContextIntProviders.exactly(1))
                 .when(LootItemRandomChanceCondition.randomChance(chance))
                 .add(LootItem.lootTableItem(Items.BOOK)
                              .apply(EnchantRandomlyFunction
@@ -143,14 +143,14 @@ public class EndChestLootTableProvider extends WoverLootTableProvider {
     private LootPool.Builder fishing() {
         return LootPool
                 .lootPool()
-                .setRolls(UniformGenerator.between(1, 2))
+                .setRolls(ContextIntProviders.between(1, 2))
                 .add(LootItem.lootTableItem(EndFoodItems.END_FISH_RAW));
     }
 
     private LootPool.Builder fishingJunk() {
         final LootPool.Builder builder = LootPool
                 .lootPool()
-                .setRolls(UniformGenerator.between(1, 2))
+                .setRolls(ContextIntProviders.between(1, 2))
                 .add(LootItem.lootTableItem(EndResourceItems.END_LILY_LEAF))
                 .add(LootItem.lootTableItem(Items.ENDER_PEARL))
                 .add(LootItem.lootTableItem(Items.CHORUS_FRUIT))
@@ -174,24 +174,24 @@ public class EndChestLootTableProvider extends WoverLootTableProvider {
         final HolderGetter<Enchantment> enchantments = enchantments(lookup);
         return LootPool
                 .lootPool()
-                .setRolls(ConstantValue.exactly(1))
+                .setRolls(ContextIntProviders.exactly(1))
                 .add(LootItem.lootTableItem(EndMetalBlocks.TERMINITE.equipment.swordBlade))
                 .add(LootItem.lootTableItem(EndMetalBlocks.TERMINITE.equipment.forgedPlate))
                 .add(LootItem.lootTableItem(EndDecorBlocks.MENGER_SPONGE))
                 .add(LootItem.lootTableItem(Items.BOW)
-                             .apply(SetItemDamageFunction.setDamage(UniformGenerator.between(0.0F, 0.25F)))
-                             .apply(EnchantWithLevelsFunction.enchantWithLevels(enchantments, ConstantValue.exactly(30.0F))))
+                             .apply(SetItemDamageFunction.setDamage(ContextFloatProviders.between(0.0F, 0.25F)))
+                             .apply(EnchantWithLevelsFunction.enchantWithLevels(enchantments, ContextIntProviders.exactly(30))))
                 .add(LootItem.lootTableItem(Items.FISHING_ROD)
-                             .apply(SetItemDamageFunction.setDamage(UniformGenerator.between(0.0F, 0.25F)))
-                             .apply(EnchantWithLevelsFunction.enchantWithLevels(enchantments, ConstantValue.exactly(30.0F))))
+                             .apply(SetItemDamageFunction.setDamage(ContextFloatProviders.between(0.0F, 0.25F)))
+                             .apply(EnchantWithLevelsFunction.enchantWithLevels(enchantments, ContextIntProviders.exactly(30))))
                 .add(LootItem.lootTableItem(Items.BOOK)
-                             .apply(EnchantWithLevelsFunction.enchantWithLevels(enchantments, ConstantValue.exactly(30.0F))));
+                             .apply(EnchantWithLevelsFunction.enchantWithLevels(enchantments, ContextIntProviders.exactly(30))));
     }
 
     private LootPool.Builder foggyMushroomland() {
         return LootPool
                 .lootPool()
-                .setRolls(UniformGenerator.between(4, 8))
+                .setRolls(ContextIntProviders.between(4, 8))
                 .add(LootItem.lootTableItem(EndWoodBlocks.MOSSY_GLOWSHROOM.getBlock(SlotType.PLANKS)))
                 .add(LootItem.lootTableItem(EndSaplingBlocks.MOSSY_GLOWSHROOM_SAPLING))
                 .add(LootItem.lootTableItem(EndVineBlocks.BLUE_VINE_SEED));
@@ -200,7 +200,7 @@ public class EndChestLootTableProvider extends WoverLootTableProvider {
     private LootPool.Builder chorusForest() {
         return LootPool
                 .lootPool()
-                .setRolls(UniformGenerator.between(4, 8))
+                .setRolls(ContextIntProviders.between(4, 8))
                 .add(LootItem.lootTableItem(EndWoodBlocks.PYTHADENDRON.getBlock(SlotType.PLANKS)))
                 .add(LootItem.lootTableItem(EndSaplingBlocks.PYTHADENDRON_SAPLING))
                 .add(LootItem.lootTableItem(EndCropBlocks.CHORUS_MUSHROOM))
@@ -210,7 +210,7 @@ public class EndChestLootTableProvider extends WoverLootTableProvider {
     private LootPool.Builder shadowForest() {
         return LootPool
                 .lootPool()
-                .setRolls(UniformGenerator.between(4, 8))
+                .setRolls(ContextIntProviders.between(4, 8))
                 .add(LootItem.lootTableItem(EndWoodBlocks.DRAGON_TREE.getBlock(SlotType.PLANKS)))
                 .add(LootItem.lootTableItem(EndSaplingBlocks.DRAGON_TREE_SAPLING))
                 .add(LootItem.lootTableItem(EndCropBlocks.SHADOW_BERRY))
@@ -220,7 +220,7 @@ public class EndChestLootTableProvider extends WoverLootTableProvider {
     private LootPool.Builder lanternWoods() {
         return LootPool
                 .lootPool()
-                .setRolls(UniformGenerator.between(4, 8))
+                .setRolls(ContextIntProviders.between(4, 8))
                 .add(LootItem.lootTableItem(EndWoodBlocks.LUCERNIA.getBlock(SlotType.PLANKS)))
                 .add(LootItem.lootTableItem(EndSaplingBlocks.LUCERNIA_SAPLING))
                 .add(LootItem.lootTableItem(EndMushroomBlocks.BOLUX_MUSHROOM));
@@ -229,7 +229,7 @@ public class EndChestLootTableProvider extends WoverLootTableProvider {
     private LootPool.Builder umbrellaJungle() {
         return LootPool
                 .lootPool()
-                .setRolls(UniformGenerator.between(4, 8))
+                .setRolls(ContextIntProviders.between(4, 8))
                 .add(LootItem.lootTableItem(EndWoodBlocks.UMBRELLA_TREE.getBlock(SlotType.PLANKS)))
                 .add(LootItem.lootTableItem(EndSaplingBlocks.UMBRELLA_TREE_SAPLING))
                 .add(LootItem.lootTableItem(EndMushroomBlocks.SMALL_JELLYSHROOM));
@@ -239,36 +239,36 @@ public class EndChestLootTableProvider extends WoverLootTableProvider {
     private LootPool.Builder upgradeLootPool() {
         return LootPool
                 .lootPool()
-                .setRolls(UniformGenerator.between(1, 2))
+                .setRolls(ContextIntProviders.between(1, 2))
                 .add(LootItem
                         .lootTableItem(EndTemplates.THALLASIUM_UPGRADE)
                         .setWeight(8)
-                        .apply(SetItemCountFunction.setCount(ConstantValue.exactly(1)))
+                        .apply(SetItemCountFunction.setCount(ContextIntProviders.exactly(1)))
                 )
                 .add(LootItem
                         .lootTableItem(EndTemplates.TERMINITE_UPGRADE)
                         .setWeight(4)
-                        .apply(SetItemCountFunction.setCount(ConstantValue.exactly(1)))
+                        .apply(SetItemCountFunction.setCount(ContextIntProviders.exactly(1)))
                 )
                 .add(LootItem
                         .lootTableItem(EndTemplates.AETERNIUM_UPGRADE)
                         .setWeight(2)
-                        .apply(SetItemCountFunction.setCount(ConstantValue.exactly(1)))
+                        .apply(SetItemCountFunction.setCount(ContextIntProviders.exactly(1)))
                 )
                 .add(LootItem
                         .lootTableItem(EndTemplates.NETHERITE_UPGRADE)
                         .setWeight(8)
-                        .apply(SetItemCountFunction.setCount(ConstantValue.exactly(1)))
+                        .apply(SetItemCountFunction.setCount(ContextIntProviders.exactly(1)))
                 );
     }
 
     private LootPool.Builder plateUpgradeLootPool() {
         return LootPool
                 .lootPool()
-                .setRolls(ConstantValue.exactly(1))
+                .setRolls(ContextIntProviders.exactly(1))
                 .add(LootItem
                         .lootTableItem(EndTemplates.PLATE_UPGRADE)
-                        .apply(SetItemCountFunction.setCount(UniformGenerator.between(1, 2)))
+                        .apply(SetItemCountFunction.setCount(ContextIntProviders.between(1, 2)))
                         .when(LootItemRandomChanceCondition.randomChance(0.70F))
                 );
     }
@@ -276,10 +276,10 @@ public class EndChestLootTableProvider extends WoverLootTableProvider {
     private LootPool.Builder leatherHandleLootPool() {
         return LootPool
                 .lootPool()
-                .setRolls(ConstantValue.exactly(1))
+                .setRolls(ContextIntProviders.exactly(1))
                 .add(LootItem
                         .lootTableItem(EndTemplates.LEATHER_HANDLE_ATTACHMENT)
-                        .apply(SetItemCountFunction.setCount(ConstantValue.exactly(1)))
+                        .apply(SetItemCountFunction.setCount(ContextIntProviders.exactly(1)))
                         .when(LootItemRandomChanceCondition.randomChance(0.75F))
                 );
     }
@@ -287,57 +287,57 @@ public class EndChestLootTableProvider extends WoverLootTableProvider {
     private LootPool.Builder handleLootPool() {
         return LootPool
                 .lootPool()
-                .setRolls(ConstantValue.exactly(1))
+                .setRolls(ContextIntProviders.exactly(1))
                 .add(LootItem
                         .lootTableItem(EndTemplates.HANDLE_ATTACHMENT)
                         .setWeight(8)
-                        .apply(SetItemCountFunction.setCount(UniformGenerator.between(1, 4)))
+                        .apply(SetItemCountFunction.setCount(ContextIntProviders.between(1, 4)))
                 )
                 .add(LootItem
                         .lootTableItem(EndTemplates.TOOL_ASSEMBLY)
                         .setWeight(2)
-                        .apply(SetItemCountFunction.setCount(ConstantValue.exactly(1)))
+                        .apply(SetItemCountFunction.setCount(ContextIntProviders.exactly(1)))
                 );
     }
 
     private LootPool.Builder villageBonusLoot() {
         return LootPool
                 .lootPool()
-                .setRolls(UniformGenerator.between(1, 2))
+                .setRolls(ContextIntProviders.between(1, 2))
                 .add(LootItem
                         .lootTableItem(EndEquipmentItems.AETERNIUM_SET.ingot)
                         .setWeight(8)
-                        .apply(SetItemCountFunction.setCount(UniformGenerator.between(1, 4)))
+                        .apply(SetItemCountFunction.setCount(ContextIntProviders.between(1, 4)))
                 )
                 .add(LootItem
-                        .lootTableItem(EndStoneBlocks.FLAVOLITE_RUNED_ETERNAL)
+                        .lootTableItem(EndStoneBlocks.FLAVOLITE_RUNED)
                         .setWeight(4)
-                        .apply(SetItemCountFunction.setCount(ConstantValue.exactly(1)))
+                        .apply(SetItemCountFunction.setCount(ContextIntProviders.exactly(1)))
                 )
                 .add(LootItem
                         .lootTableItem(EndResourceItems.ETERNAL_CRYSTAL)
                         .setWeight(1)
-                        .apply(SetItemCountFunction.setCount(ConstantValue.exactly(1)))
+                        .apply(SetItemCountFunction.setCount(ContextIntProviders.exactly(1)))
                 )
                 .add(LootItem
                         .lootTableItem(Items.SHULKER_SHELL)
                         .setWeight(1)
-                        .apply(SetItemCountFunction.setCount(UniformGenerator.between(2, 4)))
+                        .apply(SetItemCountFunction.setCount(ContextIntProviders.between(2, 4)))
                 );
     }
 
     private LootPool.Builder elytraLoot(float chance) {
         return LootPool
                 .lootPool()
-                .setRolls(UniformGenerator.between(1, 3))
+                .setRolls(ContextIntProviders.between(1, 3))
                 .add(LootItem
                         .lootTableItem(Items.ELYTRA)
                         .setWeight(1)
-                        .apply(SetItemCountFunction.setCount(ConstantValue.exactly(1)))
+                        .apply(SetItemCountFunction.setCount(ContextIntProviders.exactly(1)))
                 ).add(LootItem
                         .lootTableItem(Items.FIREWORK_ROCKET)
                         .setWeight(8)
-                        .apply(SetItemCountFunction.setCount(UniformGenerator.between(4, 8)))
+                        .apply(SetItemCountFunction.setCount(ContextIntProviders.between(4, 8)))
                 )
                 .when(LootItemRandomChanceCondition.randomChance(chance));
     }
@@ -345,36 +345,36 @@ public class EndChestLootTableProvider extends WoverLootTableProvider {
     private LootPool.Builder simpleVillageLoot() {
         return LootPool
                 .lootPool()
-                .setRolls(UniformGenerator.between(1, 3))
+                .setRolls(ContextIntProviders.between(1, 3))
                 .add(LootItem
                         .lootTableItem(EndResourceItems.LEATHER_WRAPPED_STICK)
                         .setWeight(10)
-                        .apply(SetItemCountFunction.setCount(UniformGenerator.between(2, 5)))
+                        .apply(SetItemCountFunction.setCount(ContextIntProviders.between(2, 5)))
                 )
                 .add(LootItem
                         .lootTableItem(Items.ENDER_PEARL)
                         .setWeight(9)
-                        .apply(SetItemCountFunction.setCount(UniformGenerator.between(1, 5)))
+                        .apply(SetItemCountFunction.setCount(ContextIntProviders.between(1, 5)))
                 )
                 .add(LootItem
                         .lootTableItem(EndFoodItems.SHADOW_BERRY_COOKED)
                         .setWeight(8)
-                        .apply(SetItemCountFunction.setCount(UniformGenerator.between(1, 4)))
+                        .apply(SetItemCountFunction.setCount(ContextIntProviders.between(1, 4)))
                 )
                 .add(LootItem
                         .lootTableItem(EndFoodItems.BLOSSOM_BERRY_JELLY)
                         .setWeight(4)
-                        .apply(SetItemCountFunction.setCount(UniformGenerator.between(1, 4)))
+                        .apply(SetItemCountFunction.setCount(ContextIntProviders.between(1, 4)))
                 )
                 .add(LootItem
                         .lootTableItem(EndMetalBlocks.THALLASIUM.equipment.shovelHead)
                         .setWeight(2)
-                        .apply(SetItemCountFunction.setCount(ConstantValue.exactly(1)))
+                        .apply(SetItemCountFunction.setCount(ContextIntProviders.exactly(1)))
                 )
                 .add(LootItem
                         .lootTableItem(Blocks.ENDER_CHEST)
                         .setWeight(1)
-                        .apply(SetItemCountFunction.setCount(ConstantValue.exactly(1)))
+                        .apply(SetItemCountFunction.setCount(ContextIntProviders.exactly(1)))
                 );
     }
 
@@ -405,7 +405,7 @@ public class EndChestLootTableProvider extends WoverLootTableProvider {
 
     private static LootTable.Builder includeCommonItems(LootTable.Builder table) {
         LootPool.Builder builder = LootPool.lootPool();
-        builder.setRolls(UniformGenerator.between(0, 2));
+        builder.setRolls(ContextIntProviders.between(0, 2));
         builder.add(LootItem.lootTableItem(EndDiscItems.MUSIC_DISC_STRANGE_AND_ALIEN));
         builder.add(LootItem.lootTableItem(EndDiscItems.MUSIC_DISC_GRASPING_AT_STARS));
         builder.add(LootItem.lootTableItem(EndDiscItems.MUSIC_DISC_ENDSEEKER));
@@ -415,14 +415,14 @@ public class EndChestLootTableProvider extends WoverLootTableProvider {
         table.withPool(builder);
 
         builder = LootPool.lootPool();
-        builder.setRolls(UniformGenerator.between(4, 8));
+        builder.setRolls(ContextIntProviders.between(4, 8));
         builder.add(LootItem.lootTableItem(EndMetalBlocks.THALLASIUM.equipment.ingot));
         builder.add(LootItem.lootTableItem(EndMetalBlocks.THALLASIUM.rawOre));
         builder.add(LootItem.lootTableItem(Items.ENDER_PEARL));
         table.withPool(builder);
 
         builder = LootPool.lootPool();
-        builder.setRolls(UniformGenerator.between(2, 4));
+        builder.setRolls(ContextIntProviders.between(2, 4));
         builder.add(LootItem.lootTableItem(EndMetalBlocks.TERMINITE.equipment.ingot));
         builder.add(LootItem.lootTableItem(EndResourceItems.ENDER_SHARD));
         builder.add(LootItem.lootTableItem(EndCrystalBlocks.AURORA_CRYSTAL));
@@ -436,7 +436,7 @@ public class EndChestLootTableProvider extends WoverLootTableProvider {
         table.withPool(builder);
 
         builder = LootPool.lootPool();
-        builder.setRolls(UniformGenerator.between(0, 4));
+        builder.setRolls(ContextIntProviders.between(0, 4));
         builder.add(LootItem.lootTableItem(EndStoneBlocks.FLAVOLITE_RUNED));
         builder.add(LootItem.lootTableItem(EndEquipmentItems.AETERNIUM_SET.ingot));
         builder.add(LootItem.lootTableItem(EndResourceItems.AMBER_GEM));

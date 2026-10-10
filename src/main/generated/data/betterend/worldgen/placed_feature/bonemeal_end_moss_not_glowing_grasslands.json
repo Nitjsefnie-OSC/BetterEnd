@@ -5,18 +5,14 @@
       "feature": {
         "type": "minecraft:simple_block",
         "to_place": {
-          "type": "minecraft:weighted_state_provider",
+          "type": "minecraft:weighted",
           "entries": [
             {
-              "data": {
-                "Name": "betterend:creeping_moss"
-              },
+              "data": "betterend:creeping_moss",
               "weight": 10
             },
             {
-              "data": {
-                "Name": "betterend:umbrella_moss"
-              },
+              "data": "betterend:umbrella_moss",
               "weight": 10
             }
           ]

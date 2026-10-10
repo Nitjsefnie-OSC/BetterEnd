@@ -1,5 +1,6 @@
 {
   "type": "minecraft:smelting",
+  "cookingtime": 200,
   "ingredient": "betterend:thallasium_boots",
   "result": {
     "id": "betterend:thallasium_nugget"

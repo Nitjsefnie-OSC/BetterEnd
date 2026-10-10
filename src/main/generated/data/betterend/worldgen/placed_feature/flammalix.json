@@ -5,10 +5,7 @@
     "radius": 3,
     "raw_heightmap": false,
     "state": {
-      "type": "minecraft:simple_state_provider",
-      "state": {
-        "Name": "betterend:flammalix"
-      }
+      "id": "betterend:flammalix"
     }
   },
   "placement": [

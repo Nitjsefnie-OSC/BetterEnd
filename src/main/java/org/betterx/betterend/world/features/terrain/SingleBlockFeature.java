@@ -26,7 +26,7 @@ import net.minecraft.world.level.levelgen.feature.stateproviders.BlockStateProvi
 public class SingleBlockFeature implements Feature {
     public static final MapCodec<SingleBlockFeature> CODEC = RecordCodecBuilder.mapCodec(instance -> instance
             .group(
-                    BlockStateProvider.CODEC.fieldOf("to_place").forGetter(o -> o.toPlace)
+                    BlockStateProvider.DIRECT_CODEC.fieldOf("to_place").forGetter(o -> o.toPlace)
             )
             .apply(instance, SingleBlockFeature::new));
 

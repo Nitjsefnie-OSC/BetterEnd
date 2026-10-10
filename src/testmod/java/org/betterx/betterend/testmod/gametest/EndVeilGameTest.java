@@ -17,7 +17,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.entity.monster.EnderMan;
+import net.minecraft.world.entity.monster.Enderman;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.alchemy.Potion;
@@ -38,7 +38,7 @@ import net.fabricmc.fabric.api.gametest.v1.GameTest;
  * Covers {@code betterend:end_veil} end to end: the enchantment, the potion effect, and the brewing
  * recipes that are the only way to obtain the potion.
  * <p>
- * {@code EnderManMixin} short-circuits {@code EnderMan#isBeingStaredBy} on three independent conditions
+ * {@code EnderManMixin} short-circuits {@code Enderman#isBeingStaredBy} on three independent conditions
  * - creative mode, the End Veil mob effect, and the End Veil enchantment on the head slot. The
  * enchantment and the effect are asserted separately, and
  * {@link #bareHeadedPlayerStillAngersEnderman} is the control that makes them mean anything: a mixin
@@ -54,11 +54,11 @@ public class EndVeilGameTest {
     /** Long enough for the spawned enderman to land before the player takes aim. */
     private static final int SETTLE_TICKS = 10;
 
-    private static boolean isStaredAt(EnderMan enderman, ServerPlayer player) {
+    private static boolean isStaredAt(Enderman enderman, ServerPlayer player) {
         return ((EnderManInvoker) enderman).betterend_testmod$isBeingStaredBy(player);
     }
 
-    private static EnderMan enderman(GameTestHelper helper) {
+    private static Enderman enderman(GameTestHelper helper) {
         // spawnWithNoFreeWill keeps the enderman from wandering out of the structure mid-test.
         return helper.spawnWithNoFreeWill(EntityTypes.ENDERMAN, ENDERMAN_POS);
     }
@@ -75,7 +75,7 @@ public class EndVeilGameTest {
      * spawns slightly above the floor and falls, and an aim taken before it lands is off by enough
      * (~15 degrees at this range) to miss the 0.025 stare tolerance entirely.
      */
-    private static void aimAt(ServerPlayer player, EnderMan target) {
+    private static void aimAt(ServerPlayer player, Enderman target) {
         MockPlayers.lookAt(player, target.getEyePosition());
     }
 
@@ -85,7 +85,7 @@ public class EndVeilGameTest {
      */
     @GameTest(maxTicks = 100)
     public void bareHeadedPlayerStillAngersEnderman(GameTestHelper helper) {
-        final EnderMan enderman = enderman(helper);
+        final Enderman enderman = enderman(helper);
         final ServerPlayer player = starer(helper);
 
         helper.startSequence()
@@ -106,7 +106,7 @@ public class EndVeilGameTest {
     @GameTest(maxTicks = 100)
     public void endVeilEnchantmentHidesTheStare(GameTestHelper helper) {
         final List<String> failures = new ArrayList<>();
-        final EnderMan enderman = enderman(helper);
+        final Enderman enderman = enderman(helper);
         final ServerPlayer player = starer(helper);
 
         final ItemStack helmet = new ItemStack(Items.DIAMOND_HELMET);
@@ -142,7 +142,7 @@ public class EndVeilGameTest {
 
     @GameTest(maxTicks = 100)
     public void endVeilEffectHidesTheStare(GameTestHelper helper) {
-        final EnderMan enderman = enderman(helper);
+        final Enderman enderman = enderman(helper);
         final ServerPlayer player = starer(helper);
         player.addEffect(new MobEffectInstance(EndStatusEffects.END_VEIL, 400));
 

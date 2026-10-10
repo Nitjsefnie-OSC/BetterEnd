@@ -2,24 +2,16 @@
   "type": "betterend:biome",
   "biome": "betterend:sulphur_springs",
   "fogDensity": 1.5,
+  "genChance": 1.25,
   "generation_data": {
     "intended_placement": "wover:is_end/land"
   },
   "has_caves": false,
   "surface": {
-    "alt": {
-      "Name": "betterend:sulphuric_rock"
-    },
+    "alt": "betterend:sulphuric_rock",
     "floor_rule": false,
-    "top": {
-      "Name": "betterend:brimstone",
-      "Properties": {
-        "active": "false"
-      }
-    },
-    "under": {
-      "Name": "minecraft:end_stone"
-    }
+    "top": "betterend:brimstone",
+    "under": "minecraft:end_stone"
   },
   "terrainHeight": 0.0
 }

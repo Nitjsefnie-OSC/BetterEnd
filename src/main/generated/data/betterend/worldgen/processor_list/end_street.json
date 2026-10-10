@@ -12,9 +12,7 @@
             "block": "minecraft:water",
             "predicate_type": "minecraft:block_match"
           },
-          "output_state": {
-            "Name": "betterend:pythadendron_planks"
-          }
+          "output_state": "betterend:pythadendron_planks"
         },
         {
           "input_predicate": {
@@ -25,12 +23,7 @@
             "block": "minecraft:water",
             "predicate_type": "minecraft:block_match"
           },
-          "output_state": {
-            "Name": "minecraft:water",
-            "Properties": {
-              "level": "0"
-            }
-          }
+          "output_state": "minecraft:water"
         },
         {
           "input_predicate": {
@@ -41,9 +34,7 @@
           "location_predicate": {
             "predicate_type": "minecraft:always_true"
           },
-          "output_state": {
-            "Name": "betterend:shadow_grass_path"
-          }
+          "output_state": "betterend:shadow_grass_path"
         },
         {
           "input_predicate": {
@@ -54,9 +45,7 @@
           "location_predicate": {
             "predicate_type": "minecraft:always_true"
           },
-          "output_state": {
-            "Name": "betterend:end_stone_brick_cracked"
-          }
+          "output_state": "betterend:end_stone_brick_cracked"
         },
         {
           "input_predicate": {
@@ -67,9 +56,7 @@
           "location_predicate": {
             "predicate_type": "minecraft:always_true"
           },
-          "output_state": {
-            "Name": "betterend:end_stone_brick_weathered"
-          }
+          "output_state": "betterend:end_stone_brick_weathered"
         }
       ]
     }

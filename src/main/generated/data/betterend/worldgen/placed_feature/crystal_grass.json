@@ -5,10 +5,7 @@
     "radius": 8,
     "raw_heightmap": false,
     "state": {
-      "type": "minecraft:simple_state_provider",
-      "state": {
-        "Name": "betterend:crystal_grass"
-      }
+      "id": "betterend:crystal_grass"
     }
   },
   "placement": [

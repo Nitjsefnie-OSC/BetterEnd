@@ -33,8 +33,6 @@ import de.ambertation.wover.block.api.DefaultBlockDefinition;
 import de.ambertation.wover.block.api.VanillaBlockDefinition;
 import de.ambertation.wover.block.api.model.ModelTraitLibrary;
 import de.ambertation.wover.core.api.ModCore;
-import de.ambertation.wover.block.api.client.trait.BlockModelTrait;
-import de.ambertation.wover.block.api.client.trait.ClientBlockTraits;
 import de.ambertation.wover.block.api.trait.BlockTraits;
 import de.ambertation.wover.item.api.BlockItemDefinition;
 import de.ambertation.wover.pottable.api.trait.PottablePlantBlockTrait;
@@ -56,7 +54,6 @@ import net.minecraft.world.level.block.state.BlockBehaviour.OffsetType;
 import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.level.material.PushReaction;
 import net.minecraft.world.level.storage.loot.LootTable;
-import net.minecraft.world.level.storage.loot.providers.number.UniformGenerator;
 
 import java.util.List;
 import java.util.function.Function;
@@ -118,7 +115,10 @@ public class EndMetalBlocks {
             .buildAndRegister();
 
     public static final Block CHARCOAL_BLOCK = EndBlocks.defineBlock("charcoal_block", CharcoalBlock::new)
+            .replacePropertiesWithCopy(Blocks.COAL_BLOCK)
             .addTrait(BlockTraits.STONE_BLOCK)
+            // After STONE_BLOCK on purpose: its strength(2, 6) default would otherwise replace coal block's.
+            .strength(Blocks.COAL_BLOCK.defaultDestroyTime(), Blocks.COAL_BLOCK.getExplosionResistance())
             .addTrait(ModelTraitLibrary.cube())
             .addTrait(BlockTraits.LOOT_TABLE.dropSelf())
             .buildAndRegister();
@@ -134,7 +134,10 @@ public class EndMetalBlocks {
             .buildAndRegister();
 
     public static final Block AMBER_BLOCK = EndBlocks.defineBlock("amber_block", AmberBlock::new)
+            .replacePropertiesWithCopy(Blocks.DIAMOND_BLOCK)
             .addTrait(BlockTraits.STONE_BLOCK)
+            // After STONE_BLOCK on purpose: its strength(2, 6) default would otherwise replace diamond block's.
+            .strength(Blocks.DIAMOND_BLOCK.defaultDestroyTime(), Blocks.DIAMOND_BLOCK.getExplosionResistance())
             .addTrait(ModelTraitLibrary.cube())
             .mapColor(MapColor.COLOR_YELLOW)
             .addTrait(BlockTraits.LOOT_TABLE.dropSelf())

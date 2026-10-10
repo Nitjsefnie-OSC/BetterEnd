@@ -1,6 +1,6 @@
 package org.betterx.betterend.client.render;
 
-import de.ambertation.wunderlib.ui.ColorHelper;
+import de.ambertation.wunderlib.utils.ColorUtilARGB32;
 import org.betterx.bclib.util.MHelper;
 import org.betterx.betterend.BetterEnd;
 import org.betterx.betterend.blocks.AuroraCrystalBlock;
@@ -57,7 +57,7 @@ public class EternalCrystalRenderer {
             PoseStack local = new PoseStack();
             local.mulPose(pose.pose());
             local.scale(0.6F, 0.6F, 0.6F);
-            local.mulPose(Axis.YP.rotation(rotation));
+            local.rotate(Axis.YP.rotation(rotation));
 
             CORE.render(
                     local,
@@ -97,7 +97,7 @@ public class EternalCrystalRenderer {
         int g = MHelper.floor(Mth.lerp(delta, color1.getY(), color2.getY()));
         int b = MHelper.floor(Mth.lerp(delta, color1.getZ(), color2.getZ()));
 
-        return ColorHelper.color(r, g, b);
+        return ColorUtilARGB32.color(r, g, b);
     }
 
     public static LayerDefinition getTexturedModelData() {

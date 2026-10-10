@@ -1,0 +1,9 @@
+{
+  "type": "minecraft:smelting",
+  "category": "food",
+  "cookingtime": 200,
+  "ingredient": "betterend:end_fish_raw",
+  "result": {
+    "id": "betterend:end_fish_cooked"
+  }
+}

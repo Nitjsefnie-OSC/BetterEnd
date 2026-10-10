@@ -4,8 +4,6 @@ import org.betterx.bclib.util.MHelper;
 import org.betterx.betterend.BetterEnd;
 import org.betterx.betterend.interfaces.BETargetChecker;
 import org.betterx.betterend.mixin.common.NoiseBasedChunkGeneratorAccessor;
-import org.betterx.betterend.mixin.common.NoiseChunkAccessor;
-import org.betterx.betterend.mixin.common.NoiseInterpolatorAccessor;
 import org.betterx.betterend.noise.OpenSimplexNoise;
 import de.ambertation.wover.biome.api.BiomeManager;
 import de.ambertation.wover.block.api.BlockHelper;
@@ -21,12 +19,17 @@ import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
+import net.minecraft.world.level.biome.BiomeResolver;
 import net.minecraft.world.level.biome.BiomeSource;
 import net.minecraft.world.level.biome.Climate.Sampler;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.dimension.LevelStem;
 import net.minecraft.world.level.levelgen.*;
+import net.minecraft.world.level.levelgen.densityfunction.DensityFunction;
+import net.minecraft.world.level.levelgen.densityfunction.DfRewriteRule;
+import net.minecraft.world.level.levelgen.densityfunction.SamplerContext;
+import net.minecraft.world.level.levelgen.densityfunction.op.InterpolatedFunction;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -54,7 +57,12 @@ public class TerrainGenerator {
     private static OpenSimplexNoise noise2;
     private static BiomeSource biomeSource;
     public static WoverEndConfig config;
-    private static Sampler sampler;
+    /**
+     * Resolves the biome at a quart position. The 26.3 release removed
+     * {@code BiomeSource#getNoiseBiome(x, y, z, Climate.Sampler)}; biome lookups now go through a
+     * {@link BiomeResolver} created from the climate sampler, which {@link #initNoise} builds once.
+     */
+    private static BiomeResolver biomeResolver;
 
     /**
      * The world seed the End generator was initialised with, or {@code 0} before {@link #initNoise} has run.
@@ -103,7 +111,8 @@ public class TerrainGenerator {
             config = null;
             noiseSeed = 0;
             biomeSource = null;
-            sampler = null;
+            biomeResolver = null;
+            islandTerrain = null;
             largeIslands = null;
             mediumIslands = null;
             smallIslands = null;
@@ -140,7 +149,7 @@ public class TerrainGenerator {
         noise2 = new OpenSimplexNoise(random.nextInt());
         TERRAIN_BOOL_CACHE_MAP.clear();
         TerrainGenerator.biomeSource = biomeSource;
-        TerrainGenerator.sampler = sampler;
+        TerrainGenerator.biomeResolver = biomeSource.createResolver(sampler);
 
     }
 
@@ -150,7 +159,7 @@ public class TerrainGenerator {
         LOCKER.lock();
         try {
             // Same defensive guard as isLand/getSurfaceHeight: the island layers are null whenever
-            // BetterEnd does not own this End (see disableTerrainGenerator). fillSlice is gated on
+            // BetterEnd does not own this End (see disableTerrainGenerator). The terrain hook is gated on
             // be_isTarget() and so should never get here in that state, but a chunk worker NPE would be
             // far worse than leaving the column to vanilla, so bail out rather than dereference null.
             if (largeIslands == null || mediumIslands == null || smallIslands == null || noise1 == null) {
@@ -168,7 +177,7 @@ public class TerrainGenerator {
      * bottom, and {@code buffer[y] > 0} means the block there is solid.
      * <p>
      * This is the single source of truth shared by {@link #fillTerrainDensity} (which writes the
-     * actual generated terrain via {@code fillSlice}) and {@link #getSurfaceHeight} (which reports the
+     * actual generated terrain via {@link IslandTerrainDensityFunction}) and {@link #getSurfaceHeight} (which reports the
      * surface height to structure placement). Keeping both on this one method guarantees structure
      * placement can never diverge from the terrain that actually generates.
      * <p>
@@ -224,13 +233,13 @@ public class TerrainGenerator {
      * {@code (blockX, blockZ)}, or {@code noiseMinY} (the void floor) if the column is entirely air.
      * <p>
      * The value is derived from {@link #computeColumnDensity} - the exact same island density that
-     * {@code fillSlice}/{@link #fillTerrainDensity} write as terrain - so structure placement (which
+     * {@link IslandTerrainDensityFunction}/{@link #fillTerrainDensity} write as terrain - so structure placement (which
      * queries this through {@code getBaseHeight}/{@code getFirstOccupiedHeight}) sees the real islands
      * and no longer places structures floating at the void floor. The column is sampled cell-aligned
-     * (via {@code floorDiv}), matching how {@code fillSlice} always samples cell corners.
+     * (via {@code floorDiv}), matching how the terrain is always sampled at cell corners.
      *
-     * @param scaleXZ   the noise cell width  ({@code noiseSettings.getCellWidth()})
-     * @param scaleY    the noise cell height ({@code noiseSettings.getCellHeight()})
+     * @param scaleXZ   the noise cell width  ({@link #islandCellSize})
+     * @param scaleY    the noise cell height ({@link #islandCellSize})
      * @param maxHeight the noise height span ({@code noiseSettings.height()})
      * @param noiseMinY the noise bottom Y    ({@code noiseSettings.minY()})
      */
@@ -258,7 +267,7 @@ public class TerrainGenerator {
     }
 
     private static float getAverageDepth(int x, int z) {
-        if (biomeSource == null) {
+        if (biomeSource == null || biomeResolver == null) {
             return 0;
         }
         WoverBiomeData biome = getBiomeData(biomeSource, x, z);
@@ -288,7 +297,7 @@ public class TerrainGenerator {
         final int biomeY = config == null
                 ? 0
                 : (config.caveBiomesTopY + config.caveBiomesTopJitter + 8) >> 2;
-        if (BiomeManager.biomeDataForHolder(biomeSource.getNoiseBiome(x, biomeY, z, sampler)) instanceof WoverBiomeData biome) {
+        if (BiomeManager.biomeDataForHolder(biomeResolver.getNoiseBiome(x, biomeY, z)) instanceof WoverBiomeData biome) {
             return biome;
         }
         return null;
@@ -427,7 +436,7 @@ public class TerrainGenerator {
             initNoise(
                     seed,
                     endBiomeSource,
-                    level.getChunkSource().randomState().sampler()
+                    level.getChunkSource().randomState().createClimateSampler(SamplerContext.EMPTY_UNCACHED)
             );
         }
     }
@@ -452,29 +461,95 @@ public class TerrainGenerator {
         }
     }
 
-    public static void fillSlice(
-            boolean primarySlice,
-            int x,
-            List<NoiseChunk.NoiseInterpolator> interpolators,
-            NoiseChunkAccessor accessor,
-            NoiseSettings noiseSettings
-    ) {
-        final int sizeY = noiseSettings.getCellHeight();
-        final int sizeXZ = noiseSettings.getCellWidth();
-        final int cellSizeXZ = accessor.bnv_getCellCountXZ() + 1;
-        final int firstCellZ = accessor.bnv_getFirstCellZ();
+    /**
+     * Fallback cell size used when the End's final density has no {@code interpolated} node: vanilla's
+     * {@code NoiseRouterData#end} interpolates the End terrain in 8x4x8 block cells.
+     */
+    private static final int DEFAULT_CELL_SIZE_XZ = 8;
+    private static final int DEFAULT_CELL_SIZE_Y = 4;
 
-        x *= sizeXZ;
-        for (int cellXZ = 0; cellXZ < cellSizeXZ; ++cellXZ) {
-            int z = (firstCellZ + cellXZ) * sizeXZ;
-            for (NoiseChunk.NoiseInterpolator noiseInterpolator : interpolators) {
-                if (noiseInterpolator instanceof NoiseInterpolatorAccessor interpolator) {
-                    final double[] ds = (primarySlice
-                            ? interpolator.be_getSlice0()
-                            : interpolator.be_getSlice1())[cellXZ];
-                    fillTerrainDensity(ds, x, z, sizeXZ, sizeY, noiseSettings.height());
-                }
-            }
+    /**
+     * The final density with BetterEnd's island terrain swapped in, for the one End router it was built for.
+     */
+    private record IslandTerrain(
+            DensityFunction source,
+            NoiseSettings noiseSettings,
+            DensityFunction withIslands,
+            int cellSizeXz,
+            int cellSizeY
+    ) {
+    }
+
+    private static volatile IslandTerrain islandTerrain;
+
+    /**
+     * Returns {@code finalDensity} with the input of every {@code interpolated} node replaced by BetterEnd's
+     * island terrain ({@link IslandTerrainDensityFunction}).
+     * <p>
+     * This is the 26.3-release replacement for the old {@code fillSlice} hook. Before the release BetterEnd
+     * cancelled {@code NoiseChunk#fillSlice} and wrote {@link #fillTerrainDensity} into the cell-corner slices
+     * of every {@code NoiseChunk.NoiseInterpolator}. Those interpolators were the inputs of the router's
+     * {@code interpolated} nodes; the release turned interpolation into a plain density function, so replacing
+     * the input of those nodes reproduces exactly what the slice hook did: the same density at the same cell
+     * corners, interpolated by vanilla, and then post-processed (squeeze, beardifier) like before.
+     * <p>
+     * Must only be called for a {@link BETargetChecker#be_isTarget() target} generator.
+     */
+    public static DensityFunction withIslandTerrain(DensityFunction finalDensity, NoiseSettings noiseSettings) {
+        return islandTerrainFor(finalDensity, noiseSettings).withIslands();
+    }
+
+    /**
+     * The interpolation cell size ({@code [xz, y]}) of the End terrain built for {@code settings}, i.e. the cell
+     * corners at which {@link #fillTerrainDensity} is sampled. Replaces {@code NoiseSettings#getCellWidth()} and
+     * {@code getCellHeight()}, which the 26.3 release removed (the cell size is now part of the
+     * {@code interpolated} density function).
+     */
+    public static int[] islandCellSize(NoiseGeneratorSettings settings) {
+        final IslandTerrain terrain = islandTerrainFor(settings.noiseRouter().finalDensity(), settings.noiseSettings());
+        return new int[]{terrain.cellSizeXz(), terrain.cellSizeY()};
+    }
+
+    private static IslandTerrain islandTerrainFor(DensityFunction finalDensity, NoiseSettings noiseSettings) {
+        final IslandTerrain cached = islandTerrain;
+        if (cached != null && cached.source() == finalDensity && cached.noiseSettings().equals(noiseSettings)) {
+            return cached;
         }
+
+        final int[] cellSize = {DEFAULT_CELL_SIZE_XZ, DEFAULT_CELL_SIZE_Y};
+        final boolean[] found = {false};
+        final DensityFunction withIslands = new DfRewriteRule() {
+            @Override
+            public DensityFunction rewrite(DensityFunction function) {
+                if (function instanceof InterpolatedFunction interpolated) {
+                    if (!found[0]) {
+                        found[0] = true;
+                        cellSize[0] = interpolated.cellSizeXz();
+                        cellSize[1] = interpolated.cellSizeY();
+                    }
+                    return new InterpolatedFunction(
+                            new IslandTerrainDensityFunction(
+                                    interpolated.cellSizeXz(),
+                                    interpolated.cellSizeY(),
+                                    noiseSettings.minY(),
+                                    noiseSettings.height()
+                            ),
+                            interpolated.cellSizeXz(),
+                            interpolated.cellSizeY()
+                    );
+                }
+                return function.rewriteChildren(this);
+            }
+        }.rewrite(finalDensity);
+
+        if (!found[0]) {
+            BetterEnd.LOGGER.warn(
+                    "The End's final density has no interpolated node, BetterEnd island terrain can not be applied."
+            );
+        }
+
+        final IslandTerrain result = new IslandTerrain(finalDensity, noiseSettings, withIslands, cellSize[0], cellSize[1]);
+        islandTerrain = result;
+        return result;
     }
 }

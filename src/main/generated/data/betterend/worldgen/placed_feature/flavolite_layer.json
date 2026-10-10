@@ -4,9 +4,7 @@
     "max_y": 128,
     "min_y": 16,
     "radius": 12.0,
-    "state": {
-      "Name": "betterend:flavolite"
-    }
+    "state": "betterend:flavolite"
   },
   "placement": [
     {

@@ -16,7 +16,7 @@ import java.util.function.Function;
 public class ArchFeatureConfig {
     public static final MapCodec<ArchFeatureConfig> CODEC = RecordCodecBuilder.mapCodec(instance -> instance
             .group(
-                    BlockStateProvider.CODEC.fieldOf("states").forGetter(o -> o.block),
+                    BlockStateProvider.DIRECT_CODEC.fieldOf("states").forGetter(o -> o.block),
                     SurfaceFunction.CODEC.fieldOf("surface_function").forGetter(o -> o.surfaceFunction)
             )
             .apply(instance, ArchFeatureConfig::new));
@@ -26,7 +26,7 @@ public class ArchFeatureConfig {
     public final SurfaceFunction surfaceFunction;
 
     public ArchFeatureConfig(Block block, SurfaceFunction surfaceFunction) {
-        this(BlockStateProvider.simple(block), surfaceFunction);
+        this(BlockStateProvider.of(block), surfaceFunction);
     }
 
     public ArchFeatureConfig(BlockStateProvider block, SurfaceFunction surfaceFunction) {

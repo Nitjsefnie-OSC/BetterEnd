@@ -18,8 +18,8 @@ import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
-import net.minecraft.world.level.storage.loot.providers.number.NumberProviders;
-import net.minecraft.world.level.storage.loot.providers.number.ResolvableNumber;
+import net.minecraft.world.level.storage.loot.providers.number.ints.ContextIntProviders;
+import net.minecraft.world.level.storage.loot.providers.number.ints.ResolvableInt;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.Optional;
@@ -40,7 +40,7 @@ import net.fabricmc.fabric.api.gametest.v1.GameTest;
  * {@code level.fuelValues().burnDuration(stack)} - one server-wide {@code FuelValues} table mapping an
  * item to an {@code int}. 26.3 deleted {@code FuelValues} and {@code Level#fuelValues()} outright.
  * A burn time is now the {@code minecraft:cooking_fuel} item component ({@link CookingFuel}), whose
- * {@code burnTime} is a {@link ResolvableNumber} - for everything vanilla and everything BCLib
+ * {@code burnTime} is a {@link ResolvableInt} - for everything vanilla and everything BCLib
  * registers, a {@code Reference} into the new {@code minecraft:number_provider} datapack registry -
  * and resolving it to a tick count needs a {@link LootContext}, because the provider is a
  * {@code ConditionalValue} that halves the duration for blast furnaces and smokers
@@ -49,7 +49,7 @@ import net.fabricmc.fabric.api.gametest.v1.GameTest;
  * So the single 26.2 assertion is reproduced here in the two halves 26.3 splits it into:
  * <ul>
  *     <li>{@link #charcoalBlockBurnsAtItsDeclaredFuelTime} resolves the component exactly the way
- *     {@code AbstractFurnaceBlockEntity#getBurnDuration} does - same {@code ResolvableNumber.getIntFromItem}
+ *     {@code AbstractFurnaceBlockEntity#getBurnDuration} does - same {@code ResolvableInt.getFromItem}
  *     call, against a real furnace's own {@code BaseContainerBlockEntity#getLootContext} - and asserts the
  *     resulting tick count, which is the direct analogue of the old {@code burnDuration(...) >= 16000}.</li>
  *     <li>{@link #charcoalBlockIsAcceptedAsFurnaceFuel} asserts the end-to-end consequence: a plain vanilla
@@ -65,7 +65,7 @@ public class FurnaceFuelGameTest {
 
     /**
      * 16000 ticks - vanilla {@code coal_block}'s burn time, which {@code CharcoalBlock.getFuelTime()}
-     * matches, and the value behind {@link NumberProviders#COOKING_TIME_COAL_BLOCK}.
+     * matches, and the value behind {@link ContextIntProviders#COOKING_TIME_COAL_BLOCK}.
      */
     private static final int EXPECTED_TICKS = 16000;
 
@@ -104,7 +104,7 @@ public class FurnaceFuelGameTest {
      * Also pins down that the component is a reference to vanilla's 16000-tick provider rather than some
      * inline constant that happens to be large enough - that is what {@code FuelComponents}' lookup of
      * {@code getFuelTime()} against vanilla's providers is supposed to produce, and it is the same fact
-     * {@code EndStoneSmelterBlockEntity#canUseAsFuel} depends on (its {@code LONG_BURNING_FUELS} set
+     * {@code EndStoneSmelterBlockEntity#canUseAsFuel} depends on (its {@code LONG_BURNING_FUELS} map
      * matches on the provider key, so a constant-backed fuel would silently stop working in the smelter).
      */
     @GameTest
@@ -120,21 +120,21 @@ public class FurnaceFuelGameTest {
             ));
         }
 
-        if (!(fuel.burnTime() instanceof ResolvableNumber.Reference reference)) {
+        if (!(fuel.burnTime() instanceof ResolvableInt.Reference reference)) {
             throw helper.assertionException(Component.literal(
                     "charcoal_block's cooking_fuel burnTime is " + fuel.burnTime()
                             + ", expected a reference to minecraft:cooking/time_coal_block"
             ));
         }
-        if (!reference.key().equals(NumberProviders.COOKING_TIME_COAL_BLOCK)) {
+        if (!reference.key().equals(ContextIntProviders.COOKING_TIME_COAL_BLOCK)) {
             throw helper.assertionException(Component.literal(
                     "charcoal_block's cooking_fuel burnTime points at " + reference.key().identifier()
-                            + ", expected " + NumberProviders.COOKING_TIME_COAL_BLOCK.identifier()
+                            + ", expected " + ContextIntProviders.COOKING_TIME_COAL_BLOCK.identifier()
             ));
         }
 
         // Exactly what AbstractFurnaceBlockEntity#getBurnDuration computes.
-        final int burnDuration = ResolvableNumber.getIntFromItem(
+        final int burnDuration = ResolvableInt.getFromItem(
                 stack,
                 DataComponents.COOKING_FUEL,
                 CookingFuel::burnTime,

@@ -31,7 +31,7 @@ import net.minecraft.world.level.storage.loot.predicates.InvertedLootItemConditi
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 import net.minecraft.world.level.storage.loot.predicates.MatchBlock;
 import net.minecraft.world.level.storage.loot.predicates.LootItemRandomChanceCondition;
-import net.minecraft.world.level.storage.loot.providers.number.ConstantValue;
+import net.minecraft.world.level.storage.loot.providers.number.ints.ContextIntProviders;
 
 public class LanceleafBlock extends BasePlantBlock {
 
@@ -102,11 +102,11 @@ public class LanceleafBlock extends BasePlantBlock {
         return LootTable
                 .lootTable()
                 .withPool(LootPool.lootPool()
-                        .setRolls(ConstantValue.exactly(1))
+                        .setRolls(ContextIntProviders.exactly(1))
                         .when(isBottom(block, provider))
                         .add(LootItem.lootTableItem(EndPlantBlocks.LANCELEAF_SEED)))
                 .withPool(LootPool.lootPool()
-                        .setRolls(ConstantValue.exactly(1))
+                        .setRolls(ContextIntProviders.exactly(1))
                         .when(InvertedLootItemCondition.invert(isBottom(block, provider)))
                         .when(LootItemRandomChanceCondition.randomChance(0.5F))
                         .add(LootItem.lootTableItem(EndPlantBlocks.LANCELEAF_SEED)));

@@ -5,24 +5,18 @@
       "feature": {
         "type": "minecraft:simple_block",
         "to_place": {
-          "type": "minecraft:weighted_state_provider",
+          "type": "minecraft:weighted",
           "entries": [
             {
-              "data": {
-                "Name": "betterend:aeridium"
-              },
+              "data": "betterend:aeridium",
               "weight": 20
             },
             {
-              "data": {
-                "Name": "betterend:bolux_mushroom"
-              },
+              "data": "betterend:bolux_mushroom",
               "weight": 5
             },
             {
-              "data": {
-                "Name": "betterend:lamellarium"
-              },
+              "data": "betterend:lamellarium",
               "weight": 100
             }
           ]

@@ -17,29 +17,32 @@
       }
     },
     "minecraft:gameplay/natural_mob_spawns": {
-      "spawn_costs": {},
-      "spawns_by_category": {
-        "monster": [
-          {
-            "type": "betterend:end_slime",
-            "count": {
-              "type": "minecraft:uniform",
-              "max_inclusive": 2,
-              "min_inclusive": 1
+      "argument": {
+        "spawn_costs": {},
+        "spawns_by_category": {
+          "monster": [
+            {
+              "type": "betterend:end_slime",
+              "count": {
+                "type": "minecraft:uniform",
+                "max_inclusive": 2,
+                "min_inclusive": 1
+              },
+              "weight": 5
             },
-            "weight": 5
-          },
-          {
-            "type": "minecraft:enderman",
-            "count": {
-              "type": "minecraft:uniform",
-              "max_inclusive": 4,
-              "min_inclusive": 1
-            },
-            "weight": 3
-          }
-        ]
-      }
+            {
+              "type": "minecraft:enderman",
+              "count": {
+                "type": "minecraft:uniform",
+                "max_inclusive": 4,
+                "min_inclusive": 1
+              },
+              "weight": 3
+            }
+          ]
+        }
+      },
+      "modifier": "overlay"
     },
     "minecraft:visual/ambient_particles": [
       {

@@ -32,25 +32,19 @@
               },
               "then_run": {
                 "type": "minecraft:block",
-                "result_state": {
-                  "Name": "betterend:jungle_moss"
-                }
+                "result_state": "betterend:jungle_moss"
               }
             },
             {
               "type": "minecraft:block",
-              "result_state": {
-                "Name": "betterend:jungle_moss"
-              }
+              "result_state": "betterend:jungle_moss"
             }
           ]
         }
       },
       {
         "type": "minecraft:block",
-        "result_state": {
-          "Name": "minecraft:end_stone"
-        }
+        "result_state": "minecraft:end_stone"
       }
     ]
   }

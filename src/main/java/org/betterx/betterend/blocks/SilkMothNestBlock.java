@@ -41,12 +41,12 @@ import net.minecraft.world.level.storage.loot.LootPool;
 import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.entries.LootItem;
 import net.minecraft.world.level.storage.loot.predicates.MatchBlock;
-import net.minecraft.world.level.storage.loot.providers.number.ConstantValue;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import net.minecraft.world.level.storage.loot.providers.number.ints.ContextIntProviders;
 
 import java.util.Collections;
 import java.util.List;
@@ -131,7 +131,7 @@ public class SilkMothNestBlock extends Block {
                 .lootTable()
                 .withPool(LootPool
                         .lootPool()
-                        .setRolls(ConstantValue.exactly(1.0F))
+                        .setRolls(ContextIntProviders.exactly(1))
                         .when(MatchBlock.blockMatches(
                                 provider.blockLookup(),
                                 block,

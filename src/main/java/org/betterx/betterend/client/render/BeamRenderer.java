@@ -43,7 +43,7 @@ public class BeamRenderer {
         float rotation = (age + tick) / 25.0F + 6.0F;
 
         matrices.pushPose();
-        matrices.mulPose(Axis.YP.rotation(-rotation));
+        matrices.rotate(Axis.YP.rotation(-rotation));
 
         submitNodeCollector.submitCustomGeometry(matrices, RenderTypes.beaconBeam(BEAM_TEXTURE, true), (pose, buffer) -> {
             renderBeam(

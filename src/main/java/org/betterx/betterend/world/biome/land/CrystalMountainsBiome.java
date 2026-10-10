@@ -16,8 +16,9 @@ import de.ambertation.wover.surface.impl.rules.SwitchRuleSource;
 
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.levelgen.SurfaceRules;
 import net.minecraft.world.level.levelgen.placement.CaveSurface;
+import net.minecraft.world.level.levelgen.material.rule.MaterialRule;
+import net.minecraft.world.level.levelgen.material.MaterialRules;
 
 import java.util.List;
 
@@ -48,11 +49,11 @@ public class CrystalMountainsBiome extends EndBiome.Config {
             @Override
             public SurfaceRuleBuilder surface() {
                 // A crystal-moss / end-moss split - no end stone, so nothing bare shows on the surface.
-                SurfaceRules.RuleSource surfaceBlockRule = new SwitchRuleSource(
+                MaterialRule surfaceBlockRule = new SwitchRuleSource(
                         new SplitNoiseCondition(),
                         List.of(
-                                SurfaceRules.state(EndTerrainBlocks.END_MOSS.defaultBlockState()),
-                                SurfaceRules.state(EndTerrainBlocks.CRYSTAL_MOSS.defaultBlockState())
+                                MaterialRules.state(EndTerrainBlocks.END_MOSS.defaultBlockState()),
+                                MaterialRules.state(EndTerrainBlocks.CRYSTAL_MOSS.defaultBlockState())
                         )
                 );
                 return super
@@ -61,7 +62,7 @@ public class CrystalMountainsBiome extends EndBiome.Config {
                         // (multiple moss layers on top of each other look wrong). ON_FLOOR paints just the
                         // top floor block; end stone stays below. Priority must beat the FILLER (900) or
                         // the rule is dead - that was the old bug (1).
-                        .rule(SurfaceRules.ifTrue(
+                        .rule(MaterialRules.ifTrue(
                                 EndBiomeBuilder.ON_FLOOR,
                                 surfaceBlockRule
                         ), BaseSurfaceRuleBuilder.SUB_SURFACE_PRIORITY)

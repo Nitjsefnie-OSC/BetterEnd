@@ -5,12 +5,9 @@
     "radius": 8,
     "raw_heightmap": true,
     "state": {
-      "type": "minecraft:simple_state_provider",
-      "state": {
-        "Name": "betterend:small_jellyshroom",
-        "Properties": {
-          "facing": "up"
-        }
+      "id": "betterend:small_jellyshroom",
+      "properties": {
+        "facing": "up"
       }
     }
   },

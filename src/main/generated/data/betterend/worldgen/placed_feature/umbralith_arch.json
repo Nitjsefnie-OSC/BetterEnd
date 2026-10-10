@@ -2,10 +2,7 @@
   "feature": {
     "type": "betterend:arch_feature",
     "states": {
-      "type": "minecraft:simple_state_provider",
-      "state": {
-        "Name": "betterend:umbralith"
-      }
+      "id": "betterend:umbralith"
     },
     "surface_function": "umbra_valley"
   },

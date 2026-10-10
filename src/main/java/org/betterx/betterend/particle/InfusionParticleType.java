@@ -1,7 +1,8 @@
 package org.betterx.betterend.particle;
 
+import org.betterx.bclib.client.ClientColorUtil;
+import de.ambertation.wunderlib.utils.ColorUtilARGB32;
 import org.betterx.betterend.registry.EndParticles;
-import org.betterx.ui.ColorUtil;
 
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.particles.ParticleOptions;
@@ -43,8 +44,8 @@ public class InfusionParticleType extends ParticleType<InfusionParticleType> imp
 
     @Environment(EnvType.CLIENT)
     public float[] getPalette() {
-        int color = ColorUtil.extractColor(itemStackTemplate.item().value());
-        return ColorUtil.toFloatArray(color);
+        int color = ClientColorUtil.extractColor(itemStackTemplate.item().value());
+        return ColorUtilARGB32.toFloatArrayRGBA(color);
     }
 
     @Override

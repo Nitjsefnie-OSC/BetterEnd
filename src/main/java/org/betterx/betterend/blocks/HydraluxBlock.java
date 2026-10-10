@@ -34,8 +34,7 @@ import net.minecraft.world.level.storage.loot.functions.SetItemCountFunction;
 import net.minecraft.world.level.storage.loot.predicates.AnyOfCondition;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 import net.minecraft.world.level.storage.loot.predicates.MatchBlock;
-import net.minecraft.world.level.storage.loot.providers.number.ConstantValue;
-import net.minecraft.world.level.storage.loot.providers.number.UniformGenerator;
+import net.minecraft.world.level.storage.loot.providers.number.ints.ContextIntProviders;
 
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -102,17 +101,17 @@ public class HydraluxBlock extends UnderwaterPlantBlock {
         return LootTable
                 .lootTable()
                 .withPool(LootPool.lootPool()
-                        .setRolls(ConstantValue.exactly(1))
+                        .setRolls(ContextIntProviders.exactly(1))
                         .when(AnyOfCondition.anyOf(
                                 shapeCond(block, provider, HydraluxShape.FLOWER_BIG_BOTTOM),
                                 shapeCond(block, provider, HydraluxShape.FLOWER_SMALL_BOTTOM)))
                         .add(LootItem.lootTableItem(EndResourceItems.HYDRALUX_PETAL)
-                                     .apply(SetItemCountFunction.setCount(UniformGenerator.between(1, 4)))))
+                                     .apply(SetItemCountFunction.setCount(ContextIntProviders.between(1, 4)))))
                 .withPool(LootPool.lootPool()
-                        .setRolls(ConstantValue.exactly(1))
+                        .setRolls(ContextIntProviders.exactly(1))
                         .when(shapeCond(block, provider, HydraluxShape.ROOTS))
                         .add(LootItem.lootTableItem(EndSaplingBlocks.HYDRALUX_SAPLING)
-                                     .apply(SetItemCountFunction.setCount(UniformGenerator.between(1, 2)))));
+                                     .apply(SetItemCountFunction.setCount(ContextIntProviders.between(1, 2)))));
     }
 
     /**

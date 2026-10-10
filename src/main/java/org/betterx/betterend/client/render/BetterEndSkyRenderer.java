@@ -175,27 +175,27 @@ public class BetterEndSkyRenderer implements LevelRenderEvents.StartMain {
 
         if (blindA > 0) {
             matrices.pushPose();
-            matrices.mulPose(new Quaternionf().rotationXYZ(0, time, 0));
+            matrices.rotate(new Quaternionf().rotationXYZ(0, time, 0));
             renderTexturedMesh(matrices, horizon, HORIZON, 0.77f, 0.31f, 0.73f, 0.7f * blindA);
             matrices.popPose();
 
             matrices.pushPose();
-            matrices.mulPose(new Quaternionf().rotationXYZ(0, -time, 0));
+            matrices.rotate(new Quaternionf().rotationXYZ(0, -time, 0));
             renderTexturedMesh(matrices, nebula1, NEBULA_1, 0.77f, 0.31f, 0.73f, blind02);
             matrices.popPose();
 
             matrices.pushPose();
-            matrices.mulPose(new Quaternionf().rotationXYZ(0, time2, 0));
+            matrices.rotate(new Quaternionf().rotationXYZ(0, time2, 0));
             renderTexturedMesh(matrices, nebula2, NEBULA_2, 0.77f, 0.31f, 0.73f, blind02);
             matrices.popPose();
 
             matrices.pushPose();
-            matrices.mulPose(new Quaternionf().setAngleAxis(time, axis3.x, axis3.y, axis3.z));
+            matrices.rotate(new Quaternionf().setAngleAxis(time, axis3.x, axis3.y, axis3.z));
             renderTexturedMesh(matrices, stars3, STARS, 0.77f, 0.31f, 0.73f, blind06);
             matrices.popPose();
 
             matrices.pushPose();
-            matrices.mulPose(new Quaternionf().setAngleAxis(time2, axis4.x, axis4.y, axis4.z));
+            matrices.rotate(new Quaternionf().setAngleAxis(time2, axis4.x, axis4.y, axis4.z));
             renderTexturedMesh(matrices, stars4, STARS, 1F, 1F, 1F, blind06);
             matrices.popPose();
         }
@@ -216,12 +216,12 @@ public class BetterEndSkyRenderer implements LevelRenderEvents.StartMain {
 
         if (blindA > 0) {
             matrices.pushPose();
-            matrices.mulPose(new Quaternionf().setAngleAxis(time3, axis1.x, axis1.y, axis1.z));
+            matrices.rotate(new Quaternionf().setAngleAxis(time3, axis1.x, axis1.y, axis1.z));
             renderStarMesh(matrices, stars1, 1, 1, 1, blind06);
             matrices.popPose();
 
             matrices.pushPose();
-            matrices.mulPose(new Quaternionf().setAngleAxis(time2, axis2.x, axis2.y, axis2.z));
+            matrices.rotate(new Quaternionf().setAngleAxis(time2, axis2.x, axis2.y, axis2.z));
             renderStarMesh(matrices, stars2, 0.95f, 0.64f, 0.93f, blind06);
             matrices.popPose();
         }

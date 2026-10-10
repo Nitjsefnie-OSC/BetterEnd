@@ -3,12 +3,9 @@
     "type": "betterend:wall_plant_on_log_feature",
     "radius": 6,
     "state": {
-      "type": "minecraft:simple_state_provider",
-      "state": {
-        "Name": "betterend:ruscus",
-        "Properties": {
-          "facing": "north"
-        }
+      "id": "betterend:ruscus",
+      "properties": {
+        "facing": "north"
       }
     }
   },

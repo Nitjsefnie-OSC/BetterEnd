@@ -1,6 +1,6 @@
 package org.betterx.betterend.blocks;
 
-import org.betterx.ui.ColorUtil;
+import de.ambertation.wunderlib.utils.ColorUtilARGB32;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.BlockGetter;
@@ -12,7 +12,7 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 
 public class EndstoneDustBlock extends FallingBlock {
-    private static final int COLOR = ColorUtil.color(226, 239, 168);
+    private static final int COLOR = ColorUtilARGB32.color(226, 239, 168);
 
     // 26.3 removed block codecs entirely: Block#codec()/BlockBehaviour#simpleCodec no longer exist,
     // because blocks are no longer described by a dispatch codec. The CODEC constant and the codec()

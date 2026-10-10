@@ -5,30 +5,22 @@
       "feature": {
         "type": "minecraft:simple_block",
         "to_place": {
-          "type": "minecraft:weighted_state_provider",
+          "type": "minecraft:weighted",
           "entries": [
             {
-              "data": {
-                "Name": "betterend:orango"
-              },
+              "data": "betterend:orango",
               "weight": 100
             },
             {
-              "data": {
-                "Name": "betterend:aeridium"
-              },
+              "data": "betterend:aeridium",
               "weight": 20
             },
             {
-              "data": {
-                "Name": "betterend:lutebus"
-              },
+              "data": "betterend:lutebus",
               "weight": 20
             },
             {
-              "data": {
-                "Name": "betterend:lamellarium"
-              },
+              "data": "betterend:lamellarium",
               "weight": 100
             }
           ]

@@ -8,7 +8,6 @@ import org.betterx.bclib.util.BlocksHelper;
 import org.betterx.betterend.particle.InfusionParticleType;
 import org.betterx.betterend.registry.EndBlocks;
 import org.betterx.betterend.registry.EndItems;
-import org.betterx.ui.ColorUtil;
 import de.ambertation.wover.block.api.BlockProperties;
 import de.ambertation.wover.block.api.BlockProperties.TripleShape;
 import de.ambertation.wover.loot.api.LootLookupProvider;
@@ -48,10 +47,10 @@ import net.minecraft.world.level.storage.loot.LootPool;
 import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.entries.LootItem;
 import net.minecraft.world.level.storage.loot.predicates.MatchBlock;
-import net.minecraft.world.level.storage.loot.providers.number.ConstantValue;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import net.minecraft.world.level.storage.loot.providers.number.ints.ContextIntProviders;
 
 import com.google.common.collect.Lists;
 
@@ -166,7 +165,7 @@ public class RespawnObeliskBlock extends Block {
                 .lootTable()
                 .withPool(LootPool
                         .lootPool()
-                        .setRolls(ConstantValue.exactly(1.0F))
+                        .setRolls(ContextIntProviders.exactly(1))
                         .when(MatchBlock.blockMatches(
                                 provider.blockLookup(),
                                 block,
@@ -225,7 +224,7 @@ public class RespawnObeliskBlock extends Block {
                 ((ServerLevel) level).sendParticles(particle, px, py1, pz, 20, 0.14, 0.5, 0.14, 0.1);
                 ((ServerLevel) level).sendParticles(particle, px, py2, pz, 20, 0.14, 0.3, 0.14, 0.1);
             }
-            level.playSound(null, px, py, py, SoundEvents.RESPAWN_ANCHOR_SET_SPAWN, SoundSource.BLOCKS, 1F, 1F);
+            level.playSound(null, px, py, pz, SoundEvents.RESPAWN_ANCHOR_SET_SPAWN, SoundSource.BLOCKS, 1F, 1F);
             if (!player.isCreative()) {
                 itemStack.shrink(6);
             }

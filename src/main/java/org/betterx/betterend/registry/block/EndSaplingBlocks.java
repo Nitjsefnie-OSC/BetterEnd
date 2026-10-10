@@ -1,5 +1,6 @@
 package org.betterx.betterend.registry.block;
 
+import de.ambertation.wover.block.api.render.BlockRenderTraits;
 import org.betterx.bclib.api.v3.tag.BCLBlockTags;
 import org.betterx.bclib.blocks.LeveledAnvilBlock;
 import org.betterx.bclib.items.BaseAnvilItem;
@@ -33,8 +34,6 @@ import de.ambertation.wover.block.api.DefaultBlockDefinition;
 import de.ambertation.wover.block.api.VanillaBlockDefinition;
 import de.ambertation.wover.block.api.model.ModelTraitLibrary;
 import de.ambertation.wover.core.api.ModCore;
-import de.ambertation.wover.block.api.client.trait.BlockModelTrait;
-import de.ambertation.wover.block.api.client.trait.ClientBlockTraits;
 import de.ambertation.wover.block.api.trait.BlockTraits;
 import de.ambertation.wover.item.api.BlockItemDefinition;
 import de.ambertation.wover.pottable.api.trait.PottablePlantBlockTrait;
@@ -56,7 +55,6 @@ import net.minecraft.world.level.block.state.BlockBehaviour.OffsetType;
 import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.level.material.PushReaction;
 import net.minecraft.world.level.storage.loot.LootTable;
-import net.minecraft.world.level.storage.loot.providers.number.UniformGenerator;
 
 import java.util.List;
 import java.util.function.Function;
@@ -112,7 +110,7 @@ public class EndSaplingBlocks {
     ).addTrait(SaplingBlockTrait.withColor(MapColor.COLOR_BLUE))
      .addTrait(SurvivesOnBlockTrait.withTag(EndTags.SURVIVES_ON_JUNGLE_MOSS))
      .addTrait(PottablePlantBlockTrait.withSoils(EndTags.SURVIVES_ON_JUNGLE_MOSS))
-     .addTrait(ClientBlockTraits.RENDER_LAYER.translucent())
+     .addTrait(BlockRenderTraits.RENDER_LAYER.translucent())
      .buildAndRegister();
 
     public static final Block LUCERNIA_SAPLING = EndBlocks.defineBlock("lucernia_sapling", LucerniaSaplingBlock::new)
@@ -125,6 +123,9 @@ public class EndSaplingBlocks {
             .addTrait(WaterSeedBlockTrait.withColor(MapColor.COLOR_LIGHT_BLUE, 0, false))
             .addTrait(VegetationTagTrait.waterPlant())
             .addTrait(SurvivesOnBlockTrait.withTag(EndTags.SURVIVES_ON_SULPHURIC_ROCK))
+            // HydraluxSaplingBlock.grow rolls a 4-8 tall plant and does nothing unless every block up to
+            // its top is water - up to 7 above the sapling.
+            .addTrait(DescriptionBlockTrait.of("tooltip.betterend.hydralux_sapling.depth"))
             .addTrait(WeightedCrossModelTrait.propertyDispatch(HydraluxSaplingBlock.AGE, List.of(
                             WeightedCrossModelTrait.Case.of(0, List.of(
                             WeightedCrossModelTrait.cropParent(BetterEnd.C.mk("block/cross_no_distortion"), BetterEnd.C.mk("block/hydralux_sapling_1"))

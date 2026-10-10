@@ -115,6 +115,8 @@ public class EndItems {
                 .defineDrinkItem(name, def -> new Item(def.getProperties()))
                 .nutrition(hunger)
                 .saturationModifier(saturation)
+                // drinks are bottled (umbrella_cluster_juice is filled from a glass bottle) - hand it back
+                .usingConvertsTo(Items.GLASS_BOTTLE)
                 .addTrait(CompostableItemTrait.withChance(hunger * saturation * 0.18F))
                 .buildAndRegister();
     }

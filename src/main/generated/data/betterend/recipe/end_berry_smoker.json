@@ -1,6 +1,7 @@
 {
   "type": "minecraft:smoking",
   "category": "food",
+  "cookingtime": 100,
   "ingredient": "betterend:shadow_berry_raw",
   "result": {
     "id": "betterend:shadow_berry_cooked"

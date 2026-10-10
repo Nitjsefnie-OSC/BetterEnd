@@ -4,9 +4,9 @@ import de.ambertation.wover.enchantment.api.EnchantmentUtils;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.attribute.EnvironmentAttributes;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.Level;
@@ -28,8 +28,8 @@ public class EmeraldIceBlock extends HalfTransparentBlock {
 
     @Override
     public void playerDestroy(
-            @NotNull Level world,
-            @NotNull Player player,
+            @NotNull ServerLevel world,
+            @NotNull ServerPlayer player,
             @NotNull BlockPos pos,
             @NotNull BlockState state,
             @Nullable BlockEntity blockEntity,

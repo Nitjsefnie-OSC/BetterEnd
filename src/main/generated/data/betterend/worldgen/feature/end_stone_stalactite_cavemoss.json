@@ -9,14 +9,11 @@
   },
   "ceiling": true,
   "states": {
-    "type": "minecraft:simple_state_provider",
-    "state": {
-      "Name": "betterend:end_stone_stalactite_cavemoss",
-      "Properties": {
-        "is_floor": "true",
-        "size": "0",
-        "waterlogged": "false"
-      }
+    "id": "betterend:end_stone_stalactite_cavemoss",
+    "properties": {
+      "is_floor": "true",
+      "size": "0",
+      "waterlogged": "false"
     }
   }
 }

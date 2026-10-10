@@ -9,7 +9,7 @@ import net.minecraft.world.level.levelgen.feature.stateproviders.BlockStateProvi
 public class ThinArchFeatureConfig {
     public static final MapCodec<ThinArchFeatureConfig> CODEC = RecordCodecBuilder.mapCodec(instance -> instance
             .group(
-                    BlockStateProvider.CODEC.fieldOf("states").forGetter(o -> o.block)
+                    BlockStateProvider.DIRECT_CODEC.fieldOf("states").forGetter(o -> o.block)
             )
             .apply(instance, ThinArchFeatureConfig::new));
 
@@ -17,7 +17,7 @@ public class ThinArchFeatureConfig {
     public final BlockStateProvider block;
 
     public ThinArchFeatureConfig(Block block) {
-        this(BlockStateProvider.simple(block));
+        this(BlockStateProvider.of(block));
     }
 
     public ThinArchFeatureConfig(BlockStateProvider block) {

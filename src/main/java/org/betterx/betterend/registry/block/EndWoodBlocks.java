@@ -1,5 +1,6 @@
 package org.betterx.betterend.registry.block;
 
+import de.ambertation.wunderlib.utils.ColorUtilARGB32;
 import org.betterx.bclib.api.v3.tag.BCLBlockTags;
 import org.betterx.bclib.blocks.LeveledAnvilBlock;
 import org.betterx.bclib.items.BaseAnvilItem;
@@ -14,7 +15,6 @@ import org.betterx.bclib.blocks.UnderwaterPlantBlock;
 import org.betterx.bclib.blocks.BaseTerrainBlock;
 import org.betterx.bclib.blocks.BasePlantWithAgeBlock;
 import org.betterx.bclib.trait.block.*;
-import org.betterx.ui.ColorUtil;
 import org.betterx.betterend.BetterEnd;
 import org.betterx.betterend.blocks.*;
 import org.betterx.betterend.blocks.EndPortalBlock;
@@ -34,8 +34,7 @@ import de.ambertation.wover.block.api.DefaultBlockDefinition;
 import de.ambertation.wover.block.api.VanillaBlockDefinition;
 import de.ambertation.wover.block.api.model.ModelTraitLibrary;
 import de.ambertation.wover.core.api.ModCore;
-import de.ambertation.wover.block.api.client.trait.BlockModelTrait;
-import de.ambertation.wover.block.api.client.trait.ClientBlockTraits;
+import de.ambertation.wover.block.api.render.BlockRenderTraits;
 import de.ambertation.wover.block.api.render.TinterKeys;
 import de.ambertation.wover.block.api.trait.BlockTraits;
 import de.ambertation.wover.item.api.BlockItemDefinition;
@@ -57,7 +56,6 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockBehaviour.OffsetType;
 import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.level.material.PushReaction;
-import net.minecraft.world.level.storage.loot.providers.number.UniformGenerator;
 
 import java.util.List;
 import java.util.function.Function;
@@ -134,7 +132,7 @@ public class EndWoodBlocks {
 
     public static final Block END_LOTUS_STEM = EndBlocks.defineBlock("end_lotus_stem", EndLotusStemBlock::new)
             .addTrait(BlockTraits.WOOD_BLOCK)
-            .addTrait(ClientBlockTraits.RENDER_LAYER.cutout())
+            .addTrait(BlockRenderTraits.RENDER_LAYER.cutout())
             .addTrait(ModelTraitLibrary.externalModelDelegatedItem())
             .addTrait(BlockTraits.LOOT_TABLE.dropSelf())
             // Not a full cube, so no sulfur cube archetype - vanilla tags no block of this shape.
@@ -190,10 +188,10 @@ public class EndWoodBlocks {
     /** The tenanea petal shimmer - see EndCrystalBlocks.AURORA_PALETTE for the same pattern. */
     private static final TinterKeys.PaletteCycle TENANEA_PALETTE = new TinterKeys.PaletteCycle(
             List.of(
-                    ColorUtil.color(250, 111, 222),
-                    ColorUtil.color(167, 89, 255),
-                    ColorUtil.color(120, 207, 239),
-                    ColorUtil.color(255, 87, 182)
+                    ColorUtilARGB32.color(250, 111, 222),
+                    ColorUtilARGB32.color(167, 89, 255),
+                    ColorUtilARGB32.color(120, 207, 239),
+                    ColorUtilARGB32.color(255, 87, 182)
             ),
             TinterKeys.PaletteCycle.IndexMode.HASH_XZ_PLUS_Y,
             0.5F
@@ -206,7 +204,7 @@ public class EndWoodBlocks {
             .addTrait(VineBlockTrait.withColor(MapColor.PLANT, 15, false, false))
             // World only: the flowers' item has its own fully coloured texture, so tinting it would
             // double-colour the icon. minSaturation 0.5 keeps the petals vivid where the palette lerps dull.
-            .addTrait(ClientBlockTraits.TINT.world(TinterKeys.PALETTE_CYCLE, () -> TENANEA_PALETTE))
+            .addTrait(BlockRenderTraits.TINT.world(TinterKeys.PALETTE_CYCLE, () -> TENANEA_PALETTE))
             .addTrait(ModelTraitLibrary.externalModel())
             .buildAndRegister();
 
@@ -242,12 +240,12 @@ public class EndWoodBlocks {
             // at COLOR=4 rather than the default 0: COLOR runs 0..7 from deep orange to yellow, but
             // HelixTreeFeature distributes leaves as noise*3.5+4, so 4 is the shade a player actually sees on a
             // tree, while 0 is the extreme end of the gradient.
-            .addTrait(ClientBlockTraits.TINT.worldAndItem(
+            .addTrait(BlockRenderTraits.TINT.worldAndItem(
                     TinterKeys.GRADIENT,
                     () -> new TinterKeys.Gradient(
                             HelixTreeLeavesBlock.COLOR, 7,
-                            ColorUtil.color(237, 80, 20),
-                            ColorUtil.color(237, 158, 20)
+                            ColorUtilARGB32.color(237, 80, 20),
+                            ColorUtilARGB32.color(237, 158, 20)
                     ),
                     b -> b.defaultBlockState().setValue(HelixTreeLeavesBlock.COLOR, 4)
             ))
@@ -274,10 +272,8 @@ public class EndWoodBlocks {
      // CANOPY_SAPLING_CHANCE: UmbrellaTreeFeature builds 1-3 filled dome shells of radius 4-12 per tree,
      // so a canopy is several hundred membrane blocks - see the constant.
      .addTrait(LeavesBlockTrait.withColor(MapColor.COLOR_BLUE, 0, false, CANOPY_SAPLING_CHANCE, EndSaplingBlocks.UMBRELLA_TREE_SAPLING, false, true))
-     .addTrait(ModCore.isDatagen() ? ClientBlockTraits.MODEL.with(
-             (key, block, generator) -> UmbrellaTreeMembraneBlock.provideBlockModel(generator, block)
-     ) : null)
-     .addTrait(ClientBlockTraits.RENDER_LAYER.translucent())
+     .addTrait(EndModelTraits.umbrellaTreeMembrane())
+     .addTrait(BlockRenderTraits.RENDER_LAYER.translucent())
      // Vanilla groups the mushroom blocks, mushroom_stem and mycelium in slow_sliding.
      .addTrait(BlockTraits.SULFUR_CUBE_ARCHETYPE.slowSliding())
      .buildAndRegister();
@@ -317,22 +313,20 @@ public class EndWoodBlocks {
     ).replacePropertiesWithCopy(Blocks.SLIME_BLOCK)
      .mapColor(MapColor.COLOR_PURPLE)
      .addTrait(BlockTraits.LOOT_TABLE)
-     .addTrait(ClientBlockTraits.RENDER_LAYER.translucent())
+     .addTrait(BlockRenderTraits.RENDER_LAYER.translucent())
      // block/jellyshroom_cap is grayscale; all the purple comes from the block tint. Sampled at COLOR=4
      // rather than the default 0: COLOR runs 0..7 across the gradient, but getStateForPlacement and
      // JellyshroomFeature distribute caps as noise*3.5+4, so 4 is the shade actually seen in the world.
-     .addTrait(ClientBlockTraits.TINT.worldAndItem(
+     .addTrait(BlockRenderTraits.TINT.worldAndItem(
              TinterKeys.GRADIENT,
              () -> new TinterKeys.Gradient(
                      JellyshroomCapBlock.COLOR, 7,
-                     ColorUtil.color(217, 142, 255),
-                     ColorUtil.color(164, 0, 255)
+                     ColorUtilARGB32.color(217, 142, 255),
+                     ColorUtilARGB32.color(164, 0, 255)
              ),
              b -> b.defaultBlockState().setValue(JellyshroomCapBlock.COLOR, 4)
      ))
-     .addTrait(ModCore.isDatagen() ? ClientBlockTraits.MODEL.with(
-             (key, block, generator) -> JellyshroomCapBlock.provideBlockModel(generator, block)
-     ) : null)
+     .addTrait(EndModelTraits.jellyshroomCap())
      // Vanilla groups the mushroom blocks, mushroom_stem and mycelium in slow_sliding.
      .addTrait(BlockTraits.SULFUR_CUBE_ARCHETYPE.slowSliding())
      .buildAndRegister();

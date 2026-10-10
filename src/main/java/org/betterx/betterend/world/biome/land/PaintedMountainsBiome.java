@@ -18,7 +18,8 @@ import de.ambertation.wover.surface.impl.rules.SwitchRuleSource;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.levelgen.SurfaceRules;
+import net.minecraft.world.level.levelgen.material.rule.MaterialRule;
+import net.minecraft.world.level.levelgen.material.MaterialRules;
 
 import java.util.List;
 
@@ -51,14 +52,14 @@ public class PaintedMountainsBiome extends EndBiome.Config {
             public SurfaceRuleBuilder surface() {
                 // A full rainbow of coloured end-stone, no plain end stone - so the painted bands
                 // actually read as colour instead of washing back into the default terrain.
-                SurfaceRules.RuleSource surfaceBlockRule = new SwitchRuleSource(
+                MaterialRule surfaceBlockRule = new SwitchRuleSource(
                         VerticalBandNoiseCondition.DEFAULT,
                         List.of(
-                                SurfaceRules.state(EndStoneBlocks.FLAVOLITE.getBlock(SlotType.SOURCE).defaultBlockState()),
-                                SurfaceRules.state(EndStoneBlocks.VIOLECITE.getBlock(SlotType.SOURCE).defaultBlockState()),
-                                SurfaceRules.state(EndStoneBlocks.VIRID_JADESTONE.getBlock(SlotType.SOURCE).defaultBlockState()),
-                                SurfaceRules.state(EndStoneBlocks.AZURE_JADESTONE.getBlock(SlotType.SOURCE).defaultBlockState()),
-                                SurfaceRules.state(EndStoneBlocks.SANDY_JADESTONE.getBlock(SlotType.SOURCE).defaultBlockState())
+                                MaterialRules.state(EndStoneBlocks.FLAVOLITE.getBlock(SlotType.SOURCE).defaultBlockState()),
+                                MaterialRules.state(EndStoneBlocks.VIOLECITE.getBlock(SlotType.SOURCE).defaultBlockState()),
+                                MaterialRules.state(EndStoneBlocks.VIRID_JADESTONE.getBlock(SlotType.SOURCE).defaultBlockState()),
+                                MaterialRules.state(EndStoneBlocks.AZURE_JADESTONE.getBlock(SlotType.SOURCE).defaultBlockState()),
+                                MaterialRules.state(EndStoneBlocks.SANDY_JADESTONE.getBlock(SlotType.SOURCE).defaultBlockState())
                         )
                 );
                 return SurfaceRuleBuilder.start().rule(surfaceBlockRule, 9);

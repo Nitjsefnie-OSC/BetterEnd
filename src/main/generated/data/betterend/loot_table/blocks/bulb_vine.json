@@ -56,12 +56,12 @@
           "type": "minecraft:item",
           "modifier": {
             "type": "minecraft:set_count",
-            "count": 1.0
+            "count": 1
           },
           "name": "betterend:glowing_bulb"
         }
       ],
-      "rolls": 1.0
+      "rolls": 1
     },
     {
       "condition": {
@@ -139,12 +139,12 @@
           },
           "modifier": {
             "type": "minecraft:set_count",
-            "count": 1.0
+            "count": 1
           },
           "name": "betterend:bulb_vine_seed"
         }
       ],
-      "rolls": 1.0
+      "rolls": 1
     }
   ]
 }

@@ -31,10 +31,9 @@ import net.minecraft.world.level.storage.loot.functions.SetItemCountFunction;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 import net.minecraft.world.level.storage.loot.predicates.LootItemRandomChanceCondition;
 import net.minecraft.world.level.storage.loot.predicates.MatchBlock;
-import net.minecraft.world.level.storage.loot.providers.number.ConstantValue;
-import net.minecraft.world.level.storage.loot.providers.number.UniformGenerator;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import net.minecraft.world.level.storage.loot.providers.number.ints.ContextIntProviders;
 
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -98,7 +97,7 @@ public class LumecornBlock extends Block {
      * <p>
      * This replaces a {@code getDrops} override, which bypassed the loot table entirely and drew its
      * randomness from {@code MHelper.RANDOM}. {@code MHelper.randRange} is inclusive at both ends, so it
-     * maps onto {@link UniformGenerator#between} unchanged, and {@code nextBoolean()} onto a flat 0.5
+     * maps onto {@link ContextIntProviders#between} unchanged, and {@code nextBoolean()} onto a flat 0.5
      * chance. The override never consulted {@code survives_explosion}, so this table does not either.
      */
     public static LootTable.Builder buildLoot(Block block, LootLookupProvider provider) {
@@ -111,13 +110,13 @@ public class LumecornBlock extends Block {
                 .lootTable()
                 .withPool(LootPool
                         .lootPool()
-                        .setRolls(ConstantValue.exactly(1.0F))
+                        .setRolls(ContextIntProviders.exactly(1))
                         .when(seedBearing)
                         .add(LootItem.lootTableItem(EndMushroomBlocks.LUMECORN_SEED)
-                                     .apply(SetItemCountFunction.setCount(UniformGenerator.between(1, 2)))))
+                                     .apply(SetItemCountFunction.setCount(ContextIntProviders.between(1, 2)))))
                 .withPool(LootPool
                         .lootPool()
-                        .setRolls(ConstantValue.exactly(1.0F))
+                        .setRolls(ContextIntProviders.exactly(1))
                         .when(seedBearing.invert())
                         .when(LootItemRandomChanceCondition.randomChance(0.5F))
                         .add(LootItem.lootTableItem(EndResourceItems.LUMECORN_ROD)));

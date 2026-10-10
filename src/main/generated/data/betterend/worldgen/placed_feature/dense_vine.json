@@ -4,12 +4,9 @@
     "max_length": 24,
     "radius": 6,
     "state": {
-      "type": "minecraft:simple_state_provider",
-      "state": {
-        "Name": "betterend:dense_vine",
-        "Properties": {
-          "shape": "bottom"
-        }
+      "id": "betterend:dense_vine",
+      "properties": {
+        "shape": "bottom"
       }
     }
   },

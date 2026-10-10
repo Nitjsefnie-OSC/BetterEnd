@@ -17,20 +17,23 @@
       }
     },
     "minecraft:gameplay/natural_mob_spawns": {
-      "spawn_costs": {},
-      "spawns_by_category": {
-        "monster": [
-          {
-            "type": "minecraft:enderman",
-            "count": {
-              "type": "minecraft:uniform",
-              "max_inclusive": 2,
-              "min_inclusive": 1
-            },
-            "weight": 50
-          }
-        ]
-      }
+      "argument": {
+        "spawn_costs": {},
+        "spawns_by_category": {
+          "monster": [
+            {
+              "type": "minecraft:enderman",
+              "count": {
+                "type": "minecraft:uniform",
+                "max_inclusive": 2,
+                "min_inclusive": 1
+              },
+              "weight": 50
+            }
+          ]
+        }
+      },
+      "modifier": "overlay"
     },
     "minecraft:visual/ambient_particles": [
       {

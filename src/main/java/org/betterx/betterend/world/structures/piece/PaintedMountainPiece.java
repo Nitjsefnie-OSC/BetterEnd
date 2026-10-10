@@ -1,6 +1,7 @@
 package org.betterx.betterend.world.structures.piece;
 
 import org.betterx.bclib.util.MHelper;
+import org.betterx.bclib.util.NbtHelper;
 import org.betterx.betterend.registry.EndStructures;
 import org.betterx.betterend.util.GlobalState;
 
@@ -62,7 +63,8 @@ public class PaintedMountainPiece extends MountainPiece {
         ListTag slise = tag.getListOrEmpty("slises");
         slices = new BlockState[slise.size()];
         for (int i = 0; i < slices.length; i++) {
-            slices[i] = NbtUtils.readBlockState(blockLookup, slise.getCompoundOrEmpty(i));
+            // pieces saved before 26.3 still use the old {Name, Properties} field names
+            slices[i] = NbtHelper.readBlockState(blockLookup, slise.getCompoundOrEmpty(i));
         }
     }
 
@@ -81,7 +83,6 @@ public class PaintedMountainPiece extends MountainPiece {
         final MutableBlockPos pos = GlobalState.stateForThread().POS;
         ChunkAccess chunk = world.getChunk(chunkPos.x(), chunkPos.z());
         Heightmap map = chunk.getOrCreateHeightmapUnprimed(Types.WORLD_SURFACE);
-        Heightmap map2 = chunk.getOrCreateHeightmapUnprimed(Types.WORLD_SURFACE_WG);
         for (int x = 0; x < 16; x++) {
             int px = x + sx;
             int px2 = px - center.getX();
@@ -101,7 +102,7 @@ public class PaintedMountainPiece extends MountainPiece {
                         pos.setY(minY--);
                     }
                     minY = pos.getY();
-                    minY = Math.max(minY, map2.getFirstAvailable(x, z));
+                    minY = Math.max(minY, getWorldgenSurface(world, px, pz));
                     if (minY > center.getY() - 8) {
                         float maxY = dist * height * getHeightClamp(world, 10, px, pz);
                         if (maxY > 0) {
@@ -115,7 +116,7 @@ public class PaintedMountainPiece extends MountainPiece {
                             for (int y = minY - 1; y < maxY; y++) {
                                 pos.setY(y);
                                 int index = MHelper.floor((y + offset) * 0.65F) % slices.length;
-                                chunk.setBlockState(pos, slices[index], 3);
+                                setChunkBlock(chunk, pos, slices[index]);
                             }
                         }
                     }

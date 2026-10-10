@@ -2,21 +2,15 @@
   "feature": {
     "type": "betterend:double_plant_feature",
     "large_state": {
-      "type": "minecraft:simple_state_provider",
-      "state": {
-        "Name": "betterend:twisted_umbrella_moss_tall",
-        "Properties": {
-          "rotation": "0",
-          "top": "false"
-        }
+      "id": "betterend:twisted_umbrella_moss_tall",
+      "properties": {
+        "rotation": "0",
+        "top": "false"
       }
     },
     "radius": 6,
     "small_state": {
-      "type": "minecraft:simple_state_provider",
-      "state": {
-        "Name": "betterend:twisted_umbrella_moss"
-      }
+      "id": "betterend:twisted_umbrella_moss"
     }
   },
   "placement": [

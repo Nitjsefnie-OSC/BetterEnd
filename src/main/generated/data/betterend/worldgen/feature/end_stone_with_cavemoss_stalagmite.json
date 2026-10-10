@@ -6,28 +6,14 @@
   },
   "ceiling": false,
   "states": {
-    "type": "minecraft:weighted_state_provider",
+    "type": "minecraft:weighted",
     "entries": [
       {
-        "data": {
-          "Name": "betterend:end_stone_stalactite",
-          "Properties": {
-            "is_floor": "true",
-            "size": "0",
-            "waterlogged": "false"
-          }
-        },
+        "data": "betterend:end_stone_stalactite",
         "weight": 5
       },
       {
-        "data": {
-          "Name": "betterend:end_stone_stalactite_cavemoss",
-          "Properties": {
-            "is_floor": "true",
-            "size": "0",
-            "waterlogged": "false"
-          }
-        },
+        "data": "betterend:end_stone_stalactite_cavemoss",
         "weight": 1
       }
     ]

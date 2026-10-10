@@ -1,5 +1,6 @@
 {
   "type": "minecraft:blasting",
+  "cookingtime": 100,
   "ingredient": "betterend:thallasium_axe",
   "result": {
     "id": "betterend:thallasium_nugget"

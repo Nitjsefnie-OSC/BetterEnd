@@ -17,9 +17,9 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.level.storage.loot.LootTable;
-import net.minecraft.world.level.storage.loot.providers.number.UniformGenerator;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import net.minecraft.world.level.storage.loot.providers.number.ints.ContextIntProviders;
 
 import java.util.List;
 import org.jetbrains.annotations.NotNull;
@@ -112,8 +112,8 @@ public class PottableCropBlock extends BushBlock {
     public LootTable.Builder buildLoot(LootLookupProvider provider) {
         return provider.dropPlant(
                 this,
-                drop, UniformGenerator.between(1, 2),
-                this, UniformGenerator.between(1, 3),
+                drop, ContextIntProviders.between(1, 2),
+                this, ContextIntProviders.between(1, 3),
                 0.571f, 3,
                 AGE, 3
         );

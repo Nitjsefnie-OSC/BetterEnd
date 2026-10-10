@@ -37,11 +37,10 @@ import net.minecraft.world.level.storage.loot.entries.LootItem;
 import net.minecraft.world.level.storage.loot.functions.SetItemCountFunction;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 import net.minecraft.world.level.storage.loot.predicates.MatchBlock;
-import net.minecraft.world.level.storage.loot.providers.number.ConstantValue;
-import net.minecraft.world.level.storage.loot.providers.number.UniformGenerator;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import net.minecraft.world.level.storage.loot.providers.number.ints.ContextIntProviders;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -113,15 +112,15 @@ public class EndLilyBlock extends UnderwaterPlantBlock {
         return LootTable
                 .lootTable()
                 .withPool(LootPool.lootPool()
-                        .setRolls(ConstantValue.exactly(1))
+                        .setRolls(ContextIntProviders.exactly(1))
                         .when(isTop(block, provider))
                         .add(LootItem.lootTableItem(EndResourceItems.END_LILY_LEAF)
-                                     .apply(SetItemCountFunction.setCount(UniformGenerator.between(1, 2)))))
+                                     .apply(SetItemCountFunction.setCount(ContextIntProviders.between(1, 2)))))
                 .withPool(LootPool.lootPool()
-                        .setRolls(ConstantValue.exactly(1))
+                        .setRolls(ContextIntProviders.exactly(1))
                         .when(isTop(block, provider))
                         .add(LootItem.lootTableItem(EndWaterPlantBlocks.END_LILY_SEED)
-                                     .apply(SetItemCountFunction.setCount(UniformGenerator.between(1, 2)))));
+                                     .apply(SetItemCountFunction.setCount(ContextIntProviders.between(1, 2)))));
     }
 
     /**

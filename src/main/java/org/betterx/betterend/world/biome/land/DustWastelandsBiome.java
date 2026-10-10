@@ -16,8 +16,8 @@ import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.levelgen.SurfaceRules;
 import net.minecraft.world.level.levelgen.placement.CaveSurface;
+import net.minecraft.world.level.levelgen.material.MaterialRules;
 
 public class DustWastelandsBiome extends EndBiome.Config {
     public DustWastelandsBiome() {
@@ -58,9 +58,9 @@ public class DustWastelandsBiome extends EndBiome.Config {
                         // per column instead of a flat 5. It sits on the END_STONE filler below, so
                         // the falling dust always has solid ground under it. Priority must beat the
                         // FILLER (900) - a small number like the old 4 sorts after it and never runs.
-                        .rule(SurfaceRules.ifTrue(
-                                SurfaceRules.stoneDepthCheck(2, true, CaveSurface.FLOOR),
-                                SurfaceRules.state(EndTerrainBlocks.ENDSTONE_DUST.defaultBlockState())
+                        .rule(MaterialRules.ifTrue(
+                                MaterialRules.stoneDepthCheck(2, true, CaveSurface.FLOOR),
+                                MaterialRules.state(EndTerrainBlocks.ENDSTONE_DUST.defaultBlockState())
                         ), BaseSurfaceRuleBuilder.SUB_SURFACE_PRIORITY);
             }
         };

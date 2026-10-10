@@ -1,8 +1,6 @@
 {
   "type": "betterend:building_list_feature",
-  "default": {
-    "Name": "betterend:pink_moss"
-  },
+  "default": "betterend:pink_moss",
   "structures": [
     {
       "offset_y": 0,

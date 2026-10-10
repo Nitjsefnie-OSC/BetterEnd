@@ -1,6 +1,7 @@
 package org.betterx.betterend.registry.block;
 
 
+import de.ambertation.wover.block.api.render.BlockRenderTraits;
 import org.betterx.betterend.registry.item.EndFoodItems;
 import org.betterx.bclib.api.v3.tag.BCLBlockTags;
 import org.betterx.bclib.blocks.LeveledAnvilBlock;
@@ -35,8 +36,6 @@ import de.ambertation.wover.block.api.DefaultBlockDefinition;
 import de.ambertation.wover.block.api.VanillaBlockDefinition;
 import de.ambertation.wover.block.api.model.ModelTraitLibrary;
 import de.ambertation.wover.core.api.ModCore;
-import de.ambertation.wover.block.api.client.trait.BlockModelTrait;
-import de.ambertation.wover.block.api.client.trait.ClientBlockTraits;
 import de.ambertation.wover.block.api.trait.BlockTraits;
 import de.ambertation.wover.item.api.BlockItemDefinition;
 import de.ambertation.wover.pottable.api.trait.PottablePlantBlockTrait;
@@ -58,7 +57,6 @@ import net.minecraft.world.level.block.state.BlockBehaviour.OffsetType;
 import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.level.material.PushReaction;
 import net.minecraft.world.level.storage.loot.LootTable;
-import net.minecraft.world.level.storage.loot.providers.number.UniformGenerator;
 
 import java.util.List;
 import java.util.function.Function;
@@ -184,8 +182,10 @@ public class EndCropBlocks {
             .buildAndRegister();
 
     public static final Block CAVE_PUMPKIN = EndBlocks.defineBlock("cave_pumpkin", CavePumpkinBlock::new)
+            // Pumpkin's strength, sound, map colour and instrument - lost when the props left the constructor.
+            .replacePropertiesWithCopy(Blocks.PUMPKIN)
             .lightLevel(state -> state.getValue(BlockProperties.SMALL) ? 10 : 15)
-            .addTrait(ClientBlockTraits.RENDER_LAYER.cutout())
+            .addTrait(BlockRenderTraits.RENDER_LAYER.cutout())
             .addTrait(BlockTraits.LOOT_TABLE.with(
                     (tableKey, blockKey, block, provider) -> CavePumpkinBlock.buildLoot(block, provider)
             ))

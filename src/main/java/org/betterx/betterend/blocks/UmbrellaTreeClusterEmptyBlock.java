@@ -29,7 +29,7 @@ public class UmbrellaTreeClusterEmptyBlock extends Block {
     }
 
     @Override
-    public void tick(
+    public void randomTick(
             BlockState state,
             @NotNull ServerLevel world,
             @NotNull BlockPos pos,

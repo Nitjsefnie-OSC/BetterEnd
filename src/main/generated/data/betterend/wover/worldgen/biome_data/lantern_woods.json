@@ -2,20 +2,15 @@
   "type": "betterend:biome",
   "biome": "betterend:lantern_woods",
   "fogDensity": 1.1,
+  "genChance": 1.25,
   "generation_data": {
     "intended_placement": "wover:is_end/land"
   },
   "has_caves": true,
   "surface": {
-    "alt": {
-      "Name": "betterend:rutiscus"
-    },
+    "alt": "betterend:rutiscus",
     "floor_rule": true,
-    "top": {
-      "Name": "betterend:rutiscus"
-    },
-    "under": {
-      "Name": "minecraft:end_stone"
-    }
+    "top": "betterend:rutiscus",
+    "under": "minecraft:end_stone"
   }
 }

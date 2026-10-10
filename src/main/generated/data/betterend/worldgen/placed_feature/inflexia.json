@@ -5,10 +5,7 @@
     "radius": 7,
     "raw_heightmap": false,
     "state": {
-      "type": "minecraft:simple_state_provider",
-      "state": {
-        "Name": "betterend:inflexia"
-      }
+      "id": "betterend:inflexia"
     }
   },
   "placement": [

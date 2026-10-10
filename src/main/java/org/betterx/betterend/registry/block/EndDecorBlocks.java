@@ -33,8 +33,7 @@ import de.ambertation.wover.block.api.DefaultBlockDefinition;
 import de.ambertation.wover.block.api.VanillaBlockDefinition;
 import de.ambertation.wover.block.api.model.ModelTraitLibrary;
 import de.ambertation.wover.core.api.ModCore;
-import de.ambertation.wover.block.api.client.trait.BlockModelTrait;
-import de.ambertation.wover.block.api.client.trait.ClientBlockTraits;
+import de.ambertation.wover.block.api.render.BlockRenderTraits;
 import de.ambertation.wover.block.api.trait.BlockTraits;
 import de.ambertation.wover.item.api.BlockItemDefinition;
 import de.ambertation.wover.pottable.api.trait.PottablePlantBlockTrait;
@@ -56,7 +55,6 @@ import net.minecraft.world.level.block.state.BlockBehaviour.OffsetType;
 import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.level.material.PushReaction;
 import net.minecraft.world.level.storage.loot.LootTable;
-import net.minecraft.world.level.storage.loot.providers.number.UniformGenerator;
 
 import java.util.List;
 import java.util.function.Function;
@@ -95,6 +93,8 @@ public class EndDecorBlocks {
             .buildAndRegister();
 
     public static final Block NEON_CACTUS_BLOCK = EndBlocks.defineBlock("neon_cactus_block", RotatedPillarBlock::new)
+            // Cactus's strength, sound and map colour - lost when the props left the constructor.
+            .replacePropertiesWithCopy(Blocks.CACTUS)
             .lightLevel(bs -> 15)
             .addTrait(BlockTraits.LOOT_TABLE.dropSelf())
             .addTrait(ModelTraitLibrary.pillar())
@@ -117,16 +117,23 @@ public class EndDecorBlocks {
 
     public static final Block MENGER_SPONGE = EndBlocks.defineBlock("menger_sponge", MengerSpongeBlock::new)
             .noOcclusion()
+            // Same base properties as vanilla sponge/wet_sponge (lost when the props were moved out of the ctor).
+            .mapColor(MapColor.COLOR_YELLOW)
+            .strength(0.6f)
+            .sound(SoundType.SPONGE)
             .addTrait(BlockTraits.MINEABLE_WITH.needsHoe())
-            .addTrait(ClientBlockTraits.RENDER_LAYER.cutout())
+            .addTrait(BlockRenderTraits.RENDER_LAYER.cutout())
             .addTrait(BlockTraits.LOOT_TABLE.dropSelf())
             .addTrait(ModelTraitLibrary.externalModelDelegatedItem())
             .buildAndRegister();
 
     public static final Block MENGER_SPONGE_WET = EndBlocks.defineBlock("menger_sponge_wet", MengerSpongeWetBlock::new)
             .noOcclusion()
+            .mapColor(MapColor.COLOR_YELLOW)
+            .strength(0.6f)
+            .sound(SoundType.WET_SPONGE)
             .addTrait(BlockTraits.MINEABLE_WITH.needsHoe())
-            .addTrait(ClientBlockTraits.RENDER_LAYER.cutout())
+            .addTrait(BlockRenderTraits.RENDER_LAYER.cutout())
             .addTrait(BlockTraits.LOOT_TABLE.dropSelf())
             // A pure texture swap of the bespoke menger_sponge fractal mesh: generate its child model
             // (parent=menger_sponge, particle+texture from this block's texture), single-variant blockstate and
@@ -149,9 +156,9 @@ public class EndDecorBlocks {
             HydraluxPetalColoredBlock::new,
             HYDRALUX_PETAL_BLOCK,
             true,
-             (def) -> def.addTrait(ModCore.isDatagen() ? ClientBlockTraits.MODEL.with(
-                    (key, block, generator) -> HydraluxPetalColoredBlock.provideBlockModel(generator, block)
-            ) : null).addTrait(PlantLikeBlockTrait.withDefault()).addTrait(BlockTraits.MINEABLE_WITH.needsAxe())
+             (def) -> def.addTrait(EndModelTraits.hydraluxPetalColored())
+                     .addTrait(PlantLikeBlockTrait.withDefault())
+                     .addTrait(BlockTraits.MINEABLE_WITH.needsAxe())
                      // Same soft organic cube as the uncoloured petal block above.
                      .addTrait(BlockTraits.SULFUR_CUBE_ARCHETYPE.fastFlat())
     );

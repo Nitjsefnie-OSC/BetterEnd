@@ -13,7 +13,7 @@ import net.minecraft.world.level.levelgen.feature.stateproviders.BlockStateProvi
 public class SinglePlantFeatureConfig extends ScatterFeatureConfig {
     public static final MapCodec<SinglePlantFeatureConfig> CODEC = RecordCodecBuilder.mapCodec(instance -> instance
             .group(
-                    BlockStateProvider.CODEC.fieldOf("state").forGetter(o -> o.plant),
+                    BlockStateProvider.DIRECT_CODEC.fieldOf("state").forGetter(o -> o.plant),
                     Codec.INT.fieldOf("radius").forGetter(o -> o.radius),
                     Codec.BOOL.fieldOf("raw_heightmap").forGetter(o -> o.rawHeightmap),
                     Codec.INT.fieldOf("chance").forGetter(o -> o.chance)
@@ -28,19 +28,19 @@ public class SinglePlantFeatureConfig extends ScatterFeatureConfig {
     public final int chance;
 
     public SinglePlantFeatureConfig(Block plant, int radius) {
-        this(BlockStateProvider.simple(plant), radius, true, 1);
+        this(BlockStateProvider.of(plant), radius, true, 1);
     }
 
     public SinglePlantFeatureConfig(Block plant, int radius, int chance) {
-        this(BlockStateProvider.simple(plant), radius, true, chance);
+        this(BlockStateProvider.of(plant), radius, true, chance);
     }
 
     public SinglePlantFeatureConfig(Block plant, int radius, boolean rawHeightmap) {
-        this(BlockStateProvider.simple(plant), radius, rawHeightmap, 1);
+        this(BlockStateProvider.of(plant), radius, rawHeightmap, 1);
     }
 
     public SinglePlantFeatureConfig(Block plant, int radius, boolean rawHeightmap, int chance) {
-        this(BlockStateProvider.simple(plant), radius, rawHeightmap, chance);
+        this(BlockStateProvider.of(plant), radius, rawHeightmap, chance);
     }
 
     public SinglePlantFeatureConfig(BlockStateProvider plant, int radius, boolean rawHeightmap, int chance) {

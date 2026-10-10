@@ -15,7 +15,7 @@
           "name": "betterend:cave_pumpkin_seed"
         }
       ],
-      "rolls": 1.0
+      "rolls": 1
     },
     {
       "condition": {
@@ -34,7 +34,7 @@
           "name": "betterend:cave_pumpkin"
         }
       ],
-      "rolls": 1.0
+      "rolls": 1
     }
   ]
 }

@@ -1,13 +1,15 @@
 package org.betterx.betterend.complexmaterials.types;
 
 import org.betterx.bclib.blocks.LeveledAnvilBlock;
+import org.betterx.bclib.items.BaseAnvilItem;
 import org.betterx.betterend.complexmaterials.MetalMaterial;
 import de.ambertation.wover.block.api.BlockDefinition;
 import de.ambertation.wover.block.api.BlockRegistry;
-import de.ambertation.wover.block.api.client.trait.BlockModelTrait;
+import de.ambertation.wover.block.api.model.BlockModelBinding;
 import de.ambertation.wover.block.api.trait.BlockRecipeTrait;
 import de.ambertation.wover.block.api.trait.BlockTraitLookup;
 import de.ambertation.wover.block.api.trait.BlockTraits;
+import de.ambertation.wover.item.api.BlockItemDefinition;
 import de.ambertation.wover.recipe.api.RecipeBuilder;
 import de.ambertation.wover.sets.api.blocks.BlockSet;
 import de.ambertation.wover.sets.api.blocks.SlotFromDefinition;
@@ -36,7 +38,11 @@ public class Anvil extends SlotFromDefinition {
                         def.getProperties(),
                         level
                 )
-        );
+        ).withBlockItem((def, block) -> new BlockItemDefinition<>(
+                // LeveledAnvilBlock no longer brings its item implicitly; without BaseAnvilItem the wear
+                // stored in the drop is ignored on placement.
+                def, id -> new BaseAnvilItem(block, id.getProperties())
+        ));
     }
 
     @Override
@@ -60,7 +66,7 @@ public class Anvil extends SlotFromDefinition {
     }
 
     @Override
-    protected BlockModelTrait buildModel(BlockSet<?> set, BlockTraitLookup traitLookup) {
+    protected BlockModelBinding buildModel(BlockSet<?> set, BlockTraitLookup traitLookup) {
         return LeveledAnvilBlock.buildModel(set, traitLookup);
     }
 

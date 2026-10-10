@@ -42,17 +42,17 @@ public class EndCrystalRenderer {
             local.mulPose(pose.pose());
             local.scale(0.8F, 0.8F, 0.8F);
             local.translate(0.0D, -0.5D, 0.0D);
-            local.mulPose(Axis.YP.rotationDegrees(rotation));
+            local.rotate(Axis.YP.rotationDegrees(rotation));
             local.translate(0.0D, 0.8F, 0.0D);
-            local.mulPose(ROTATOR);
+            local.rotate(ROTATOR);
             FRAME.render(local, buffer, light, OverlayTexture.NO_OVERLAY);
             local.scale(0.875F, 0.875F, 0.875F);
-            local.mulPose(ROTATOR);
-            local.mulPose(Axis.YP.rotationDegrees(rotation));
+            local.rotate(ROTATOR);
+            local.rotate(Axis.YP.rotationDegrees(rotation));
             FRAME.render(local, buffer, light, OverlayTexture.NO_OVERLAY);
             local.scale(0.875F, 0.875F, 0.875F);
-            local.mulPose(ROTATOR);
-            local.mulPose(Axis.YP.rotationDegrees(rotation));
+            local.rotate(ROTATOR);
+            local.rotate(Axis.YP.rotationDegrees(rotation));
             CORE.render(local, buffer, light, OverlayTexture.NO_OVERLAY);
         });
     }

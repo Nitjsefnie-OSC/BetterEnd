@@ -31,7 +31,7 @@ public class GameRendererMixin {
         if (wobble == null) wobble = EternalHint.wobble(partialTick);
         if (wobble == null) return;
 
-        poseStack.mulPose(Axis.ZP.rotationDegrees(wobble[0]));
-        poseStack.mulPose(Axis.XP.rotationDegrees(wobble[1]));
+        poseStack.rotate(Axis.ZP.rotationDegrees(wobble[0]));
+        poseStack.rotate(Axis.XP.rotationDegrees(wobble[1]));
     }
 }

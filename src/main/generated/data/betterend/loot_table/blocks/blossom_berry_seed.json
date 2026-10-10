@@ -22,8 +22,8 @@
                 "type": "minecraft:set_count",
                 "count": {
                   "type": "minecraft:uniform",
-                  "max": 2.0,
-                  "min": 1.0
+                  "max": 2,
+                  "min": 1
                 }
               },
               "name": "betterend:blossom_berry"
@@ -35,7 +35,7 @@
           ]
         }
       ],
-      "rolls": 1.0
+      "rolls": 1
     },
     {
       "condition": {
@@ -53,8 +53,8 @@
               "type": "minecraft:set_count",
               "count": {
                 "type": "minecraft:uniform",
-                "max": 3.0,
-                "min": 1.0
+                "max": 3,
+                "min": 1
               }
             },
             {
@@ -70,7 +70,7 @@
           "name": "betterend:blossom_berry_seed"
         }
       ],
-      "rolls": 1.0
+      "rolls": 1
     }
   ]
 }

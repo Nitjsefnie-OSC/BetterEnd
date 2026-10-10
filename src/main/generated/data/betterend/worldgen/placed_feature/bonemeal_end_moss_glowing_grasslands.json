@@ -5,48 +5,34 @@
       "feature": {
         "type": "minecraft:simple_block",
         "to_place": {
-          "type": "minecraft:weighted_state_provider",
+          "type": "minecraft:weighted",
           "entries": [
             {
-              "data": {
-                "Name": "betterend:creeping_moss"
-              },
+              "data": "betterend:creeping_moss",
               "weight": 10
             },
             {
-              "data": {
-                "Name": "betterend:umbrella_moss"
-              },
+              "data": "betterend:umbrella_moss",
               "weight": 10
             },
             {
-              "data": {
-                "Name": "betterend:blooming_cooksonia"
-              },
+              "data": "betterend:blooming_cooksonia",
               "weight": 100
             },
             {
-              "data": {
-                "Name": "betterend:vaiolush_fern"
-              },
+              "data": "betterend:vaiolush_fern",
               "weight": 100
             },
             {
-              "data": {
-                "Name": "betterend:fracturn"
-              },
+              "data": "betterend:fracturn",
               "weight": 100
             },
             {
-              "data": {
-                "Name": "betterend:salteago"
-              },
+              "data": "betterend:salteago",
               "weight": 100
             },
             {
-              "data": {
-                "Name": "betterend:twisted_umbrella_moss"
-              },
+              "data": "betterend:twisted_umbrella_moss",
               "weight": 10
             }
           ]

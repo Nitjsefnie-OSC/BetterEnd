@@ -4,24 +4,18 @@
     "feature": {
       "type": "minecraft:simple_block",
       "to_place": {
-        "type": "minecraft:weighted_state_provider",
+        "type": "minecraft:weighted",
         "entries": [
           {
-            "data": {
-              "Name": "betterend:clawfern"
-            },
+            "data": "betterend:clawfern",
             "weight": 100
           },
           {
-            "data": {
-              "Name": "betterend:globulagus"
-            },
+            "data": "betterend:globulagus",
             "weight": 100
           },
           {
-            "data": {
-              "Name": "betterend:small_amaranita_mushroom"
-            },
+            "data": "betterend:small_amaranita_mushroom",
             "weight": 10
           }
         ]

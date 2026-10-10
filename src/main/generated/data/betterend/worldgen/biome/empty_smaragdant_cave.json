@@ -17,8 +17,11 @@
       }
     },
     "minecraft:gameplay/natural_mob_spawns": {
-      "spawn_costs": {},
-      "spawns_by_category": {}
+      "argument": {
+        "spawn_costs": {},
+        "spawns_by_category": {}
+      },
+      "modifier": "overlay"
     },
     "minecraft:visual/ambient_particles": [
       {

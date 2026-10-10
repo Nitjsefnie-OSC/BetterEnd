@@ -601,7 +601,7 @@ public class EndCraftingRecipesProvider extends WoverRecipeProvider {
                                .build(context);
 
         CraftingRecipeBuilder craftingRecipeBuilder28 = RecipeBuilder.crafting(
-                BetterEnd.C.mk("tined_glass_from_smaragdant"), Blocks.TINTED_GLASS);
+                BetterEnd.C.mk("tinted_glass_from_smaragdant"), Blocks.TINTED_GLASS);
         craftingRecipeBuilder28.shape(" # ", "#G#", " # ")
                                .addMaterial('#', EndCrystalBlocks.SMARAGDANT_CRYSTAL_SHARD)
                                .addMaterial('G', Blocks.GLASS)

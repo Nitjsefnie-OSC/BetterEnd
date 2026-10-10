@@ -2,20 +2,15 @@
   "type": "betterend:biome",
   "biome": "betterend:shadow_forest",
   "fogDensity": 2.5,
+  "genChance": 1.25,
   "generation_data": {
     "intended_placement": "wover:is_end/land"
   },
   "has_caves": true,
   "surface": {
-    "alt": {
-      "Name": "betterend:shadow_grass"
-    },
+    "alt": "betterend:shadow_grass",
     "floor_rule": true,
-    "top": {
-      "Name": "betterend:shadow_grass"
-    },
-    "under": {
-      "Name": "minecraft:end_stone"
-    }
+    "top": "betterend:shadow_grass",
+    "under": "minecraft:end_stone"
   }
 }
