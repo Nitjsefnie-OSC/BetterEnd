@@ -73,8 +73,11 @@ public class BushWithOuterFeature extends Feature<BushWithOuterFeatureConfig> {
             return info.getState();
         }).addPostProcess((info) -> {
             if (info.getState().getBlock() instanceof LeavesBlock) {
-                MHelper.shuffle(DIRECTIONS, random);
-                for (Direction dir : DIRECTIONS) {
+                // Shuffle a copy: the static array is shared by all worldgen threads, and shuffling it in place from
+                // several threads at once (C2ME) duplicates entries and loses others for good.
+                final Direction[] shuffled = DIRECTIONS.clone();
+                MHelper.shuffle(shuffled, random);
+                for (Direction dir : shuffled) {
                     if (info.getState(dir).isAir()) {
                         info.setBlockPos(
                                 info.getPos().relative(dir),

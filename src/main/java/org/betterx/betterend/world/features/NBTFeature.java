@@ -4,6 +4,7 @@ import org.betterx.bclib.api.v2.levelgen.biomes.BiomeAPI;
 import org.betterx.bclib.api.v2.levelgen.features.features.DefaultFeature;
 import org.betterx.bclib.api.v2.levelgen.structures.templatesystem.DestructionStructureProcessor;
 import org.betterx.bclib.util.BlocksHelper;
+import org.betterx.bclib.util.GenerationArea;
 import org.betterx.worlds.together.tag.v3.CommonBlockTags;
 
 import com.mojang.serialization.Codec;
@@ -53,7 +54,7 @@ public abstract class NBTFeature<FC extends NBTFeatureConfig> extends Feature<FC
     protected abstract void addStructureData(StructurePlaceSettings data);
 
     protected BlockPos getGround(WorldGenLevel world, BlockPos center) {
-        Holder<Biome> biome = world.getBiome(center);
+        Holder<Biome> biome = GenerationArea.getBiome(world, center);
         ResourceLocation id = BiomeAPI.getBiomeID(biome);
         if (id.getNamespace().contains("moutain") || id.getNamespace().contains("lake")) {
             int y = getAverageY(world, center);
@@ -137,6 +138,12 @@ public abstract class NBTFeature<FC extends NBTFeatureConfig> extends Feature<FC
                 z2 = a;
             }
 
+            // the structure itself is clipped to the 3x3 chunks around the center (makeBox), so is the merge
+            x1 = Math.max(x1, GenerationArea.minX(world));
+            x2 = Math.min(x2, GenerationArea.maxX(world));
+            z1 = Math.max(z1, GenerationArea.minZ(world));
+            z2 = Math.min(z2, GenerationArea.maxZ(world));
+
             int surfMax = posY - 1;
             for (int x = x1; x <= x2; x++) {
                 mut.setX(x);
@@ -151,7 +158,7 @@ public abstract class NBTFeature<FC extends NBTFeatureConfig> extends Feature<FC
                             if (!isTerrain(stateSt)) {
                                 if (merge == TerrainMerge.SURFACE) {
                                     boolean isTop = mut.getY() == surfMax && state.isSolid();
-                                    Holder<Biome> b = world.getBiome(mut);
+                                    Holder<Biome> b = GenerationArea.getBiome(world, mut);
                                     BlockState top = (isTop
                                             ? BiomeAPI.findTopMaterial(b)
                                             : BiomeAPI.findUnderMaterial(b)).orElse(cfg.defaultBlock);
@@ -162,7 +169,7 @@ public abstract class NBTFeature<FC extends NBTFeatureConfig> extends Feature<FC
                             } else {
                                 if (isTerrain(state) && state.isSolid()) {
                                     if (merge == TerrainMerge.SURFACE) {
-                                        Holder<Biome> b = world.getBiome(mut);
+                                        Holder<Biome> b = GenerationArea.getBiome(world, mut);
                                         BlockState bottom = BiomeAPI.findUnderMaterial(b).orElse(cfg.defaultBlock);
                                         BlocksHelper.setWithoutUpdate(world, mut, bottom);
                                     } else {

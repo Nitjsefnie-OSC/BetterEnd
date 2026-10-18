@@ -8,6 +8,7 @@ import org.betterx.bclib.sdf.primitive.SDFFlatland;
 import org.betterx.bclib.sdf.primitive.SDFPrimitive;
 import org.betterx.bclib.sdf.primitive.SDFSphere;
 import org.betterx.bclib.util.BlocksHelper;
+import org.betterx.bclib.util.GenerationArea;
 import org.betterx.bclib.util.MHelper;
 import org.betterx.betterend.blocks.HydrothermalVentBlock;
 import org.betterx.betterend.noise.OpenSimplexNoise;
@@ -189,7 +190,8 @@ public class GeyserFeature extends DefaultFeature {
                );
             float distRaw = MHelper.length(mut.getX() - pos.getX(), mut.getZ() - pos.getZ());
             int dist = MHelper.floor(6 - distRaw) + random.nextInt(2);
-            if (dist >= 0) {
+            // vents (and the tube worms next to them) stay inside the chunks this feature may access
+            if (dist >= 0 && GenerationArea.contains(world, mut, 1)) {
                 state = world.getBlockState(mut);
                 while (!state.getFluidState().isEmpty() || state.is(CommonBlockTags.WATER_PLANT)) {
                     mut.setY(mut.getY() - 1);
@@ -199,8 +201,11 @@ public class GeyserFeature extends DefaultFeature {
                                                                       .is(EndBlocks.HYDROTHERMAL_VENT)) {
                     for (int j = 0; j <= dist; j++) {
                         BlocksHelper.setWithoutUpdate(world, mut, EndBlocks.SULPHURIC_ROCK.stone);
-                        MHelper.shuffle(HORIZONTAL, random);
-                        for (Direction dir : HORIZONTAL) {
+                        // Shuffle a copy: the static array is shared by all worldgen threads, and shuffling it in place from
+                        // several threads at once (C2ME) duplicates entries and loses others for good.
+                        final Direction[] shuffled = HORIZONTAL.clone();
+                        MHelper.shuffle(shuffled, random);
+                        for (Direction dir : shuffled) {
                             BlockPos p = mut.relative(dir);
                             if (random.nextBoolean() && world.getBlockState(p).is(Blocks.WATER)) {
                                 BlocksHelper.setWithoutUpdate(
@@ -236,7 +241,8 @@ public class GeyserFeature extends DefaultFeature {
                );
             float distRaw = MHelper.length(mut.getX() - pos.getX(), mut.getZ() - pos.getZ());
             int dist = MHelper.floor(6 - distRaw) + random.nextInt(2);
-            if (dist >= 0) {
+            // vents (and the tube worms next to them) stay inside the chunks this feature may access
+            if (dist >= 0 && GenerationArea.contains(world, mut, 1)) {
                 state = world.getBlockState(mut);
                 while (state.is(Blocks.WATER)) {
                     mut.setY(mut.getY() - 1);

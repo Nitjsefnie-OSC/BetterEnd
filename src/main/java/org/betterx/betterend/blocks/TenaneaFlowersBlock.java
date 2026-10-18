@@ -27,6 +27,7 @@ public class TenaneaFlowersBlock extends BaseVineBlock implements CustomColorPro
     }
 
     @Override
+    @Environment(EnvType.CLIENT)
     public BlockColor getProvider() {
         return (state, world, pos, tintIndex) -> {
             if (pos == null) {
@@ -52,6 +53,7 @@ public class TenaneaFlowersBlock extends BaseVineBlock implements CustomColorPro
     }
 
     @Override
+    @Environment(EnvType.CLIENT)
     public ItemColor getItemProvider() {
         return (stack, tintIndex) -> ColorUtil.color(255, 255, 255);
     }

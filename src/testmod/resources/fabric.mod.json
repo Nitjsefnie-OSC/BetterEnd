@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "id": "betterend-testmod",
+  "version": "1.0.0",
+  "name": "BetterEnd (TestMod)",
+  "description": "Headless GameTest suite and cross-mod compat checks for BetterEnd. Never shipped.",
+  "authors": [
+    "Quiqueck"
+  ],
+  "license": "MIT",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "org.betterx.betterend.testmod.compat.CompatWorldgenBootCheck"
+    ],
+    "fabric-gametest": [
+      "org.betterx.betterend.testmod.gametest.BlockRegistrationGameTest"
+    ]
+  },
+  "depends": {
+    "fabricloader": ">=0.14.21",
+    "fabric-api": "*",
+    "betterend": "*"
+  }
+}

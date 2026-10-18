@@ -31,7 +31,7 @@ import net.fabricmc.fabric.api.object.builder.v1.block.FabricBlockSettings;
 import java.util.Map;
 
 @SuppressWarnings("deprecation")
-public class EndLanternBlock extends BaseBlockNotFull.Wood implements SimpleWaterloggedBlock, LiquidBlockContainer {
+public class EndLanternBlock extends BaseBlockNotFull implements SimpleWaterloggedBlock, LiquidBlockContainer {
     public static final BooleanProperty IS_FLOOR = BlockProperties.IS_FLOOR;
     public static final BooleanProperty WATERLOGGED = BlockStateProperties.WATERLOGGED;
 
@@ -41,6 +41,9 @@ public class EndLanternBlock extends BaseBlockNotFull.Wood implements SimpleWate
 
     public EndLanternBlock(Properties settings) {
         super(settings.noOcclusion());
+        //without this the default state was waterlogged (first value of the boolean property), so
+        //everything using defaultBlockState() (e.g. /setblock without properties) placed water
+        registerDefaultState(defaultBlockState().setValue(WATERLOGGED, false));
     }
 
     @Override

@@ -7,7 +7,6 @@ import org.betterx.bclib.api.v2.levelgen.biomes.BCLBiome;
 import org.betterx.bclib.api.v2.levelgen.biomes.BCLBiomeRegistry;
 import org.betterx.bclib.api.v2.levelgen.biomes.BiomeAPI;
 import org.betterx.betterend.BetterEnd;
-import org.betterx.betterend.config.Configs;
 import org.betterx.betterend.world.biome.EndBiome;
 import org.betterx.betterend.world.biome.cave.*;
 import org.betterx.betterend.world.generator.GeneratorOptions;
@@ -22,7 +21,8 @@ import net.minecraft.world.level.biome.Biome;
 public class EndBiomes {
     public static final BiomeAPI.BiomeType END_CAVE = new BiomeAPI.BiomeType("END_CAVE", BiomeAPI.BiomeType.END_IGNORE);
     public static BiomePicker CAVE_BIOMES = null;
-    private static HexBiomeMap caveBiomeMap;
+    // read by the worldgen threads, so publish a fully built map
+    private static volatile HexBiomeMap caveBiomeMap;
     private static long lastSeed;
 
     public static final ResourceKey<Biome> AMBER_LAND = cKey("amber_land");
@@ -64,9 +64,11 @@ public class EndBiomes {
         LifeCycleAPI.onLevelLoad(EndBiomes::onWorldLoad);
     }
 
-    private static void onWorldLoad(ServerLevel level, long seed, Registry<Biome> registry) {
+    private static synchronized void onWorldLoad(ServerLevel level, long seed, Registry<Biome> registry) {
+        // build into locals and publish at the end: other worldgen threads may still use the old picker/map
+        boolean newPicker = false;
         if (CAVE_BIOMES == null || CAVE_BIOMES.biomeRegistry != registry) {
-            CAVE_BIOMES = new BiomePicker(registry);
+            final BiomePicker picker = new BiomePicker(registry);
             registry.stream()
                     .filter(biome -> registry.getResourceKey(biome).isPresent())
                     .map(biome -> registry.getHolderOrThrow(registry.getResourceKey(biome).get()))
@@ -74,13 +76,14 @@ public class EndBiomes {
                     .filter(id -> BiomeAPI.wasRegisteredAs(id, END_CAVE))
                     .map(BiomeAPI::getBiome)
                     .filter(bcl -> !BCLBiomeRegistry.isEmptyBiome(bcl))
-                    .forEach(CAVE_BIOMES::addBiome);
+                    .forEach(picker::addBiome);
 
-            CAVE_BIOMES.rebuild();
-            caveBiomeMap = null;
+            picker.rebuild();
+            CAVE_BIOMES = picker;
+            newPicker = true;
         }
 
-        if (caveBiomeMap == null || lastSeed != seed) {
+        if (newPicker || caveBiomeMap == null || lastSeed != seed) {
             caveBiomeMap = new HexBiomeMap(seed, GeneratorOptions.getBiomeSizeCaves(), CAVE_BIOMES);
             lastSeed = seed;
         }
@@ -104,11 +107,9 @@ public class EndBiomes {
      * @param parent - {@link ResourceLocation} parent id
      */
     public static void addSubBiomeIntegration(EndBiome biome, ResourceLocation parent) {
-        if (Configs.BIOME_CONFIG.getBoolean(biome.getID(), "enabled", true)) {
-            BCLBiome parentBiome = BiomeAPI.getBiome(parent);
-            if (!BCLBiomeRegistry.isEmptyBiome(parentBiome) && biome.getParentBiome().getID().equals(biome.getID())) {
-                parentBiome.addSubBiome(biome);
-            }
+        BCLBiome parentBiome = BiomeAPI.getBiome(parent);
+        if (!BCLBiomeRegistry.isEmptyBiome(parentBiome) && biome.getParentBiome().getID().equals(biome.getID())) {
+            parentBiome.addSubBiome(biome);
         }
     }
 

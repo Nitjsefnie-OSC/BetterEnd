@@ -2,6 +2,7 @@ package org.betterx.betterend.world.features;
 
 import org.betterx.bclib.api.v2.levelgen.features.features.DefaultFeature;
 import org.betterx.bclib.util.BlocksHelper;
+import org.betterx.bclib.util.GenerationArea;
 import org.betterx.bclib.util.MHelper;
 import org.betterx.betterend.util.GlobalState;
 import org.betterx.worlds.together.tag.v3.CommonBlockTags;
@@ -72,22 +73,29 @@ public abstract class ScatterFeature<FC extends ScatterFeatureConfig> extends Fe
 
         float r = MHelper.randRange(cfg.radius * 0.5F, cfg.radius, random);
         int count = MHelper.floor(r * r * MHelper.randRange(1.5F, 3F, random));
-        for (int i = 0; i < count; i++) {
-            float pr = r * (float) Math.sqrt(random.nextFloat());
-            float theta = random.nextFloat() * MHelper.PI2;
-            float x = pr * (float) Math.cos(theta);
-            float z = pr * (float) Math.sin(theta);
+        // Subclasses (DoublePlantFeature, SinglePlantFeature, ...) hand the plant picked in canGenerate() to
+        // generate() through an instance field, and the feature instance is shared by every worldgen thread.
+        // Without the lock a second thread (C2ME) could swap that field between the two calls, and a property
+        // was set on a block that does not have it ("Cannot set property rotation ... umbrella_moss").
+        synchronized (this) {
+            for (int i = 0; i < count; i++) {
+                float pr = r * (float) Math.sqrt(random.nextFloat());
+                float theta = random.nextFloat() * MHelper.PI2;
+                float x = pr * (float) Math.cos(theta);
+                float z = pr * (float) Math.sin(theta);
 
-            POS.set(center.getX() + x, center.getY() + getYOffset(), center.getZ() + z);
-            if (getGroundPlant(cfg, world, POS) && canGenerate(
-                    cfg,
-                    world,
-                    random,
-                    center,
-                    POS,
-                    r
-            ) && (getChance() < 2 || random.nextInt(getChance()) == 0)) {
-                generate(cfg, world, random, POS);
+                POS.set(center.getX() + x, center.getY() + getYOffset(), center.getZ() + z);
+                // plants (and the blocks next to them) stay inside the chunks this feature may access
+                if (GenerationArea.contains(world, POS, 1) && getGroundPlant(cfg, world, POS) && canGenerate(
+                        cfg,
+                        world,
+                        random,
+                        center,
+                        POS,
+                        r
+                ) && (getChance() < 2 || random.nextInt(getChance()) == 0)) {
+                    generate(cfg, world, random, POS);
+                }
             }
         }
 

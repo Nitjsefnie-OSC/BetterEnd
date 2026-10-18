@@ -26,7 +26,7 @@ import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemp
 public class CrashedShipFeature extends NBTFeature<NBTFeatureConfig> {
     private static final StructureProcessor REPLACER;
     private static final String STRUCTURE_PATH = "/data/minecraft/structures/end_city/ship.nbt";
-    private StructureTemplate structure;
+    private volatile StructureTemplate structure;
 
     public CrashedShipFeature() {
         super(NBTFeatureConfig.CODEC);
@@ -39,13 +39,17 @@ public class CrashedShipFeature extends NBTFeature<NBTFeatureConfig> {
             BlockPos pos,
             RandomSource random
     ) {
-        if (structure == null) {
-            structure = world.getLevel().getStructureManager().getOrCreate(new ResourceLocation("end_city/ship"));
-            if (structure == null) {
-                structure = StructureHelper.readStructure(STRUCTURE_PATH);
+        // lazily loaded by whichever worldgen thread gets here first; build it in a local so no thread ever
+        // sees a half-assigned field
+        StructureTemplate result = structure;
+        if (result == null) {
+            result = world.getLevel().getStructureManager().getOrCreate(new ResourceLocation("end_city/ship"));
+            if (result == null) {
+                result = StructureHelper.readStructure(STRUCTURE_PATH);
             }
+            structure = result;
         }
-        return structure;
+        return result;
     }
 
     @Override

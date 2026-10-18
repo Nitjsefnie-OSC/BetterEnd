@@ -107,11 +107,13 @@ public class EndPortalBlock extends NetherPortalBlock implements RenderLayerProv
     }
 
     @Override
+    @Environment(EnvType.CLIENT)
     public BlockColor getProvider() {
         return (state, world, pos, tintIndex) -> EndPortals.getColor(state.getValue(PORTAL));
     }
 
     @Override
+    @Environment(EnvType.CLIENT)
     public ItemColor getItemProvider() {
         return (stack, tintIndex) -> EndPortals.getColor(0);
     }

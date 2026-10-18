@@ -5,6 +5,7 @@ import org.betterx.bclib.sdf.PosInfo;
 import org.betterx.bclib.sdf.SDF;
 import org.betterx.bclib.sdf.operator.*;
 import org.betterx.bclib.util.BlocksHelper;
+import org.betterx.bclib.util.GenerationArea;
 import org.betterx.bclib.util.MHelper;
 import org.betterx.bclib.util.SplineHelper;
 import org.betterx.betterend.blocks.HelixTreeLeavesBlock;
@@ -197,7 +198,7 @@ public class HelixTreeFeature extends DefaultFeature {
             bPos.set(x + pos.getX(), y + pos.getY(), z + pos.getZ());
             int color = MHelper.floor((float) i / (float) count * 7F + 0.5F) + offset;
             color = Mth.clamp(color, 0, 7);
-            if (world.getBlockState(bPos).canBeReplaced()){
+            if (GenerationArea.contains(world, bPos) && world.getBlockState(bPos).canBeReplaced()) {
                 BlocksHelper.setWithoutUpdate(world, bPos, state.setValue(HelixTreeLeavesBlock.COLOR, color));
             }
             x += dx;
@@ -205,7 +206,7 @@ public class HelixTreeFeature extends DefaultFeature {
             z += dz;
         }
         bPos.set(end.x() + pos.getX(), end.y() + pos.getY(), end.z() + pos.getZ());
-        if (world.getBlockState(bPos).canBeReplaced()){
+        if (GenerationArea.contains(world, bPos) && world.getBlockState(bPos).canBeReplaced()) {
             BlocksHelper.setWithoutUpdate(world, bPos, state.setValue(HelixTreeLeavesBlock.COLOR, 7));
         }
     }

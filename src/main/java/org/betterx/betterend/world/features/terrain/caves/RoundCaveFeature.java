@@ -1,9 +1,9 @@
 package org.betterx.betterend.world.features.terrain.caves;
 
 import org.betterx.bclib.util.BlocksHelper;
+import org.betterx.bclib.util.GenerationArea;
 import org.betterx.bclib.util.MHelper;
 import org.betterx.betterend.noise.OpenSimplexNoise;
-import org.betterx.worlds.together.tag.v3.CommonBlockTags;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.BlockPos.MutableBlockPos;
@@ -22,10 +22,11 @@ public class RoundCaveFeature extends EndCaveFeature {
     protected Set<BlockPos> generate(WorldGenLevel world, BlockPos center, int radius, RandomSource random) {
         OpenSimplexNoise noise = new OpenSimplexNoise(MHelper.getSeed(534, center.getX(), center.getZ()));
 
-        int x1 = center.getX() - radius - 5;
-        int z1 = center.getZ() - radius - 5;
-        int x2 = center.getX() + radius + 5;
-        int z2 = center.getZ() + radius + 5;
+        // Only touch the chunks this feature may access; other worldgen threads may be generating the ones further away
+        int x1 = Math.max(center.getX() - radius - 5, GenerationArea.minX(world));
+        int z1 = Math.max(center.getZ() - radius - 5, GenerationArea.minZ(world));
+        int x2 = Math.min(center.getX() + radius + 5, GenerationArea.maxX(world));
+        int z2 = Math.min(center.getZ() + radius + 5, GenerationArea.maxZ(world));
         int y1 = MHelper.floor(center.getY() - (radius + 5) / 1.6);
         int y2 = MHelper.floor(center.getY() + (radius + 5) / 1.6);
 
@@ -35,6 +36,7 @@ public class RoundCaveFeature extends EndCaveFeature {
         int dx = x2 - x1 + 1;
         int dz = z2 - z1 + 1;
         int count = dx * dz;
+        final CaveSession session = session(world);
         Set<BlockPos> blocks = Sets.newConcurrentHashSet();
         IntStream.range(0, count).parallel().forEach(index -> {
             MutableBlockPos bpos = new MutableBlockPos();
@@ -53,7 +55,7 @@ public class RoundCaveFeature extends EndCaveFeature {
                 if (dist < r * r) {
                     bpos.setY(y);
                     state = world.getBlockState(bpos);
-                    if (isReplaceable(state) && !isWaterNear(world, bpos)) {
+                    if (isReplaceable(session, state, bpos) && !isWaterNear(world, bpos)) {
                         blocks.add(bpos.immutable());
 
                         while (state.is(BlockTags.LEAVES)) {
@@ -70,13 +72,16 @@ public class RoundCaveFeature extends EndCaveFeature {
                 }
             }
         });
-        blocks.forEach(bpos -> BlocksHelper.setWithoutUpdate(world, bpos, CAVE_AIR));
+        blocks.forEach(bpos -> {
+            BlocksHelper.setWithoutUpdate(world, bpos, CAVE_AIR);
+            session.markCarved(bpos);
+        });
 
         return blocks;
     }
 
-    private boolean isReplaceable(BlockState state) {
-        return state.is(CommonBlockTags.GEN_END_STONES) ||
+    private boolean isReplaceable(CaveSession session, BlockState state, BlockPos pos) {
+        return session.isCaveStone(state, pos) ||
                 BlocksHelper.replaceableOrPlant(state) ||
                 state.is(BlockTags.LEAVES);
     }

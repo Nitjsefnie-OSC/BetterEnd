@@ -2,6 +2,7 @@ package org.betterx.betterend.world.features;
 
 import org.betterx.bclib.api.v2.levelgen.features.features.DefaultFeature;
 import org.betterx.bclib.util.BlocksHelper;
+import org.betterx.bclib.util.GenerationArea;
 import org.betterx.bclib.util.MHelper;
 import org.betterx.betterend.util.GlobalState;
 
@@ -50,6 +51,8 @@ public abstract class FullHeightScatterFeature extends DefaultFeature {
                     float z = pr * (float) Math.sin(theta);
 
                     POS.set(center.getX() + x, y + 5, center.getZ() + z);
+                    // plants (and the blocks next to them) stay inside the chunks this feature may access
+                    if (!GenerationArea.contains(world, POS, 1)) continue;
                     int down = BlocksHelper.downRay(world, POS, 16);
                     if (down > 10) continue;
                     POS.setY(POS.getY() - down);

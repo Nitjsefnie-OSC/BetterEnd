@@ -26,6 +26,9 @@ import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.level.storage.loot.LootParams;
 
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+
 import java.util.List;
 
 public class HelixTreeLeavesBlock extends BaseBlock implements BehaviourLeaves, CustomColorProvider, AddMineableShears {
@@ -47,6 +50,7 @@ public class HelixTreeLeavesBlock extends BaseBlock implements BehaviourLeaves, 
     }
 
     @Override
+    @Environment(EnvType.CLIENT)
     public BlockColor getProvider() {
         return (state, world, pos, tintIndex) -> {
             return ColorUtil.color(237, getGreen(state.getValue(COLOR)), 20);
@@ -54,6 +58,7 @@ public class HelixTreeLeavesBlock extends BaseBlock implements BehaviourLeaves, 
     }
 
     @Override
+    @Environment(EnvType.CLIENT)
     public ItemColor getItemProvider() {
         return (stack, tintIndex) -> {
             return ColorUtil.color(237, getGreen(4), 20);

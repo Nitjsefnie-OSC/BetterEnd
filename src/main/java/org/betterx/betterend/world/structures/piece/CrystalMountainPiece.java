@@ -62,7 +62,6 @@ public class CrystalMountainPiece extends MountainPiece {
         final MutableBlockPos pos = GlobalState.stateForThread().POS;
         ChunkAccess chunk = world.getChunk(chunkPos.x, chunkPos.z);
         Heightmap map = chunk.getOrCreateHeightmapUnprimed(Types.WORLD_SURFACE);
-        Heightmap map2 = chunk.getOrCreateHeightmapUnprimed(Types.WORLD_SURFACE_WG);
         for (int x = 0; x < 16; x++) {
             int px = x + sx;
             int px2 = px - center.getX();
@@ -88,7 +87,7 @@ public class CrystalMountainPiece extends MountainPiece {
                         pos.setY(pos.getY() - 1);
                     }
                     minY = pos.getY();
-                    minY = Math.max(minY, map2.getFirstAvailable(x, z));
+                    minY = Math.max(minY, getWorldgenSurface(world, px, pz));
                     if (minY > center.getY() - 8) {
                         float maxY = dist * height * getHeightClamp(world, 12, px, pz);
                         if (maxY > 0) {

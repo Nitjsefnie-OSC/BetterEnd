@@ -7,6 +7,9 @@ import org.betterx.ui.ColorUtil;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.color.item.ItemColor;
 
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+
 import net.fabricmc.fabric.api.object.builder.v1.block.FabricBlockSettings;
 
 public class BulbVineLanternColoredBlock extends BulbVineLanternBlock implements CustomColorProvider {
@@ -15,11 +18,13 @@ public class BulbVineLanternColoredBlock extends BulbVineLanternBlock implements
     }
 
     @Override
+    @Environment(EnvType.CLIENT)
     public BlockColor getProvider() {
         return (state, world, pos, tintIndex) -> getColor();
     }
 
     @Override
+    @Environment(EnvType.CLIENT)
     public ItemColor getItemProvider() {
         return (stack, tintIndex) -> getColor();
     }

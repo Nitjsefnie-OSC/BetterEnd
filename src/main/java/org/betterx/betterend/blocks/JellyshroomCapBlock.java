@@ -88,6 +88,7 @@ public class JellyshroomCapBlock extends SlimeBlock implements RenderLayerProvid
     }
 
     @Override
+    @Environment(EnvType.CLIENT)
     public BlockColor getProvider() {
         return (state, world, pos, tintIndex) -> {
             float delta = (float) state.getValue(COLOR) / 7F;
@@ -99,6 +100,7 @@ public class JellyshroomCapBlock extends SlimeBlock implements RenderLayerProvid
     }
 
     @Override
+    @Environment(EnvType.CLIENT)
     public ItemColor getItemProvider() {
         return (stack, tintIndex) -> {
             return coloritem;

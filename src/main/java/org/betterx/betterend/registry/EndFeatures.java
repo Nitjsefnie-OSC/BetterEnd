@@ -13,7 +13,6 @@ import org.betterx.bclib.api.v3.levelgen.features.placement.InBiome;
 import org.betterx.bclib.util.JsonFactory;
 import org.betterx.betterend.BetterEnd;
 import org.betterx.betterend.complexmaterials.StoneMaterial;
-import org.betterx.betterend.config.Configs;
 import org.betterx.betterend.world.biome.EndBiome;
 import org.betterx.betterend.world.biome.cave.EndCaveBiome;
 import org.betterx.betterend.world.features.*;
@@ -1375,10 +1374,8 @@ public class EndFeatures {
             }
 
             if (hasCaves && !BiomeAPI.wasRegisteredAsEndVoidBiome(id) /*!BiomeAPI.END_VOID_BIOME_PICKER.containsImmutable(id)*/) {
-                if (Configs.BIOME_CONFIG.getBoolean(id, "hasCaves", true)) {
-                    BiomeAPI.addBiomeFeature(biome, ROUND_CAVE);
-                    BiomeAPI.addBiomeFeature(biome, TUNEL_CAVE);
-                }
+                BiomeAPI.addBiomeFeature(biome, ROUND_CAVE);
+                BiomeAPI.addBiomeFeature(biome, TUNEL_CAVE);
             }
         }
     }

@@ -6,6 +6,7 @@ import org.betterx.bclib.sdf.operator.SDFDisplacement;
 import org.betterx.bclib.sdf.operator.SDFScale3D;
 import org.betterx.bclib.sdf.primitive.SDFSphere;
 import org.betterx.bclib.util.BlocksHelper;
+import org.betterx.bclib.util.GenerationArea;
 import org.betterx.bclib.util.MHelper;
 import org.betterx.betterend.noise.OpenSimplexNoise;
 import org.betterx.betterend.registry.EndBlocks;
@@ -30,7 +31,7 @@ public class ObsidianBoulderFeature extends DefaultFeature {
                 world,
                 new BlockPos(pos.getX() + random.nextInt(16), pos.getY(), pos.getZ() + random.nextInt(16))
         );
-        if (!world.getBlockState(pos.below()).is(CommonBlockTags.END_STONES)) {
+        if (!GenerationArea.getBlockState(world, pos.below()).is(CommonBlockTags.END_STONES)) {
             return false;
         }
 
@@ -47,7 +48,7 @@ public class ObsidianBoulderFeature extends DefaultFeature {
     }
 
     private void makeBoulder(WorldGenLevel world, BlockPos pos, RandomSource random) {
-        if (!world.getBlockState(pos.below()).is(CommonBlockTags.END_STONES)) {
+        if (!GenerationArea.getBlockState(world, pos.below()).is(CommonBlockTags.END_STONES)) {
             return;
         }
 

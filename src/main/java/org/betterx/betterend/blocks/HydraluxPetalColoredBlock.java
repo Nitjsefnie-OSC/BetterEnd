@@ -24,11 +24,13 @@ public class HydraluxPetalColoredBlock extends HydraluxPetalBlock implements Cus
     }
 
     @Override
+    @Environment(EnvType.CLIENT)
     public BlockColor getProvider() {
         return (state, world, pos, tintIndex) -> BlocksHelper.getBlockColor(this);
     }
 
     @Override
+    @Environment(EnvType.CLIENT)
     public ItemColor getItemProvider() {
         return (stack, tintIndex) -> BlocksHelper.getBlockColor(this);
     }

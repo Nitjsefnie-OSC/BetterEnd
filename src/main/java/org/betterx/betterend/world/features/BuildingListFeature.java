@@ -27,7 +27,10 @@ import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemp
 import org.jetbrains.annotations.Nullable;
 
 public class BuildingListFeature extends NBTFeature<BuildingListFeatureConfig> {
-    private StructureInfo selected;
+    // NBTFeature.place() asks getStructure() first and getYOffset()/getTerrainMerge() later; the building picked
+    // in between is per placement, but this feature instance is shared by every worldgen thread (C2ME), so it
+    // must not live in a plain field.
+    private final ThreadLocal<StructureInfo> selected = new ThreadLocal<>();
 
     public BuildingListFeature() {
         super(BuildingListFeatureConfig.CODEC);
@@ -46,9 +49,9 @@ public class BuildingListFeature extends NBTFeature<BuildingListFeatureConfig> {
             BlockPos pos,
             RandomSource random
     ) {
-        selected = cfg.getRandom(random);
-        //BCLib.LOGGER.info("Selected: " + selected.structurePath + " /tp " + pos.getX() + " " + pos.getY() + " " + pos.getZ());
-        return selected.getStructure();
+        final StructureInfo info = cfg.getRandom(random);
+        selected.set(info);
+        return info.getStructure();
     }
 
     @Override
@@ -72,12 +75,12 @@ public class BuildingListFeature extends NBTFeature<BuildingListFeatureConfig> {
 
     @Override
     protected int getYOffset(StructureTemplate structure, WorldGenLevel world, BlockPos pos, RandomSource random) {
-        return selected.offsetY;
+        return selected.get().offsetY;
     }
 
     @Override
     protected TerrainMerge getTerrainMerge(WorldGenLevel world, BlockPos pos, RandomSource random) {
-        return selected.terrainMerge;
+        return selected.get().terrainMerge;
     }
 
     public static final class StructureInfo {
@@ -92,7 +95,7 @@ public class BuildingListFeature extends NBTFeature<BuildingListFeatureConfig> {
         public final String structurePath;
         public final int offsetY;
 
-        private StructureTemplate structure;
+        private volatile StructureTemplate structure;
 
         public StructureInfo(String structurePath, int offsetY, TerrainMerge terrainMerge) {
             this.terrainMerge = terrainMerge;

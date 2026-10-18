@@ -5,8 +5,11 @@ import org.betterx.betterend.interfaces.BetterEndElytra;
 import org.betterx.betterend.interfaces.MultiModelItem;
 import org.betterx.betterend.registry.EndItems;
 
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.renderer.item.ClampedItemPropertyFunction;
 import net.minecraft.client.renderer.item.ItemProperties;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.item.ElytraItem;
@@ -15,6 +18,8 @@ import net.minecraft.world.item.Rarity;
 
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
+
+import org.jetbrains.annotations.Nullable;
 
 public class CrystaliteElytra extends CrystaliteArmor implements MultiModelItem, BetterEndElytra {
 
@@ -76,11 +81,24 @@ public class CrystaliteElytra extends CrystaliteArmor implements MultiModelItem,
     }
 
     @Override
+    @Environment(EnvType.CLIENT)
     public void registerModelPredicate() {
         ItemProperties.register(
                 this,
                 new ResourceLocation("broken"),
-                (itemStack, clientLevel, livingEntity, i) -> ElytraItem.isFlyEnabled(itemStack) ? 0.0F : 1.0F
+                // an anonymous class instead of a lambda: the synthetic lambda method would stay in this common class with a
+                // client-only ClientLevel parameter and break reflection on dedicated servers (quiqueck/BCLib#240)
+                new ClampedItemPropertyFunction() {
+                    @Override
+                    public float unclampedCall(
+                            ItemStack itemStack,
+                            @Nullable ClientLevel clientLevel,
+                            @Nullable LivingEntity livingEntity,
+                            int seed
+                    ) {
+                        return ElytraItem.isFlyEnabled(itemStack) ? 0.0F : 1.0F;
+                    }
+                }
         );
     }
 }

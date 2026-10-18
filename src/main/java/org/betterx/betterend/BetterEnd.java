@@ -18,8 +18,10 @@ import org.betterx.betterend.util.BonemealPlants;
 import org.betterx.betterend.util.LootTableUtil;
 import org.betterx.betterend.world.generator.EndLandBiomeDecider;
 import org.betterx.betterend.world.generator.GeneratorOptions;
+import org.betterx.betterend.world.generator.VoidRing;
 import org.betterx.worlds.together.util.Logger;
 import org.betterx.worlds.together.world.WorldConfig;
+import org.betterx.worlds.together.world.event.WorldEvents;
 
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.biome.Biomes;
@@ -68,6 +70,8 @@ public class BetterEnd implements ModInitializer {
         Integrations.init();
         Configs.saveConfigs();
         CreativeTabs.register();
+
+        WorldEvents.ADAPT_WORLD_PRESET.on(VoidRing::adaptWorldPreset);
 
         if (GeneratorOptions.useNewGenerator()) {
             BiomeDecider.registerHighPriorityDecider(makeID("end_land"), new EndLandBiomeDecider());

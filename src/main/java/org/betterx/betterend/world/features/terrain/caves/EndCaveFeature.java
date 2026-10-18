@@ -7,6 +7,7 @@ import org.betterx.bclib.api.v2.levelgen.biomes.BiomeAPI;
 import org.betterx.bclib.api.v2.levelgen.features.features.DefaultFeature;
 import org.betterx.bclib.config.Configs;
 import org.betterx.bclib.util.BlocksHelper;
+import org.betterx.bclib.util.GenerationArea;
 import org.betterx.bclib.util.MHelper;
 import org.betterx.betterend.BetterEnd;
 import org.betterx.betterend.registry.EndBiomes;
@@ -19,21 +20,33 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.BlockPos.MutableBlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
+import net.minecraft.core.QuartPos;
 import net.minecraft.core.Vec3i;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.WorldGenRegion;
+import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.level.NoiseColumn;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.biome.Biome;
+import net.minecraft.world.level.biome.BiomeSource;
+import net.minecraft.world.level.biome.Climate;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.ChunkGenerator;
-import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
 import net.minecraft.world.level.levelgen.feature.FeaturePlaceContext;
 import net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConfiguration;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 
+import java.lang.ref.WeakReference;
+import java.util.Comparator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -58,32 +71,35 @@ public abstract class EndCaveFeature extends DefaultFeature {
         }
 
         int radius = MHelper.randRange(10, 30, random);
-        BlockPos center = findPos(world, pos, radius, random);
+        BlockPos center = findPos(world, featureConfig.chunkGenerator(), pos, radius, random);
 
         if (center == null) {
             return false;
         }
 
         BiomePicker.ActualBiome biome = EndBiomes.getCaveBiome(pos.getX(), pos.getZ());
-        Set<BlockPos> caveBlocks = generate(world, center, radius, random);
+        Set<BlockPos> caveBlocks = inPositionOrder(generate(world, center, radius, random));
         if (!caveBlocks.isEmpty()) {
             if (biome != null) {
                 ChunkGenerator generator = featureConfig.chunkGenerator();
                 setBiomes(world, biome, caveBlocks);
-                Set<BlockPos> floorPositions = Sets.newConcurrentHashSet();
-                Set<BlockPos> ceilPositions = Sets.newConcurrentHashSet();
+                Set<BlockPos> floorFound = Sets.newConcurrentHashSet();
+                Set<BlockPos> ceilFound = Sets.newConcurrentHashSet();
                 caveBlocks.parallelStream().forEach((bpos) -> {
                     if (world.getBlockState(bpos).canBeReplaced()) {
                         BlockPos side = bpos.below();
                         if (world.getBlockState(side).is(CommonBlockTags.GEN_END_STONES)) {
-                            floorPositions.add(side);
+                            floorFound.add(side);
                         }
                         side = bpos.above();
                         if (world.getBlockState(side).is(CommonBlockTags.GEN_END_STONES)) {
-                            ceilPositions.add(side);
+                            ceilFound.add(side);
                         }
                     }
                 });
+
+                final Set<BlockPos> floorPositions = inPositionOrder(floorFound);
+                final Set<BlockPos> ceilPositions = inPositionOrder(ceilFound);
 
                 BlockState surfaceBlock = EndBiome.findTopMaterial(biome.bclBiome);
                 if (biome.bclBiome instanceof EndCaveBiome caveBiome) {
@@ -99,6 +115,24 @@ public abstract class EndCaveFeature extends DefaultFeature {
         }
 
         return true;
+    }
+
+    private static final Comparator<BlockPos> POSITION_ORDER = Comparator
+            .comparingInt((BlockPos p) -> p.getY())
+            .thenComparingInt(p -> p.getX())
+            .thenComparingInt(p -> p.getZ());
+
+    /**
+     * The positions are collected by parallel streams into concurrent sets, whose iteration order depends on the
+     * thread timing. Decorating them consumes the feature's random in that order, so return them in a fixed order
+     * to generate the same caves every time.
+     */
+    protected static Set<BlockPos> inPositionOrder(Set<BlockPos> positions) {
+        final Set<BlockPos> result = new LinkedHashSet<>(positions.size() * 2);
+        positions.stream()
+                 .sorted(POSITION_ORDER)
+                 .forEachOrdered(result::add);
+        return result;
     }
 
     protected abstract Set<BlockPos> generate(WorldGenLevel world, BlockPos center, int radius, RandomSource random);
@@ -161,8 +195,9 @@ public abstract class EndCaveFeature extends DefaultFeature {
                 if (wallBlock != null) {
                     for (Vec3i offset : SPHERE) {
                         BlockPos wallPos = pos.offset(offset);
-                        if (!positions.contains(wallPos) && !placed.contains(wallPos) && world.getBlockState(wallPos)
-                                                                                              .is(CommonBlockTags.GEN_END_STONES)) {
+                        if (!positions.contains(wallPos) && !placed.contains(wallPos) && GenerationArea
+                                .getBlockState(world, wallPos)
+                                .is(CommonBlockTags.GEN_END_STONES)) {
                             wallBlock = biome.getWall(wallPos);
                             BlocksHelper.setWithoutUpdate(world, wallPos, wallBlock);
                             placed.add(wallPos);
@@ -187,31 +222,137 @@ public abstract class EndCaveFeature extends DefaultFeature {
     }
 
     protected void setBiome(WorldGenLevel world, BlockPos pos, BiomePicker.ActualBiome biome) {
-        BiomeAPI.setBiome(world, pos, biome.biome);
+        final ChunkAccess chunk = world.getChunk(pos);
+        BiomeAPI.setBiome(chunk, pos, session(world).caveBiomeFor(chunk, pos, biome.biome));
     }
 
-    private BlockPos findPos(WorldGenLevel world, BlockPos pos, int radius, RandomSource random) {
-        int top = world.getHeight(Heightmap.Types.WORLD_SURFACE_WG, pos.getX(), pos.getZ());
-        MutableBlockPos bpos = new MutableBlockPos();
-        bpos.setX(pos.getX());
-        bpos.setZ(pos.getZ());
-        bpos.setY(top - 1);
+    private static final ThreadLocal<CaveSession> SESSION = new ThreadLocal<>();
 
-        BlockState state = world.getBlockState(bpos);
-        while (!state.is(CommonBlockTags.GEN_END_STONES) && bpos.getY() > 5) {
-            bpos.setY(bpos.getY() - 1);
-            state = world.getBlockState(bpos);
+    /**
+     * The caves of the chunk that is currently decorated on this thread (all features of a chunk share one
+     * {@link WorldGenLevel} and run one after the other on the same thread).
+     */
+    protected static CaveSession session(WorldGenLevel world) {
+        CaveSession session = SESSION.get();
+        if (session == null || session.level.get() != world) {
+            session = new CaveSession(world);
+            SESSION.set(session);
         }
-        if (bpos.getY() < 10) {
+        return session;
+    }
+
+    /**
+     * Caves of neighbouring chunks overlap, and which chunk is decorated first depends on the order the chunks are
+     * generated in. To get the same caves and cave biomes in every order, a cave treats what the caves of other
+     * chunks did as if it did not happen yet: their cave air counts as stone, and where they already wrote a cave
+     * biome the cave biome with the lowest id is kept instead of the one written last. Within one chunk nothing
+     * changes, so the caves of a chunk still see and overwrite each other in their (fixed) feature order.
+     */
+    protected static final class CaveSession {
+        private final WeakReference<WorldGenLevel> level;
+        private final LongOpenHashSet carved = new LongOpenHashSet();
+        // the cave biome another chunk wrote into a cell before this chunk touched it (null: none)
+        private final Long2ObjectOpenHashMap<Holder<Biome>> foreignCaveBiomes = new Long2ObjectOpenHashMap<>();
+
+        private CaveSession(WorldGenLevel level) {
+            this.level = new WeakReference<>(level);
+        }
+
+        /**
+         * Blocks a cave may carve: end stones, and cave air the caves of other chunks carved there. Safe to call from
+         * several threads as long as no block is marked as carved at the same time.
+         */
+        public boolean isCaveStone(BlockState state, BlockPos pos) {
+            return state.is(CommonBlockTags.GEN_END_STONES)
+                    || (state.is(Blocks.CAVE_AIR) && !carved.contains(pos.asLong()));
+        }
+
+        public void markCarved(BlockPos pos) {
+            carved.add(pos.asLong());
+        }
+
+        private Holder<Biome> caveBiomeFor(ChunkAccess chunk, BlockPos pos, Holder<Biome> biome) {
+            final long cell = BlockPos.asLong(
+                    QuartPos.fromBlock(pos.getX()),
+                    QuartPos.fromBlock(pos.getY()),
+                    QuartPos.fromBlock(pos.getZ())
+            );
+            if (!foreignCaveBiomes.containsKey(cell)) {
+                final Holder<Biome> current = chunk.getNoiseBiome(
+                        QuartPos.fromBlock(pos.getX()),
+                        QuartPos.fromBlock(pos.getY()),
+                        QuartPos.fromBlock(pos.getZ())
+                );
+                foreignCaveBiomes.put(
+                        cell,
+                        current.unwrapKey().isPresent() && BiomeAPI.getBiome(current) instanceof EndCaveBiome
+                                ? current
+                                : null
+                );
+            }
+            final Holder<Biome> foreign = foreignCaveBiomes.get(cell);
+            if (foreign != null && biome.unwrapKey().isPresent()
+                    && foreign.unwrapKey().get().location().toString()
+                              .compareTo(biome.unwrapKey().get().location().toString()) < 0) {
+                return foreign;
+            }
+            return biome;
+        }
+    }
+
+    /**
+     * The biome the biome source generated at the position, ignoring the cave biomes other caves already wrote into
+     * the chunks (which depends on the order the chunks are generated in).
+     */
+    protected static Holder<Biome> getGeneratedBiome(WorldGenLevel world, BlockPos pos) {
+        if (world instanceof WorldGenRegion region) {
+            final ServerLevel serverLevel = region.getLevel();
+            final BiomeSource source = serverLevel.getChunkSource().getGenerator().getBiomeSource();
+            final Climate.Sampler sampler = serverLevel.getChunkSource().randomState().sampler();
+            final int minQuartY = QuartPos.fromBlock(region.getMinBuildHeight());
+            final int maxQuartY = minQuartY + QuartPos.fromBlock(region.getHeight()) - 1;
+            return region.getBiomeManager()
+                         .withDifferentSource((qx, qy, qz) -> source.getNoiseBiome(
+                                 qx,
+                                 Mth.clamp(qy, minQuartY, maxQuartY),
+                                 qz,
+                                 sampler
+                         ))
+                         .getBiome(pos);
+        }
+        return GenerationArea.getBiome(world, pos);
+    }
+
+    private BlockPos findPos(
+            WorldGenLevel world,
+            ChunkGenerator generator,
+            BlockPos pos,
+            int radius,
+            RandomSource random
+    ) {
+        // Look at the column as the noise generated it: features of the neighbouring chunks (caves, lakes, ...) may
+        // already have changed it or not, depending on the order the chunks are generated in.
+        final NoiseColumn column = generator.getBaseColumn(
+                pos.getX(),
+                pos.getZ(),
+                world,
+                world.getLevel().getChunkSource().randomState()
+        );
+        int y = world.getMaxBuildHeight() - 1;
+        BlockState state = column.getBlock(y);
+        while (!state.is(CommonBlockTags.GEN_END_STONES) && y > 5) {
+            state = column.getBlock(--y);
+        }
+        if (y < 10) {
             return null;
         }
-        top = (int) (bpos.getY() - (radius * 1.3F + 5));
+        int top = (int) (y - (radius * 1.3F + 5));
 
-        while (state.is(CommonBlockTags.GEN_END_STONES) || !state.getFluidState().isEmpty() && bpos.getY() > 5) {
-            bpos.setY(bpos.getY() - 1);
-            state = world.getBlockState(bpos);
+        while ((state.is(CommonBlockTags.GEN_END_STONES) || !state.getFluidState().isEmpty() && y > 5)
+                && y > world.getMinBuildHeight()) {
+            state = column.getBlock(--y);
         }
-        int bottom = (int) (bpos.getY() + radius * 1.3F + 5);
+        int bottom = (int) (y + radius * 1.3F + 5);
 
         if (top <= bottom) {
             return null;
@@ -251,7 +392,7 @@ public abstract class EndCaveFeature extends DefaultFeature {
 
     protected boolean isWaterNear(WorldGenLevel world, BlockPos pos) {
         for (Direction dir : BlocksHelper.DIRECTIONS) {
-            if (!world.getFluidState(pos.relative(dir, 5)).isEmpty()) {
+            if (!GenerationArea.getFluidState(world, pos.relative(dir, 5)).isEmpty()) {
                 return true;
             }
         }
@@ -261,7 +402,7 @@ public abstract class EndCaveFeature extends DefaultFeature {
     protected boolean biomeMissingCaves(WorldGenLevel world, BlockPos pos) {
         for (int x = -2; x < 3; x++) {
             for (int z = -2; z < 3; z++) {
-                Holder<Biome> biome = world.getBiome(pos.offset(x << 4, 0, z << 4));
+                Holder<Biome> biome = getGeneratedBiome(world, pos.offset(x << 4, 0, z << 4));
                 BCLBiome bclBiome = BiomeAPI.getBiome(biome);
                 boolean hasCaves = true;
                 if (bclBiome instanceof EndBiome endBiome)

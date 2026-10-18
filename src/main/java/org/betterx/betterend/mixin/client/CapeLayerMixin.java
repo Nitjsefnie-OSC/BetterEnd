@@ -1,6 +1,7 @@
 package org.betterx.betterend.mixin.client;
 
-import org.betterx.betterend.item.ArmoredElytra;
+import org.betterx.bclib.items.elytra.BCLElytraItem;
+import org.betterx.bclib.items.elytra.BCLElytraUtils;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.player.AbstractClientPlayer;
@@ -31,9 +32,21 @@ public class CapeLayerMixin {
             float l,
             CallbackInfo info
     ) {
+        // vanilla only hides the cape for Items.ELYTRA; do the same for every custom elytra (armored AND crystalite,
+        // quiqueck/BetterEnd#295), including one worn in an elytra slot provided by an integration (e.g. Trinkets)
         ItemStack itemStack = abstractClientPlayer.getItemBySlot(EquipmentSlot.CHEST);
-        if (itemStack.getItem() instanceof ArmoredElytra) {
+        if (itemStack.getItem() instanceof BCLElytraItem) {
             info.cancel();
+            return;
+        }
+        if (BCLElytraUtils.slotProvider != null) {
+            ItemStack elytra = BCLElytraUtils.slotProvider.getElytra(
+                    abstractClientPlayer,
+                    abstractClientPlayer::getItemBySlot
+            );
+            if (elytra != null && elytra.getItem() instanceof BCLElytraItem) {
+                info.cancel();
+            }
         }
     }
 }

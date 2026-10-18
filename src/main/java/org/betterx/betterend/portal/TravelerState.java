@@ -2,6 +2,8 @@ package org.betterx.betterend.portal;
 
 import org.betterx.betterend.BetterEnd;
 import org.betterx.betterend.advancements.BECriteria;
+import org.betterx.betterend.blocks.EndPortalBlock;
+import org.betterx.betterend.registry.EndPortals;
 
 import net.minecraft.BlockUtil;
 import net.minecraft.client.player.LocalPlayer;
@@ -11,9 +13,11 @@ import net.minecraft.network.protocol.game.*;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.level.TicketType;
 import net.minecraft.server.players.PlayerList;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.BiomeManager;
 import net.minecraft.world.level.block.LevelEvent;
@@ -36,6 +40,19 @@ public final class TravelerState {
     private BlockPos portalEntrancePos;
     private boolean isInsidePortal;
     private int portalTime;
+    /**
+     * Where the last trip through an Eternal Portal ended (dimension and center of the arrival portal), and the
+     * portal it started from. Several rituals can share one exit; walking back through it leads to the portal this
+     * entity came from.
+     */
+    @Nullable
+    private EternalPortalLinks.Link arrivedAt;
+    @Nullable
+    private EternalPortalLinks.Link cameFrom;
+    @Nullable
+    private EternalPortalLinks.Link pendingArrival;
+    @Nullable
+    private EternalPortalLinks.Link pendingDeparture;
 
     public TravelerState(Entity entity) {
         this.entity = entity;
@@ -78,12 +95,10 @@ public final class TravelerState {
             final int waitTimer = entity.getPortalWaitTime();
             final ServerLevel sourceDimension = (ServerLevel) this.level();
 
-            MinecraftServer minecraftServer = sourceDimension.getServer();
-            ServerLevel targetDimension = minecraftServer.getLevel(this.level().dimension() == Level.END
-                    ? Level.OVERWORLD
-                    : Level.END);
+            ServerLevel targetDimension = this.getTargetDimension(sourceDimension);
 
-            if (targetDimension != null && !entity.isPassenger() && this.portalTime++ >= waitTimer) {
+            if (targetDimension != null && targetDimension != sourceDimension
+                    && !entity.isPassenger() && this.portalTime++ >= waitTimer) {
                 this.level().getProfiler().push("end_portal");
                 this.portalTime = waitTimer;
                 entity.setPortalCooldown();
@@ -102,7 +117,27 @@ public final class TravelerState {
         }
     }
 
+    /**
+     * Eternal portals outside the End always lead to the End. Inside the End, the portal id stored in the
+     * portal block (picked by the key item of the ritual) selects the dimension configured in
+     * {@code portals.json}, so a portal keyed to the Nether really leads to the Nether.
+     */
     @Nullable
+    private ServerLevel getTargetDimension(ServerLevel sourceDimension) {
+        final MinecraftServer server = sourceDimension.getServer();
+        if (sourceDimension.dimension() != Level.END) {
+            return server.getLevel(Level.END);
+        }
+        int portalId = -1;
+        if (this.portalEntrancePos != null) {
+            final BlockState state = sourceDimension.getBlockState(this.portalEntrancePos);
+            if (state.hasProperty(EndPortalBlock.PORTAL)) {
+                portalId = state.getValue(EndPortalBlock.PORTAL);
+            }
+        }
+        return EndPortals.getWorld(server, portalId);
+    }
+
     public void changeDimension(ServerLevel targetLevel) {
         if (!(this.level() instanceof ServerLevel) || this.entity.isRemoved()) {
             return;
@@ -124,12 +159,14 @@ public final class TravelerState {
     }
 
     private void teleportEntity(ServerLevel serverLevel, PortalInfo portalInfo) {
-        final boolean targetIsEnd = serverLevel.dimension().equals(Level.END);
-        final MinecraftServer server = serverLevel.getServer();
-        final ServerLevel destination = targetIsEnd ? server.getLevel(Level.END) : server.getLevel(Level.OVERWORLD);
+        final EternalPortalLinks.Link arrival = this.pendingArrival;
+        final EternalPortalLinks.Link departure = this.pendingDeparture;
+        this.pendingArrival = null;
+        this.pendingDeparture = null;
+        Entity arrived = entity;
         if (entity instanceof ServerPlayer sp && sp.isCreative()) {
             sp.teleportTo(
-                    destination, portalInfo.pos.x + 0.5, portalInfo.pos.y, portalInfo.pos.z + 0.5,
+                    serverLevel, portalInfo.pos.x + 0.5, portalInfo.pos.y, portalInfo.pos.z + 0.5,
                     entity.getYRot() + 180, entity.getXRot()
             );
             BECriteria.PORTAL_TRAVEL.trigger(sp);
@@ -138,10 +175,14 @@ public final class TravelerState {
                 BECriteria.PORTAL_TRAVEL.trigger(sp);
                 travelToDimension(sp, serverLevel, portalInfo);
             } else {
-                sendToDimension(entity, serverLevel, portalInfo);
+                arrived = sendToDimension(entity, serverLevel, portalInfo);
             }
 
             entity.setPortalCooldown();
+        }
+        if (arrived instanceof TravelingEntity te && te.be_getTravelerState() != null) {
+            te.be_getTravelerState().arrivedAt = arrival;
+            te.be_getTravelerState().cameFrom = departure;
         }
     }
 
@@ -252,10 +293,23 @@ public final class TravelerState {
         if (this.level().dimension() != Level.END && !toEnd) {
             return null;
         }
+        if (this.portalEntrancePos == null) {
+            return null;
+        }
         final WorldBorder worldBorder = targetLevel.getWorldBorder();
         final BlockPos startingPos = PortalBuilder.getStartingPos(this.level(), targetLevel, entity, worldBorder);
 
-        return this.getExitPortal(targetLevel, startingPos, toEnd, worldBorder).map(foundRectangle -> {
+        final BlockPos entranceCenter = this.getEntranceCenter();
+        return this.findLinkedPortal(targetLevel, entranceCenter)
+                   .or(() -> this.getExitPortal(targetLevel, startingPos, toEnd, worldBorder))
+                   .map(foundRectangle -> {
+            this.pendingArrival = new EternalPortalLinks.Link(
+                    targetLevel.dimension(),
+                    PortalBuilder.getPortalCenter(targetLevel, foundRectangle)
+            );
+            this.pendingDeparture = entranceCenter == null
+                    ? null
+                    : new EternalPortalLinks.Link(this.level().dimension(), entranceCenter);
             Vec3 vec3;
             Direction.Axis axis;
             BlockState blockState = this.level().getBlockState(this.portalEntrancePos);
@@ -279,6 +333,60 @@ public final class TravelerState {
                     this.entity, entity.getDeltaMovement(), entity.getYRot(), entity.getXRot()
             );
         }).orElse(null);
+    }
+
+    /**
+     * The portal that the Eternal Portal the entity stands in is linked to. Exits to the Nether are placed around
+     * the 8:1 scaled position, often some blocks away from it; scaled back up, that offset is far larger than the
+     * search radius of {@link #getExitPortal}. So the way back follows the stored link to the portal the exit was
+     * built for (#329). Rituals activated before links were stored add their links when their chunk loads.
+     */
+    private Optional<BlockUtil.FoundRectangle> findLinkedPortal(
+            ServerLevel targetLevel,
+            @Nullable BlockPos sourceCenter
+    ) {
+        if (sourceCenter == null || !(this.level() instanceof ServerLevel sourceLevel)) return Optional.empty();
+
+        // Back through the portal this entity arrived at: return to the portal it came from
+        if (this.cameFrom != null && this.arrivedAt != null
+                && this.arrivedAt.equals(new EternalPortalLinks.Link(sourceLevel.dimension(), sourceCenter))) {
+            final Optional<BlockUtil.FoundRectangle> back = this.getLinkedPortal(targetLevel, sourceCenter, this.cameFrom);
+            if (back.isPresent()) return back;
+        }
+
+        return this.getLinkedPortal(targetLevel, sourceCenter, EternalPortalLinks.get(sourceLevel).get(sourceCenter));
+    }
+
+    private Optional<BlockUtil.FoundRectangle> getLinkedPortal(
+            ServerLevel targetLevel,
+            BlockPos sourceCenter,
+            @Nullable EternalPortalLinks.Link link
+    ) {
+        if (link == null || !link.dimension().equals(targetLevel.dimension())) return Optional.empty();
+
+        final BlockPos targetCenter = link.center();
+        targetLevel.getChunkSource()
+                   .addRegionTicket(TicketType.PORTAL, new ChunkPos(targetCenter), 3, targetCenter);
+        if (!targetLevel.getBlockState(targetCenter).is(PortalBuilder.PORTAL)) {
+            BetterEnd.LOGGER.warning(
+                    "The Eternal Portal at {} linked to {} in {} no longer exists, searching for another one",
+                    sourceCenter, targetCenter, targetLevel.dimension().location()
+            );
+            return Optional.empty();
+        }
+        return Optional.of(PortalBuilder.getPortalRectangle(targetLevel, targetCenter));
+    }
+
+    /**
+     * The center of the Eternal Portal the entity stands in, or {@code null} if it is not in one anymore.
+     */
+    @Nullable
+    private BlockPos getEntranceCenter() {
+        if (!this.level().getBlockState(this.portalEntrancePos).is(PortalBuilder.PORTAL)) return null;
+        return PortalBuilder.getPortalCenter(
+                this.level(),
+                PortalBuilder.getPortalRectangle(this.level(), this.portalEntrancePos)
+        );
     }
 
     protected Optional<BlockUtil.FoundRectangle> getExitPortal(

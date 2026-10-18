@@ -11,6 +11,7 @@
     "CraftingMenuMixin",
     "EndCityFeatureMixin",
     "EndDragonFightMixin",
+    "EndIslandDensityFunctionMixin",
     "EnderManMixin",
     "EndPodiumFeatureMixin",
     "EndSpikeMixin",
@@ -27,7 +28,6 @@
     "ServerPlayerMixin",
     "SlimeMixin",
     "SpikeFeatureMixin",
-    "WorldGenRegionMixin",
     "portal.EntityMixin"
   ],
   "injectors": {

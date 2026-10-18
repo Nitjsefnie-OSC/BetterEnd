@@ -32,6 +32,7 @@ import net.fabricmc.api.Environment;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonSyntaxException;
 
 import java.util.Arrays;
 
@@ -272,16 +273,18 @@ public class InfusionRecipe implements Recipe<InfusionRitual>, UnknownReceipBook
                         if (res == null) return Ingredient.EMPTY;
                         return res;
                     } else {
-                        final Ingredient res = Ingredient.of(ItemUtil.fromJsonRecipeWithNBT(o));
-                        if (res == null) return Ingredient.EMPTY;
-                        return res;
+                        final ItemStack stack = ItemUtil.fromJsonRecipeWithNBT(o);
+                        if (stack == null) {
+                            throw new JsonSyntaxException("Unknown catalyst item for " + key + ": " + el);
+                        }
+                        return Ingredient.of(stack);
                     }
                 } else if (el.isJsonArray()) {
                     //this is an Ingredient-Array, so read as such
                     final Ingredient res = Ingredient.fromJson(el);
                     if (res == null) return Ingredient.EMPTY;
                     return res;
-                } else if (obj.isJsonPrimitive()) {
+                } else if (el.isJsonPrimitive()) {
                     String s = GsonHelper.getAsString(obj, key, "");
                     ItemStack catalyst = ItemUtil.fromStackString(s);
                     return (catalyst != null && !catalyst.isEmpty())

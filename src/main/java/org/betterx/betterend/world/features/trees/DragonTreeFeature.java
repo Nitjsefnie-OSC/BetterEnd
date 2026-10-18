@@ -6,6 +6,7 @@ import org.betterx.bclib.sdf.SDF;
 import org.betterx.bclib.sdf.operator.*;
 import org.betterx.bclib.sdf.primitive.SDFSphere;
 import org.betterx.bclib.util.BlocksHelper;
+import org.betterx.bclib.util.GenerationArea;
 import org.betterx.bclib.util.MHelper;
 import org.betterx.bclib.util.SplineHelper;
 import org.betterx.betterend.noise.OpenSimplexNoise;
@@ -112,7 +113,7 @@ public class DragonTreeFeature extends DefaultFeature {
             SplineHelper.rotateSpline(branch, angle);
             SplineHelper.scale(branch, scale);
             Vector3f last = branch.get(branch.size() - 1);
-            if (world.getBlockState(pos.offset((int) last.x(), (int) last.y(), (int) last.z()))
+            if (GenerationArea.getBlockState(world, pos.offset((int) last.x(), (int) last.y(), (int) last.z()))
                      .is(CommonBlockTags.GEN_END_STONES)) {
                 SplineHelper.fillSpline(
                         branch,
@@ -192,7 +193,7 @@ public class DragonTreeFeature extends DefaultFeature {
                 );
                 boolean place = true;
                 for (Direction d : Direction.values()) {
-                    BlockState state = world.getBlockState(p.relative(d));
+                    BlockState state = GenerationArea.getBlockState(world, p.relative(d));
                     if (!EndBlocks.DRAGON_TREE.isTreeLog(state) && !state.is(EndBlocks.DRAGON_TREE_LEAVES)) {
                         place = false;
                         break;

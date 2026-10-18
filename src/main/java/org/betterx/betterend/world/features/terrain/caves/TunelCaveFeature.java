@@ -59,6 +59,7 @@ public class TunelCaveFeature extends EndCaveFeature {
         OpenSimplexNoise noiseV = new OpenSimplexNoise(rand.nextInt());
         OpenSimplexNoise noiseD = new OpenSimplexNoise(rand.nextInt());
 
+        final CaveSession session = session(world);
         Set<BlockPos> positions = Sets.newConcurrentHashSet();
 
         float a = hasCaves(world, new BlockPos(x1, 0, z1)) ? 1F : 0F;
@@ -93,7 +94,7 @@ public class TunelCaveFeature extends EndCaveFeature {
                     ) * 20) * 0.1F) * 0.9F;
                     float dist = (float) noiseD.eval(pos.getX() * 0.1, y * 0.1, pos.getZ() * 0.1) * 0.12F;
                     val = (val + vert * vert + dist) + density + gradient;
-                    if (val < 0.15 && world.getBlockState(pos).is(CommonBlockTags.GEN_END_STONES) && noWaterNear(
+                    if (val < 0.15 && session.isCaveStone(world.getBlockState(pos), pos) && noWaterNear(
                             world,
                             pos
                     )) {
@@ -102,7 +103,10 @@ public class TunelCaveFeature extends EndCaveFeature {
                 }
             }
         });
-        positions.forEach(bpos -> BlocksHelper.setWithoutUpdate(world, bpos, CAVE_AIR));
+        positions.forEach(bpos -> {
+            BlocksHelper.setWithoutUpdate(world, bpos, CAVE_AIR);
+            session.markCarved(bpos);
+        });
 
         return positions;
     }
@@ -137,7 +141,7 @@ public class TunelCaveFeature extends EndCaveFeature {
             return false;
         }
 
-        Set<BlockPos> caveBlocks = generate(world, pos, random);
+        Set<BlockPos> caveBlocks = inPositionOrder(generate(world, pos, random));
         if (caveBlocks.isEmpty()) {
             return false;
         }
@@ -279,7 +283,7 @@ public class TunelCaveFeature extends EndCaveFeature {
     }
 
     protected boolean hasCavesInBiome(WorldGenLevel world, BlockPos pos) {
-        Holder<Biome> biome = world.getBiome(pos);
+        Holder<Biome> biome = getGeneratedBiome(world, pos);
         BCLBiome bclBiome = BiomeAPI.getBiome(biome);
         if (bclBiome instanceof EndBiome endBiome)
             return endBiome.hasCaves();

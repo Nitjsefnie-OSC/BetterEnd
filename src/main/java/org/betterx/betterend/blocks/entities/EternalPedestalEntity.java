@@ -5,6 +5,7 @@ import org.betterx.betterend.rituals.EternalRitual;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 
@@ -32,6 +33,10 @@ public class EternalPedestalEntity extends PedestalBlockEntity {
         super.setLevel(level);
         if (hasRitual()) {
             linkedRitual.setWorld(level);
+            // Rituals activated before portal links were stored get linked as soon as their chunk loads (#329)
+            if (level instanceof ServerLevel serverLevel && serverLevel.getServer().isSameThread()) {
+                linkedRitual.registerLinks();
+            }
         }
     }
 

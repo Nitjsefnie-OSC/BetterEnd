@@ -7,7 +7,6 @@ import org.betterx.betterend.BetterEnd;
 import org.betterx.betterend.blocks.*;
 import org.betterx.betterend.blocks.basis.*;
 import org.betterx.betterend.complexmaterials.*;
-import org.betterx.betterend.config.Configs;
 import org.betterx.betterend.item.material.EndArmorMaterial;
 import org.betterx.betterend.item.material.EndToolMaterial;
 import org.betterx.worlds.together.tag.v3.CommonBlockTags;
@@ -26,7 +25,7 @@ import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 
 public class EndBlocks {
-    private static final BlockRegistry REGISTRY = new BlockRegistry(Configs.BLOCK_CONFIG);
+    private static final BlockRegistry REGISTRY = new BlockRegistry();
 
     // Terrain //
     public static final Block ENDSTONE_DUST = registerBlock("endstone_dust", new EndstoneDustBlock());
@@ -762,9 +761,6 @@ public class EndBlocks {
     }
 
     public static Block registerBlock(ResourceLocation id, Block block, TagKey<Block>... tags) {
-        if (!Configs.BLOCK_CONFIG.getBooleanRoot(id.getPath(), true)) {
-            return block;
-        }
         getBlockRegistry().register(id, block);
         TagManager.BLOCKS.add(block, tags);
         return block;

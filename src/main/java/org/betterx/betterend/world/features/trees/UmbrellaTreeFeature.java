@@ -5,6 +5,7 @@ import org.betterx.bclib.sdf.SDF;
 import org.betterx.bclib.sdf.operator.*;
 import org.betterx.bclib.sdf.primitive.SDFSphere;
 import org.betterx.bclib.util.BlocksHelper;
+import org.betterx.bclib.util.GenerationArea;
 import org.betterx.bclib.util.MHelper;
 import org.betterx.bclib.util.SplineHelper;
 import org.betterx.betterend.blocks.UmbrellaTreeClusterBlock;
@@ -126,7 +127,7 @@ public class UmbrellaTreeFeature extends DefaultFeature {
         makeRoots(world, pos, (size * 0.5F + 3) * scale, random, wood);
 
         for (Center c : centers) {
-            if (!world.getBlockState(new BlockPos((int) c.px, (int) c.py, (int) c.pz)).isAir()) {
+            if (!GenerationArea.getBlockState(world, new BlockPos((int) c.px, (int) c.py, (int) c.pz)).isAir()) {
                 count = MHelper.floor(MHelper.randRange(5F, 10F, random) * scale);
                 float startAngle = random.nextFloat() * MHelper.PI2;
                 for (int i = 0; i < count; i++) {
@@ -152,7 +153,7 @@ public class UmbrellaTreeFeature extends DefaultFeature {
             SplineHelper.rotateSpline(branch, angle);
             SplineHelper.scale(branch, scale);
             Vector3f last = branch.get(branch.size() - 1);
-            if (world.getBlockState(pos.offset((int) last.x(), (int) last.y(), (int) last.z()))
+            if (GenerationArea.getBlockState(world, pos.offset((int) last.x(), (int) last.y(), (int) last.z()))
                      .is(CommonBlockTags.GEN_END_STONES)) {
                 SplineHelper.fillSplineForce(branch, world, wood, pos, REPLACE);
             }
@@ -186,6 +187,7 @@ public class UmbrellaTreeFeature extends DefaultFeature {
 
     private void makeFruits(WorldGenLevel world, double px, double py, double pz, BlockState fruit) {
         MutableBlockPos mut = new MutableBlockPos().set(px, py, pz);
+        if (!GenerationArea.contains(world, mut)) return;
         for (int i = 0; i < 8; i++) {
             mut.move(Direction.DOWN);
             if (world.isEmptyBlock(mut)) {

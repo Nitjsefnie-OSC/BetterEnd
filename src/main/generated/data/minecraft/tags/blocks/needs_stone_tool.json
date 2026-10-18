@@ -1,0 +1,8 @@
+{
+  "replace": false,
+  "values": [
+    "betterend:amber_ore",
+    "betterend:ender_ore",
+    "betterend:thallasium_ore"
+  ]
+}

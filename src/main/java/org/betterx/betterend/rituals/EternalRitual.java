@@ -8,6 +8,7 @@ import org.betterx.betterend.blocks.EndPortalBlock;
 import org.betterx.betterend.blocks.RunedFlavolite;
 import org.betterx.betterend.blocks.entities.EternalPedestalEntity;
 import org.betterx.betterend.network.RitualUpdate;
+import org.betterx.betterend.portal.EternalPortalLinks;
 import org.betterx.betterend.portal.PortalBuilder;
 import org.betterx.betterend.registry.EndBlocks;
 import org.betterx.betterend.registry.EndPortals;
@@ -19,8 +20,10 @@ import net.minecraft.core.particles.BlockParticleOption;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -229,6 +232,7 @@ public class EternalRitual {
             }
             willActivate = false;
             active = true;
+            registerLinks();
             updateActiveStateOnPedestals();
         } catch (Exception ex) {
             BetterEnd.LOGGER.error("Create End portals error.", ex);
@@ -246,18 +250,20 @@ public class EternalRitual {
             ServerLevel targetLevel = (ServerLevel) getTargetWorld(portalId);
             PortalBuilder builder = new PortalBuilder(world, targetLevel);
             final WorldBorder worldBorder = targetLevel.getWorldBorder();
+            // Search for an existing exit at the same spot where a new one would be built and where
+            // travellers will look for it.
+            final BlockPos startingPos = PortalBuilder.getStartingPos(sourceWorld, targetLevel, player, worldBorder);
             final Optional<BlockUtil.FoundRectangle> foundRectangle = builder.findPortalAround(
-                    this.center,
+                    startingPos,
                     worldBorder
             );
 
-            if (!foundRectangle.isPresent()) {
+            if (foundRectangle.isPresent()) {
+                // Remember the existing exit, otherwise the ritual can neither be saved nor disabled
+                this.exit = builder.getPortalCenter(foundRectangle.get());
+            } else {
                 Optional<BlockPos> centerPos;
-                centerPos = builder.createPortal(
-                        PortalBuilder.getStartingPos(sourceWorld, targetLevel, player, worldBorder),
-                        axis,
-                        portalId
-                );
+                centerPos = builder.createPortal(startingPos, axis, portalId);
                 centerPos.ifPresent(blockPos -> this.exit = blockPos);
             }
         }
@@ -353,8 +359,18 @@ public class EternalRitual {
 
     public void disablePortal(int state) {
         if (!active || isInvalid()) return;
-        if (!world.isClientSide())
-            removePortal(getTargetWorld(state), exit);
+        if (!world.isClientSide()) {
+            final Level targetWorld = getTargetWorld(state);
+            if (world instanceof ServerLevel sourceLevel) {
+                EternalPortalLinks.unlink(
+                        sourceLevel,
+                        center,
+                        targetWorld instanceof ServerLevel targetLevel ? targetLevel : null,
+                        exit
+                );
+            }
+            removePortal(targetWorld, exit);
+        }
         removePortal(world, center);
     }
 
@@ -385,6 +401,24 @@ public class EternalRitual {
         });
         this.active = false;
         updateActiveStateOnPedestals();
+    }
+
+    /**
+     * Stores the link between this ritual's portal and its exit, so entities find the way back from the exit even
+     * when the exit was built away from the (Nether 8:1) scaled position (#329). Also links rituals that were
+     * activated before links were stored.
+     *
+     * @return the link from this ritual's portal to its exit, or {@code null} if the ritual has no active exit
+     */
+    @Nullable
+    public EternalPortalLinks.Link registerLinks() {
+        if (!active || center == null || exit == null || targetWorldId == null) return null;
+        if (!(world instanceof ServerLevel sourceLevel)) return null;
+        final ServerLevel targetLevel = sourceLevel.getServer()
+                                                   .getLevel(ResourceKey.create(Registries.DIMENSION, targetWorldId));
+        if (targetLevel == null || targetLevel == sourceLevel) return null;
+        EternalPortalLinks.link(sourceLevel, center, targetLevel, exit);
+        return new EternalPortalLinks.Link(targetLevel.dimension(), exit);
     }
 
     private Level getTargetWorld(int state) {

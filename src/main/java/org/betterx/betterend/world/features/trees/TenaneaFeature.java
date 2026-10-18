@@ -7,6 +7,7 @@ import org.betterx.bclib.sdf.SDF;
 import org.betterx.bclib.sdf.operator.*;
 import org.betterx.bclib.sdf.primitive.SDFSphere;
 import org.betterx.bclib.util.BlocksHelper;
+import org.betterx.bclib.util.GenerationArea;
 import org.betterx.bclib.util.MHelper;
 import org.betterx.bclib.util.SplineHelper;
 import org.betterx.betterend.blocks.basis.FurBlock;
@@ -118,8 +119,11 @@ public class TenaneaFeature extends DefaultFeature {
                 info.setState(EndBlocks.TENANEA.getBark().defaultBlockState());
             }
 
-            MHelper.shuffle(DIRECTIONS, random);
-            for (Direction d : DIRECTIONS) {
+            // Shuffle a copy: the static array is shared by all worldgen threads, and shuffling it in place from
+            // several threads at once (C2ME) duplicates entries and loses others for good.
+            final Direction[] shuffled = DIRECTIONS.clone();
+            MHelper.shuffle(shuffled, random);
+            for (Direction d : shuffled) {
                 if (info.getState(d).isAir()) {
                     info.setBlockPos(info.getPos().relative(d), outer.setValue(FurBlock.FACING, d));
                 }
@@ -155,6 +159,8 @@ public class TenaneaFeature extends DefaultFeature {
         BlocksHelper.setWithoutUpdate(world, pos, EndBlocks.TENANEA.getBark());
 
         support.forEach((bpos) -> {
+            // supports below leaves outside the chunks this feature may access are left out
+            if (!GenerationArea.contains(world, bpos)) return;
             BlockState state = world.getBlockState(bpos);
             if (state.isAir() || state.is(EndBlocks.TENANEA_OUTER_LEAVES)) {
                 int count = MHelper.randRange(3, 8, random);

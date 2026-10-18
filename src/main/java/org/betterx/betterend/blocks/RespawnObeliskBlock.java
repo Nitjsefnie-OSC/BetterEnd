@@ -41,6 +41,9 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+
 import net.fabricmc.fabric.api.object.builder.v1.block.FabricBlockSettings;
 
 import com.google.common.collect.Lists;
@@ -156,11 +159,13 @@ public class RespawnObeliskBlock extends BaseBlock.Stone implements CustomColorP
     }
 
     @Override
+    @Environment(EnvType.CLIENT)
     public BlockColor getProvider() {
         return ((CustomColorProvider) EndBlocks.AURORA_CRYSTAL).getProvider();
     }
 
     @Override
+    @Environment(EnvType.CLIENT)
     public ItemColor getItemProvider() {
         return (stack, tintIndex) -> {
             return ColorUtil.color(255, 255, 255);

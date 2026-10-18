@@ -2,6 +2,7 @@ package org.betterx.betterend.world.features.terrain;
 
 import org.betterx.bclib.api.v2.levelgen.features.features.DefaultFeature;
 import org.betterx.bclib.util.BlocksHelper;
+import org.betterx.bclib.util.GenerationArea;
 import org.betterx.bclib.util.MHelper;
 import org.betterx.betterend.blocks.EndBlockProperties;
 import org.betterx.betterend.blocks.SulphurCrystalBlock;
@@ -83,11 +84,16 @@ public class SulphuricCaveFeature extends DefaultFeature {
         Set<BlockPos> brimstone = Sets.newHashSet();
         BlockState rock = EndBlocks.SULPHURIC_ROCK.stone.defaultBlockState();
         int waterLevel = pos.getY() + MHelper.randRange(MHelper.floor(radius * 0.8), radius, random);
-        for (int x = x1; x <= x2; x++) {
+        // Only touch the chunks this feature may access; other worldgen threads may be generating the ones further away
+        final int areaX1 = Math.max(x1, GenerationArea.minX(world));
+        final int areaX2 = Math.min(x2, GenerationArea.maxX(world));
+        final int areaZ1 = Math.max(z1, GenerationArea.minZ(world));
+        final int areaZ2 = Math.min(z2, GenerationArea.maxZ(world));
+        for (int x = areaX1; x <= areaX2; x++) {
             int xsq = x - pos.getX();
             xsq *= xsq;
             mut.setX(x);
-            for (int z = z1; z <= z2; z++) {
+            for (int z = areaZ1; z <= areaZ2; z++) {
                 int zsq = z - pos.getZ();
                 zsq *= zsq;
                 mut.setZ(z);
@@ -139,7 +145,7 @@ public class SulphuricCaveFeature extends DefaultFeature {
                         mut.getX() - pos.getX(),
                         mut.getZ() - pos.getZ()
                 )) + random.nextInt(2);
-                if (dist > 0) {
+                if (dist > 0 && GenerationArea.contains(world, mut, 1)) {
                     state = world.getBlockState(mut);
                     while (!state.getFluidState().isEmpty() || state.is(CommonBlockTags.WATER_PLANT)) {
                         mut.setY(mut.getY() - 1);
@@ -149,8 +155,11 @@ public class SulphuricCaveFeature extends DefaultFeature {
                                                                           .is(EndBlocks.HYDROTHERMAL_VENT)) {
                         for (int j = 0; j <= dist; j++) {
                             BlocksHelper.setWithoutUpdate(world, mut, EndBlocks.SULPHURIC_ROCK.stone);
-                            MHelper.shuffle(HORIZONTAL, random);
-                            for (Direction dir : HORIZONTAL) {
+                            // Shuffle a copy: the static array is shared by all worldgen threads, and shuffling it in place from
+                            // several threads at once (C2ME) duplicates entries and loses others for good.
+                            final Direction[] shuffled = HORIZONTAL.clone();
+                            MHelper.shuffle(shuffled, random);
+                            for (Direction dir : shuffled) {
                                 BlockPos p = mut.relative(dir);
                                 if (random.nextBoolean() && world.getBlockState(p).is(Blocks.WATER)) {
                                     BlocksHelper.setWithoutUpdate(
@@ -207,7 +216,7 @@ public class SulphuricCaveFeature extends DefaultFeature {
 
     private BlockState getBrimstone(WorldGenLevel world, BlockPos pos) {
         for (Direction dir : BlocksHelper.DIRECTIONS) {
-            if (world.getBlockState(pos.relative(dir)).is(Blocks.WATER)) {
+            if (GenerationArea.getBlockState(world, pos.relative(dir)).is(Blocks.WATER)) {
                 return EndBlocks.BRIMSTONE.defaultBlockState().setValue(EndBlockProperties.ACTIVE, true);
             }
         }
@@ -217,7 +226,7 @@ public class SulphuricCaveFeature extends DefaultFeature {
     private void makeShards(WorldGenLevel world, BlockPos pos, RandomSource random) {
         for (Direction dir : BlocksHelper.DIRECTIONS) {
             BlockPos side;
-            if (random.nextInt(16) == 0 && world.getBlockState((side = pos.relative(dir))).is(Blocks.WATER)) {
+            if (random.nextInt(16) == 0 && GenerationArea.getBlockState(world, (side = pos.relative(dir))).is(Blocks.WATER)) {
                 BlockState state = EndBlocks.SULPHUR_CRYSTAL.defaultBlockState()
                                                             .setValue(SulphurCrystalBlock.WATERLOGGED, true)
                                                             .setValue(SulphurCrystalBlock.FACING, dir)

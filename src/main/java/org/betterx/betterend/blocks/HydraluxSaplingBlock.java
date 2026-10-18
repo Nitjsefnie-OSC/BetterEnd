@@ -3,10 +3,10 @@ package org.betterx.betterend.blocks;
 import org.betterx.bclib.behaviours.interfaces.BehaviourWaterPlantSapling;
 import org.betterx.bclib.blocks.UnderwaterPlantWithAgeBlock;
 import org.betterx.bclib.interfaces.SurvivesOnSpecialGround;
-import org.betterx.bclib.util.BlocksHelper;
 import org.betterx.bclib.util.MHelper;
 import org.betterx.betterend.interfaces.survives.SurvivesOnSulphuricRock;
 import org.betterx.betterend.registry.EndBlocks;
+import org.betterx.betterend.util.GrowthPlacer;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.BlockPos.MutableBlockPos;
@@ -38,25 +38,20 @@ public class HydraluxSaplingBlock extends UnderwaterPlantWithAgeBlock implements
 
         mut.setY(pos.getY());
         BlockState state = EndBlocks.HYDRALUX.defaultBlockState();
-        BlocksHelper.setWithoutUpdate(
-                world,
-                pos,
+        GrowthPlacer placer = new GrowthPlacer(world);
+        placer.set(pos,
                 state.setValue(EndBlockProperties.HYDRALUX_SHAPE, EndBlockProperties.HydraluxShape.ROOTS)
         );
         for (int i = 1; i < h - 2; i++) {
             mut.setY(pos.getY() + i);
-            BlocksHelper.setWithoutUpdate(
-                    world,
-                    mut,
+            placer.set(mut,
                     state.setValue(EndBlockProperties.HYDRALUX_SHAPE, EndBlockProperties.HydraluxShape.VINE)
             );
         }
 
         mut.setY(mut.getY() + 1);
         boolean big = random.nextBoolean();
-        BlocksHelper.setWithoutUpdate(
-                world,
-                mut,
+        placer.set(mut,
                 state.setValue(
                         EndBlockProperties.HYDRALUX_SHAPE,
                         big
@@ -66,9 +61,7 @@ public class HydraluxSaplingBlock extends UnderwaterPlantWithAgeBlock implements
         );
 
         mut.setY(mut.getY() + 1);
-        BlocksHelper.setWithoutUpdate(
-                world,
-                mut,
+        placer.set(mut,
                 state.setValue(
                         EndBlockProperties.HYDRALUX_SHAPE,
                         big
@@ -76,6 +69,7 @@ public class HydraluxSaplingBlock extends UnderwaterPlantWithAgeBlock implements
                                 : EndBlockProperties.HydraluxShape.FLOWER_SMALL_TOP
                 )
         );
+        placer.notifyNeighbours();
     }
 
     @Override

@@ -2,6 +2,7 @@ package org.betterx.betterend.world.features.terrain;
 
 import org.betterx.bclib.api.v2.levelgen.features.features.DefaultFeature;
 import org.betterx.bclib.util.BlocksHelper;
+import org.betterx.bclib.util.GenerationArea;
 import org.betterx.bclib.util.MHelper;
 import org.betterx.betterend.noise.OpenSimplexNoise;
 import org.betterx.betterend.registry.EndBlocks;
@@ -69,12 +70,17 @@ public class EndLakeFeature extends DefaultFeature {
         int maxZ = blockPos.getZ() + dist2;
         int maskMinX = minX - 1;
         int maskMinZ = minZ - 1;
+        // Only touch the chunks this feature may access; other worldgen threads may be generating the ones further away
+        final int areaMinX = Math.max(minX, GenerationArea.minX(world));
+        final int areaMaxX = Math.min(maxX, GenerationArea.maxX(world));
+        final int areaMinZ = Math.max(minZ, GenerationArea.minZ(world));
+        final int areaMaxZ = Math.min(maxZ, GenerationArea.maxZ(world));
 
         boolean[][] mask = new boolean[maxX - minX + 3][maxZ - minZ + 3];
-        for (int x = minX; x <= maxX; x++) {
+        for (int x = areaMinX; x <= areaMaxX; x++) {
             POS.setX(x);
             int mx = x - maskMinX;
-            for (int z = minZ; z <= maxZ; z++) {
+            for (int z = areaMinZ; z <= areaMaxZ; z++) {
                 POS.setZ(z);
                 int mz = z - maskMinZ;
                 if (!mask[mx][mz]) {
@@ -96,12 +102,12 @@ public class EndLakeFeature extends DefaultFeature {
             }
         }
 
-        for (int x = minX; x <= maxX; x++) {
+        for (int x = areaMinX; x <= areaMaxX; x++) {
             POS.setX(x);
             int x2 = x - blockPos.getX();
             x2 *= x2;
             int mx = x - maskMinX;
-            for (int z = minZ; z <= maxZ; z++) {
+            for (int z = areaMinZ; z <= areaMaxZ; z++) {
                 POS.setZ(z);
                 int z2 = z - blockPos.getZ();
                 z2 *= z2;
@@ -157,12 +163,12 @@ public class EndLakeFeature extends DefaultFeature {
 
         double aspect = (radius / depth);
 
-        for (int x = blockPos.getX() - dist; x <= blockPos.getX() + dist; x++) {
+        for (int x = Math.max(blockPos.getX() - dist, areaMinX); x <= Math.min(blockPos.getX() + dist, areaMaxX); x++) {
             POS.setX(x);
             int x2 = x - blockPos.getX();
             x2 *= x2;
             int mx = x - maskMinX;
-            for (int z = blockPos.getZ() - dist; z <= blockPos.getZ() + dist; z++) {
+            for (int z = Math.max(blockPos.getZ() - dist, areaMinZ); z <= Math.min(blockPos.getZ() + dist, areaMaxZ); z++) {
                 POS.setZ(z);
                 int z2 = z - blockPos.getZ();
                 z2 *= z2;

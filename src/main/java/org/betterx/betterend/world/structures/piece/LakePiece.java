@@ -2,6 +2,7 @@ package org.betterx.betterend.world.structures.piece;
 
 import org.betterx.bclib.api.v2.levelgen.biomes.BiomeAPI;
 import org.betterx.bclib.util.BlocksHelper;
+import org.betterx.bclib.util.GenerationArea;
 import org.betterx.bclib.util.MHelper;
 import org.betterx.betterend.noise.OpenSimplexNoise;
 import org.betterx.betterend.registry.EndBlocks;
@@ -27,19 +28,19 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.ChunkGenerator;
-import net.minecraft.world.level.levelgen.Heightmap.Types;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.level.levelgen.structure.pieces.StructurePieceSerializationContext;
 import net.minecraft.world.level.material.FluidState;
 
-import com.google.common.collect.Maps;
-
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class LakePiece extends BasePiece {
     private static final BlockState ENDSTONE = Blocks.END_STONE.defaultBlockState();
     private static final BlockState WATER = Blocks.WATER.defaultBlockState();
-    private final Map<Integer, Byte> heightmap = Maps.newHashMap();
+    // Concurrent: a lake spans multiple chunks, and its piece is postProcess()'d by different worldgen worker
+    // threads for adjacent chunks at the same time (C2ME).
+    private final Map<Integer, Byte> heightmap = new ConcurrentHashMap<>();
     private OpenSimplexNoise noise;
     private BlockPos center;
     private float radius;
@@ -244,12 +245,12 @@ public class LakePiece extends BasePiece {
             return h;
         }
 
-        if (!BiomeAPI.getBiomeID(world.getBiome(pos)).equals(biomeID)) {
+        if (!BiomeAPI.getBiomeID(GenerationArea.getBiome(world, pos)).equals(biomeID)) {
             heightmap.put(p, (byte) 0);
             return 0;
         }
 
-        h = world.getHeight(Types.WORLD_SURFACE_WG, pos.getX(), pos.getZ());
+        h = worldgenSurfaceHeight(world, pos.getX(), pos.getZ());
         h = Mth.abs(h - center.getY());
         h = h < 8 ? 1 : 0;
 

@@ -10,6 +10,7 @@ import org.betterx.bclib.sdf.operator.SDFSmoothUnion;
 import org.betterx.bclib.sdf.operator.SDFTranslate;
 import org.betterx.bclib.sdf.primitive.SDFSphere;
 import org.betterx.bclib.util.BlocksHelper;
+import org.betterx.bclib.util.GenerationArea;
 import org.betterx.bclib.util.MHelper;
 import org.betterx.betterend.noise.OpenSimplexNoise;
 import org.betterx.betterend.registry.EndBiomes;
@@ -89,7 +90,9 @@ public class SpireFeature extends DefaultFeature {
         }).fillRecursive(world, center);
 
         support.forEach((bpos) -> {
-            BCLBiome biome = BiomeAPI.getBiome(world.getBiome(bpos));
+            // bushes outside the chunks this feature may access are left out
+            if (!GenerationArea.contains(world, bpos)) return;
+            BCLBiome biome = BiomeAPI.getBiome(GenerationArea.getBiome(world, bpos));
             if (!BCLBiomeRegistry.isEmptyBiome(biome) && biome.equals(EndBiomes.BLOSSOMING_SPIRES)) {
                 EndFeatures.TENANEA_BUSH.getFeature()
                                         .place(new FeaturePlaceContext<NoneFeatureConfiguration>(

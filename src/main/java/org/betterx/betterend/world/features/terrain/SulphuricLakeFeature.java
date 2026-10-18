@@ -2,6 +2,7 @@ package org.betterx.betterend.world.features.terrain;
 
 import org.betterx.bclib.api.v2.levelgen.features.features.DefaultFeature;
 import org.betterx.bclib.util.BlocksHelper;
+import org.betterx.bclib.util.GenerationArea;
 import org.betterx.bclib.util.MHelper;
 import org.betterx.betterend.blocks.EndBlockProperties;
 import org.betterx.betterend.blocks.SulphurCrystalBlock;
@@ -43,10 +44,11 @@ public class SulphuricLakeFeature extends DefaultFeature {
         double radius = MHelper.randRange(10.0, 20.0, random);
         int dist2 = MHelper.floor(radius * 1.5);
 
-        int minX = blockPos.getX() - dist2;
-        int maxX = blockPos.getX() + dist2;
-        int minZ = blockPos.getZ() - dist2;
-        int maxZ = blockPos.getZ() + dist2;
+        // Only touch the chunks this feature may access; other worldgen threads may be generating the ones further away
+        int minX = Math.max(blockPos.getX() - dist2, GenerationArea.minX(world));
+        int maxX = Math.min(blockPos.getX() + dist2, GenerationArea.maxX(world));
+        int minZ = Math.max(blockPos.getZ() - dist2, GenerationArea.minZ(world));
+        int maxZ = Math.min(blockPos.getZ() + dist2, GenerationArea.maxZ(world));
 
         Set<BlockPos> brimstone = Sets.newHashSet();
         for (int x = minX; x <= maxX; x++) {
@@ -98,7 +100,7 @@ public class SulphuricLakeFeature extends DefaultFeature {
                             brimstone.remove(POS);
                             for (Direction dir : BlocksHelper.HORIZONTAL) {
                                 BlockPos offseted = POS.relative(dir);
-                                if (world.getBlockState(offseted).is(CommonBlockTags.GEN_END_STONES)) {
+                                if (GenerationArea.getBlockState(world, offseted).is(CommonBlockTags.GEN_END_STONES)) {
                                     brimstone.add(offseted);
                                 }
                             }
@@ -107,7 +109,7 @@ public class SulphuricLakeFeature extends DefaultFeature {
                                 brimstone.remove(POS);
                                 for (Direction dir : BlocksHelper.HORIZONTAL) {
                                     BlockPos offseted = POS.relative(dir);
-                                    if (world.getBlockState(offseted).is(CommonBlockTags.GEN_END_STONES)) {
+                                    if (GenerationArea.getBlockState(world, offseted).is(CommonBlockTags.GEN_END_STONES)) {
                                         brimstone.add(offseted);
                                     }
                                 }
@@ -182,6 +184,7 @@ public class SulphuricLakeFeature extends DefaultFeature {
     }
 
     private void placeBrimstone(WorldGenLevel world, BlockPos pos, RandomSource random) {
+        if (!GenerationArea.contains(world, pos)) return;
         BlockState state = getBrimstone(world, pos);
         BlocksHelper.setWithoutUpdate(world, pos, state);
         if (state.getValue(EndBlockProperties.ACTIVE)) {
@@ -191,7 +194,7 @@ public class SulphuricLakeFeature extends DefaultFeature {
 
     private BlockState getBrimstone(WorldGenLevel world, BlockPos pos) {
         for (Direction dir : BlocksHelper.DIRECTIONS) {
-            if (world.getBlockState(pos.relative(dir)).is(Blocks.WATER)) {
+            if (GenerationArea.getBlockState(world, pos.relative(dir)).is(Blocks.WATER)) {
                 return EndBlocks.BRIMSTONE.defaultBlockState().setValue(EndBlockProperties.ACTIVE, true);
             }
         }
@@ -201,7 +204,7 @@ public class SulphuricLakeFeature extends DefaultFeature {
     private void makeShards(WorldGenLevel world, BlockPos pos, RandomSource random) {
         for (Direction dir : BlocksHelper.DIRECTIONS) {
             BlockPos side;
-            if (random.nextInt(16) == 0 && world.getBlockState((side = pos.relative(dir))).is(Blocks.WATER)) {
+            if (random.nextInt(16) == 0 && GenerationArea.getBlockState(world, (side = pos.relative(dir))).is(Blocks.WATER)) {
                 BlockState state = EndBlocks.SULPHUR_CRYSTAL.defaultBlockState()
                                                             .setValue(SulphurCrystalBlock.WATERLOGGED, true)
                                                             .setValue(SulphurCrystalBlock.FACING, dir)

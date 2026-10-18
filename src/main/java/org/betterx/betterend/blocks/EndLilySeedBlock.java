@@ -3,8 +3,8 @@ package org.betterx.betterend.blocks;
 import org.betterx.bclib.behaviours.interfaces.BehaviourWaterPlantSeed;
 import org.betterx.bclib.blocks.BlockProperties.TripleShape;
 import org.betterx.bclib.blocks.UnderwaterPlantWithAgeBlock;
-import org.betterx.bclib.util.BlocksHelper;
 import org.betterx.betterend.registry.EndBlocks;
+import org.betterx.betterend.util.GrowthPlacer;
 import org.betterx.worlds.together.tag.v3.CommonBlockTags;
 
 import net.minecraft.core.BlockPos;
@@ -17,25 +17,21 @@ public class EndLilySeedBlock extends UnderwaterPlantWithAgeBlock implements Beh
     @Override
     public void grow(WorldGenLevel world, RandomSource random, BlockPos pos) {
         if (canGrow(world, pos)) {
-            BlocksHelper.setWithoutUpdate(
-                    world,
-                    pos,
+            GrowthPlacer placer = new GrowthPlacer(world);
+            placer.set(pos,
                     EndBlocks.END_LILY.defaultBlockState().setValue(EndLilyBlock.SHAPE, TripleShape.BOTTOM)
             );
             BlockPos up = pos.above();
             while (world.getFluidState(up).isSource()) {
-                BlocksHelper.setWithoutUpdate(
-                        world,
-                        up,
+                placer.set(up,
                         EndBlocks.END_LILY.defaultBlockState().setValue(EndLilyBlock.SHAPE, TripleShape.MIDDLE)
                 );
                 up = up.above();
             }
-            BlocksHelper.setWithoutUpdate(
-                    world,
-                    up,
+            placer.set(up,
                     EndBlocks.END_LILY.defaultBlockState().setValue(EndLilyBlock.SHAPE, TripleShape.TOP)
             );
+            placer.notifyNeighbours();
         }
     }
 

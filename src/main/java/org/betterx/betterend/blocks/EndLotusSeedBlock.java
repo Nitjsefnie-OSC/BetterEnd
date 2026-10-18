@@ -5,6 +5,7 @@ import org.betterx.bclib.blocks.BlockProperties.TripleShape;
 import org.betterx.bclib.blocks.UnderwaterPlantWithAgeBlock;
 import org.betterx.bclib.util.BlocksHelper;
 import org.betterx.betterend.registry.EndBlocks;
+import org.betterx.betterend.util.GrowthPlacer;
 import org.betterx.worlds.together.tag.v3.CommonBlockTags;
 
 import net.minecraft.core.BlockPos;
@@ -19,6 +20,7 @@ public class EndLotusSeedBlock extends UnderwaterPlantWithAgeBlock implements Be
     @Override
     public void grow(WorldGenLevel world, RandomSource random, BlockPos pos) {
         if (canGrow(world, pos)) {
+            GrowthPlacer placer = new GrowthPlacer(world);
             BlockState startLeaf = EndBlocks.END_LOTUS_STEM.defaultBlockState().setValue(EndLotusStemBlock.LEAF, true);
             BlockState roots = EndBlocks.END_LOTUS_STEM.defaultBlockState()
                                                        .setValue(EndLotusStemBlock.SHAPE, TripleShape.BOTTOM)
@@ -26,11 +28,11 @@ public class EndLotusSeedBlock extends UnderwaterPlantWithAgeBlock implements Be
             BlockState stem = EndBlocks.END_LOTUS_STEM.defaultBlockState();
             BlockState flower = EndBlocks.END_LOTUS_FLOWER.defaultBlockState();
 
-            BlocksHelper.setWithoutUpdate(world, pos, roots);
+            placer.set(pos, roots);
             MutableBlockPos bpos = new MutableBlockPos().set(pos);
             bpos.setY(bpos.getY() + 1);
             while (world.getFluidState(bpos).isSource()) {
-                BlocksHelper.setWithoutUpdate(world, bpos, stem.setValue(EndLotusStemBlock.WATERLOGGED, true));
+                placer.set(bpos, stem.setValue(EndLotusStemBlock.WATERLOGGED, true));
                 bpos.setY(bpos.getY() + 1);
             }
 
@@ -39,27 +41,26 @@ public class EndLotusSeedBlock extends UnderwaterPlantWithAgeBlock implements Be
             Direction dir = BlocksHelper.randomHorizontal(random);
             BlockPos leafCenter = bpos.immutable().relative(dir);
             if (hasLeaf(world, leafCenter)) {
-                generateLeaf(world, leafCenter);
-                BlocksHelper.setWithoutUpdate(
-                        world,
-                        bpos,
+                generateLeaf(placer, leafCenter);
+                placer.set(bpos,
                         startLeaf.setValue(EndLotusStemBlock.SHAPE, shape).setValue(EndLotusStemBlock.FACING, dir)
                 );
             } else {
-                BlocksHelper.setWithoutUpdate(world, bpos, stem.setValue(EndLotusStemBlock.SHAPE, shape));
+                placer.set(bpos, stem.setValue(EndLotusStemBlock.SHAPE, shape));
             }
 
             bpos.setY(bpos.getY() + 1);
             for (int i = 1; i <= height; i++) {
                 if (!world.isEmptyBlock(bpos)) {
                     bpos.setY(bpos.getY() - 1);
-                    BlocksHelper.setWithoutUpdate(world, bpos, flower);
+                    placer.set(bpos, flower);
                     bpos.setY(bpos.getY() - 1);
                     stem = world.getBlockState(bpos);
-                    BlocksHelper.setWithoutUpdate(world, bpos, stem.setValue(EndLotusStemBlock.SHAPE, TripleShape.TOP));
+                    placer.set(bpos, stem.setValue(EndLotusStemBlock.SHAPE, TripleShape.TOP));
+                    placer.notifyNeighbours();
                     return;
                 }
-                BlocksHelper.setWithoutUpdate(world, bpos, stem);
+                placer.set(bpos, stem);
                 bpos.setY(bpos.getY() + 1);
             }
 
@@ -67,7 +68,7 @@ public class EndLotusSeedBlock extends UnderwaterPlantWithAgeBlock implements Be
                 bpos.setY(bpos.getY() - 1);
             }
 
-            BlocksHelper.setWithoutUpdate(world, bpos, flower);
+            placer.set(bpos, flower);
             bpos.setY(bpos.getY() - 1);
             stem = world.getBlockState(bpos);
             if (!stem.is(EndBlocks.END_LOTUS_STEM)) {
@@ -81,7 +82,8 @@ public class EndLotusSeedBlock extends UnderwaterPlantWithAgeBlock implements Be
                 stem = stem.setValue(EndLotusStemBlock.LEAF, true).setValue(EndLotusStemBlock.FACING, dir);
             }
 
-            BlocksHelper.setWithoutUpdate(world, bpos, stem.setValue(EndLotusStemBlock.SHAPE, TripleShape.TOP));
+            placer.set(bpos, stem.setValue(EndLotusStemBlock.SHAPE, TripleShape.TOP));
+            placer.notifyNeighbours();
         }
     }
 
@@ -94,14 +96,12 @@ public class EndLotusSeedBlock extends UnderwaterPlantWithAgeBlock implements Be
         return world.isEmptyBlock(bpos) && world.isEmptyBlock(bpos.above());
     }
 
-    private void generateLeaf(WorldGenLevel world, BlockPos pos) {
+    private void generateLeaf(GrowthPlacer placer, BlockPos pos) {
         MutableBlockPos p = new MutableBlockPos();
         BlockState leaf = EndBlocks.END_LOTUS_LEAF.defaultBlockState();
-        BlocksHelper.setWithoutUpdate(world, pos, leaf.setValue(EndLotusLeafBlock.SHAPE, TripleShape.BOTTOM));
+        placer.set(pos, leaf.setValue(EndLotusLeafBlock.SHAPE, TripleShape.BOTTOM));
         for (Direction move : BlocksHelper.HORIZONTAL) {
-            BlocksHelper.setWithoutUpdate(
-                    world,
-                    p.set(pos).move(move),
+            placer.set(p.set(pos).move(move),
                     leaf.setValue(EndLotusLeafBlock.HORIZONTAL_FACING, move)
                         .setValue(EndLotusLeafBlock.SHAPE, TripleShape.MIDDLE)
             );
@@ -109,9 +109,7 @@ public class EndLotusSeedBlock extends UnderwaterPlantWithAgeBlock implements Be
         for (int i = 0; i < 4; i++) {
             Direction d1 = BlocksHelper.HORIZONTAL[i];
             Direction d2 = BlocksHelper.HORIZONTAL[(i + 1) & 3];
-            BlocksHelper.setWithoutUpdate(
-                    world,
-                    p.set(pos).move(d1).move(d2),
+            placer.set(p.set(pos).move(d1).move(d2),
                     leaf.setValue(EndLotusLeafBlock.HORIZONTAL_FACING, d1)
                         .setValue(EndLotusLeafBlock.SHAPE, TripleShape.TOP)
             );

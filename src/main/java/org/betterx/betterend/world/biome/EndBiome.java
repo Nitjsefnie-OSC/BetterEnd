@@ -7,6 +7,7 @@ import org.betterx.bclib.api.v2.levelgen.biomes.BCLBiomeSettings;
 import org.betterx.bclib.api.v2.levelgen.biomes.BiomeAPI;
 import org.betterx.bclib.api.v2.levelgen.surface.SurfaceRuleBuilder;
 import org.betterx.bclib.interfaces.SurfaceMaterialProvider;
+import org.betterx.bclib.util.GenerationArea;
 import org.betterx.betterend.BetterEnd;
 import org.betterx.betterend.registry.EndBlocks;
 import org.betterx.betterend.registry.EndFeatures;
@@ -258,7 +259,7 @@ public class EndBiome extends BCLBiome implements SurfaceMaterialProvider {
     }
 
     public static BlockState findTopMaterial(WorldGenLevel world, BlockPos pos) {
-        return findTopMaterial(BiomeAPI.getBiome(world.getBiome(pos)));
+        return findTopMaterial(BiomeAPI.getBiome(GenerationArea.getBiome(world, pos)));
     }
 
     public static BlockState findUnderMaterial(BCLBiome biome) {
@@ -266,7 +267,7 @@ public class EndBiome extends BCLBiome implements SurfaceMaterialProvider {
     }
 
     public static BlockState findUnderMaterial(WorldGenLevel world, BlockPos pos) {
-        return findUnderMaterial(BiomeAPI.getBiome(world.getBiome(pos)));
+        return findUnderMaterial(BiomeAPI.getBiome(GenerationArea.getBiome(world, pos)));
     }
 
     public static List<BCLBiome> getAllBeBiomes() {

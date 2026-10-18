@@ -8,6 +8,7 @@ import org.betterx.betterend.registry.EndBlocks;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.DyeItem;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.material.MapColor;
@@ -37,6 +38,11 @@ public class ColoredMaterial {
     ) {
         String id = BuiltInRegistries.BLOCK.getKey(source).getPath();
         colors.forEach((color, name) -> {
+            final ItemLike dye = dyes.get(color);
+            if (dye == null || dye.asItem() == Items.AIR) {
+                BetterEnd.LOGGER.warning("Skipping colored variant {} of {}: no dye item found", name, id);
+                return;
+            }
             String blockName = id + "_" + name;
             Block block = constructor.apply(FabricBlockSettings.copyOf(source).mapColor(MapColor.COLOR_BLACK));
             EndBlocks.registerBlock(blockName, block);
@@ -45,13 +51,13 @@ public class ColoredMaterial {
                                 .setOutputCount(8)
                                 .setShape("###", "#D#", "###")
                                 .addMaterial('#', source)
-                                .addMaterial('D', dyes.get(color))
+                                .addMaterial('D', dye)
                                 .build();
             } else {
                 BCLRecipeBuilder.crafting(BetterEnd.makeID(blockName), block)
                                 .setList("#D")
                                 .addMaterial('#', source)
-                                .addMaterial('D', dyes.get(color))
+                                .addMaterial('D', dye)
                                 .build();
             }
             this.colors.put(color, block);
@@ -67,8 +73,20 @@ public class ColoredMaterial {
         return colors.get(color);
     }
 
+    /**
+     * The 16 vanilla dye colors. Mods like Dye Depot append their own constants to {@link DyeColor}, so
+     * {@code DyeColor.values()} must not be used here: those colors have no dye item yet when our blocks are
+     * registered (and may share a map color with a vanilla one, which would replace the vanilla variant).
+     */
+    private static final DyeColor[] VANILLA_COLORS = {
+            DyeColor.WHITE, DyeColor.ORANGE, DyeColor.MAGENTA, DyeColor.LIGHT_BLUE,
+            DyeColor.YELLOW, DyeColor.LIME, DyeColor.PINK, DyeColor.GRAY,
+            DyeColor.LIGHT_GRAY, DyeColor.CYAN, DyeColor.PURPLE, DyeColor.BLUE,
+            DyeColor.BROWN, DyeColor.GREEN, DyeColor.RED, DyeColor.BLACK
+    };
+
     static {
-        for (DyeColor color : DyeColor.values()) {
+        for (DyeColor color : VANILLA_COLORS) {
             int colorRGB = color.getMapColor().col;
             COLORS.put(colorRGB, color.getName());
             DYES.put(colorRGB, DyeItem.byColor(color));

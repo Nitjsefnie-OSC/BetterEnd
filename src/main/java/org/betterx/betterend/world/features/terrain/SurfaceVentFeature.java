@@ -2,6 +2,7 @@ package org.betterx.betterend.world.features.terrain;
 
 import org.betterx.bclib.api.v2.levelgen.features.features.DefaultFeature;
 import org.betterx.bclib.util.BlocksHelper;
+import org.betterx.bclib.util.GenerationArea;
 import org.betterx.bclib.util.MHelper;
 import org.betterx.betterend.blocks.HydrothermalVentBlock;
 import org.betterx.betterend.registry.EndBlocks;
@@ -25,7 +26,7 @@ public class SurfaceVentFeature extends DefaultFeature {
                 world,
                 new BlockPos(pos.getX() + random.nextInt(16), pos.getY(), pos.getZ() + random.nextInt(16))
         );
-        if (!world.getBlockState(pos.below(3)).is(CommonBlockTags.GEN_END_STONES)) {
+        if (!GenerationArea.getBlockState(world, pos.below(3)).is(CommonBlockTags.GEN_END_STONES)) {
             return false;
         }
 
@@ -40,7 +41,8 @@ public class SurfaceVentFeature extends DefaultFeature {
                     mut.getX() - pos.getX(),
                     mut.getZ() - pos.getZ()
             )) + random.nextInt(2);
-            if (dist > 0) {
+            // vents stay inside the chunks this feature may access
+            if (dist > 0 && GenerationArea.contains(world, mut)) {
                 BlockState state = world.getBlockState(mut);
                 for (int n = 0; n < 10 && state.isAir(); n++) {
                     mut.setY(mut.getY() - 1);

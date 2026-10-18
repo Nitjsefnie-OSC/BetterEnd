@@ -22,6 +22,8 @@ import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.level.material.MapColor;
 
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.object.builder.v1.block.FabricBlockSettings;
 
 import org.jetbrains.annotations.Nullable;
@@ -58,6 +60,7 @@ public class BrimstoneBlock extends BaseBlock.Stone {
         }
     }
 
+    @Environment(EnvType.CLIENT)
     private void updateChunks(ClientLevel world, BlockPos pos) {
         int y = pos.getY() >> 4;
         int x1 = (pos.getX() - 2) >> 4;

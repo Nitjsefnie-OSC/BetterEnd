@@ -26,6 +26,9 @@ import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+
 import com.google.common.collect.Lists;
 
 import java.util.List;
@@ -55,6 +58,7 @@ public class AuroraCrystalBlock extends AbstractGlassBlock implements RenderLaye
     }
 
     @Override
+    @Environment(EnvType.CLIENT)
     public BlockColor getProvider() {
         return (state, world, pos, tintIndex) -> {
             if (pos == null) {
@@ -80,6 +84,7 @@ public class AuroraCrystalBlock extends AbstractGlassBlock implements RenderLaye
     }
 
     @Override
+    @Environment(EnvType.CLIENT)
     public ItemColor getItemProvider() {
         return (stack, tintIndex) -> {
             return ColorUtil.color(COLORS[3].getX(), COLORS[3].getY(), COLORS[3].getZ());

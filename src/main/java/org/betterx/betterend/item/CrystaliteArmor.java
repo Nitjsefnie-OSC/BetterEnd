@@ -9,6 +9,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
 import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 
@@ -21,8 +22,20 @@ public class CrystaliteArmor extends BaseArmorItem {
         super(EndArmorMaterial.CRYSTALITE, type, settings);
     }
 
+    private static final EquipmentSlot[] SET_SLOTS = {
+            EquipmentSlot.HEAD,
+            EquipmentSlot.CHEST,
+            EquipmentSlot.LEGS,
+            EquipmentSlot.FEET
+    };
+
+    /**
+     * Checks the four armor slots explicitly. Iterating {@link LivingEntity#getArmorSlots()} would treat
+     * entities without armor slots (an empty iterable, e.g. bosses from other mods) as wearing the full set.
+     */
     public static boolean hasFullSet(LivingEntity owner) {
-        for (ItemStack armorStack : owner.getArmorSlots()) {
+        for (EquipmentSlot slot : SET_SLOTS) {
+            ItemStack armorStack = owner.getItemBySlot(slot);
             if (!(armorStack.getItem() instanceof CrystaliteArmor)) {
                 return false;
             }

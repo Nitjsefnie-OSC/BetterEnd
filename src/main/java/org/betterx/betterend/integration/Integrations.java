@@ -20,6 +20,8 @@ public class Integrations {
     public static final ModIntegration NOURISH = ModIntegrationAPI.register(new NourishIntegration());
     public static final ModIntegration FLAMBOYANT_REFABRICATED = ModIntegrationAPI.register(new FlamboyantRefabricatedIntegration());
 
+    public static final ResourceLocation GUIDE_BOOK_RECIPE = BetterEnd.makeID("guide_book");
+
     private static boolean hasHydrogen;
 
     public static void init() {
@@ -33,7 +35,7 @@ public class Integrations {
                 }
             });
 
-            BCLRecipeBuilder.crafting(BetterEnd.makeID("guide_book"), GuideBookItem.GUIDE_BOOK)
+            BCLRecipeBuilder.crafting(GUIDE_BOOK_RECIPE, GuideBookItem.GUIDE_BOOK)
                             .setShape("D", "B", "C")
                             .addMaterial('D', EndItems.ENDER_DUST)
                             .addMaterial('B', Items.BOOK)
