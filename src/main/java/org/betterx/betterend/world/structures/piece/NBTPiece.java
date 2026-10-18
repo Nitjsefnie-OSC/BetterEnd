@@ -92,7 +92,7 @@ public class NBTPiece extends BasePiece {
                 blockBox.minX(),
                 this.boundingBox.minY(),
                 blockBox.minZ()
-        ), new Vec3i(blockBox.maxX(), this.boundingBox.maxX(), blockBox.maxZ()));
+        ), new Vec3i(blockBox.maxX(), this.boundingBox.maxY(), blockBox.maxZ()));
         StructurePlaceSettings placementData = new StructurePlaceSettings().setRotation(rotation)
                                                                            .setMirror(mirror)
                                                                            .setBoundingBox(bounds);
@@ -131,9 +131,7 @@ public class NBTPiece extends BasePiece {
             Rotation rotation,
             Mirror mirror
     ) {
-        Vec3i max = structure.getSize();
-        Vec3 min = StructureTemplate.transform(Vec3.atCenterOf(structure.getSize()), mirror, rotation, BlockPos.ZERO);
-        max = max.offset((int) -min.x, (int) -min.y, (int) -min.z);
-        return BoundingBox.fromCorners(pos.offset((int) min.x, (int) min.y, (int) min.z), max.offset(pos));
+        //the area placeInWorld fills for this transform (rotated and mirrored around pos)
+        return structure.getBoundingBox(new StructurePlaceSettings().setRotation(rotation).setMirror(mirror), pos);
     }
 }

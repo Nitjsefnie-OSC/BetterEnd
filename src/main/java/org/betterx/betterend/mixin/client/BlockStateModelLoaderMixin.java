@@ -6,48 +6,60 @@ import org.betterx.betterend.world.generator.GeneratorOptions;
 import net.minecraft.client.resources.model.BlockStateModelLoader;
 import net.minecraft.resources.FileToIdConverter;
 import net.minecraft.resources.Identifier;
+import net.minecraft.server.packs.resources.Resource;
+import net.minecraft.server.packs.resources.ResourceManager;
 
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Redirect;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
- * {@link BlockStateModelLoader#loadBlockStates} discovers blockstate json files by scanning
- * every pack, then maps each file back to the block id it defines via {@code fileToId}. To make
- * betterend's {@code custom_chorus_plant}/{@code custom_chorus_flower} files (shipped in the
+ * {@link BlockStateModelLoader#loadBlockStates} first lists every blockstate json file (as a
+ * file-id to resource-stack map) and then turns each entry into the models of the block it defines.
+ * To make betterend's {@code custom_chorus_plant}/{@code custom_chorus_flower} files (shipped in the
  * betterend namespace) act as the definition for {@code minecraft:chorus_plant}/{@code chorus_flower},
- * we redirect that file-to-id resolution: the vanilla files are pointed at a discarded id (so they're
- * ignored, since no such block exists) and the custom files are pointed at the real vanilla block id.
+ * we rewrite that listing: the resource stack of the custom file replaces the one of the vanilla file,
+ * and the custom file itself is dropped (no block with that id exists).
  * <p>
- * The {@code fileToId} call lives inside the per-entry lambda passed to
- * {@code CompletableFuture.supplyAsync} in {@code loadBlockStates}, not in {@code loadBlockStates}
- * itself, so the mixin must target that synthetic lambda method ({@code lambda$loadBlockStates$2}
- * as of 26.1.2 - this is a compiler-generated name, not covered by official Mojang mappings, so it
- * can and does shift between builds; verify via javap if this mixin ever fails to apply again)
- * rather than {@code loadBlockStates} directly.
+ * Swapping the listing, rather than the per-entry file-to-id resolution, keeps every entry consistent
+ * (file name and block id match), which matters for mods like ModernFix that load the listed
+ * blockstates lazily by block id (#599).
+ * <p>
+ * The listing call lives inside the lambda passed to {@code CompletableFuture.supplyAsync} in
+ * {@code loadBlockStates}, not in {@code loadBlockStates} itself, so the mixin must target that
+ * synthetic lambda method ({@code lambda$loadBlockStates$0} as of 26.1.2 - this is a compiler-generated
+ * name, not covered by official Mojang mappings, so it can and does shift between builds; verify via
+ * javap if this mixin ever fails to apply again) rather than {@code loadBlockStates} directly.
  */
 @Mixin(BlockStateModelLoader.class)
 public abstract class BlockStateModelLoaderMixin {
-    @Redirect(method = "lambda$loadBlockStates$2", at = @At(value = "INVOKE", target = "Lnet/minecraft/resources/FileToIdConverter;fileToId(Lnet/minecraft/resources/Identifier;)Lnet/minecraft/resources/Identifier;"))
-    private static Identifier be_switchModelOnLoad(FileToIdConverter instance, Identifier file) {
-        Identifier id = instance.fileToId(file);
-        if (GeneratorOptions.changeChorusPlant()) {
-            if (id.getNamespace().equals("minecraft") && be_isChorusPath(id.getPath())) {
-                return BetterEnd.C.mk("discarded_" + id.getPath());
-            }
-            if (id.getNamespace().equals(BetterEnd.MOD_ID) && id.getPath().startsWith("custom_")) {
-                String path = id.getPath().substring("custom_".length());
-                if (be_isChorusPath(path)) {
-                    return Identifier.withDefaultNamespace(path);
-                }
-            }
-        }
-        return id;
+    @Unique
+    private static final FileToIdConverter BE_BLOCKSTATE_LISTER = FileToIdConverter.json("blockstates");
+
+    @Inject(method = "lambda$loadBlockStates$0", at = @At("RETURN"), cancellable = true)
+    private static void be_switchModelOnLoad(
+            ResourceManager resourceManager,
+            CallbackInfoReturnable<Map<Identifier, List<Resource>>> cir
+    ) {
+        if (!GeneratorOptions.changeChorusPlant()) return;
+
+        Map<Identifier, List<Resource>> resources = new HashMap<>(cir.getReturnValue());
+        be_replaceDefinition(resources, "chorus_plant");
+        be_replaceDefinition(resources, "chorus_flower");
+        cir.setReturnValue(resources);
     }
 
     @Unique
-    private static boolean be_isChorusPath(String path) {
-        return path.equals("chorus_plant") || path.equals("chorus_flower");
+    private static void be_replaceDefinition(Map<Identifier, List<Resource>> resources, String path) {
+        List<Resource> custom = resources.remove(BE_BLOCKSTATE_LISTER.idToFile(BetterEnd.C.mk("custom_" + path)));
+        if (custom != null) {
+            resources.put(BE_BLOCKSTATE_LISTER.idToFile(Identifier.withDefaultNamespace(path)), custom);
+        }
     }
 }
