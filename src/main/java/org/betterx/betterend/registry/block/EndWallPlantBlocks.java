@@ -67,7 +67,7 @@ import org.betterx.betterend.registry.EndTemplates;
 
 public class EndWallPlantBlocks {
     public static final Block PURPLE_POLYPORE = EndBlocks.defineBlock("purple_polypore", BaseWallPlantBlock::new)
-            .addTrait(PlantBlockTrait.compostableWithColor(MapColor.COLOR_PURPLE, false, false))
+            .addTrait(MushroomBlockTrait.compostableWallMushroom(MapColor.COLOR_PURPLE))
             .addTrait(VegetationTagTrait.plant())
             .addTrait(ModelTraitLibrary.externalModel())
             .lightLevel(s -> 13)
@@ -75,7 +75,7 @@ public class EndWallPlantBlocks {
             .buildAndRegister();
 
     public static final Block AURANT_POLYPORE = EndBlocks.defineBlock("aurant_polypore", BaseWallPlantBlock::new)
-            .addTrait(PlantBlockTrait.compostableWithColor(MapColor.COLOR_ORANGE, false, false))
+            .addTrait(MushroomBlockTrait.compostableWallMushroom(MapColor.COLOR_ORANGE))
             .addTrait(VegetationTagTrait.plant())
             .addTrait(ModelTraitLibrary.externalModel())
             .lightLevel(s -> 13)

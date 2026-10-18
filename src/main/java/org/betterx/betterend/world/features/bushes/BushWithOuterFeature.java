@@ -55,6 +55,10 @@ public class BushWithOuterFeature extends Feature<BushWithOuterFeatureConfig> {
         // overhangs the water still generates and gets its submerged leaves waterlogged.
         if (!world.getFluidState(pos).isEmpty()) return false;
 
+        // Shuffle a copy: the static array is shared by every worldgen thread, and parallel worldgen (C2ME)
+        // shuffling it in place at once duplicates some entries and loses others for good - until outer
+        // leaves only grew on one side of every tree (#607).
+        final Direction[] directions = DIRECTIONS.clone();
         final List<BlockPos> outerLeaves = new ArrayList<>();
         float radius = MHelper.randRange(1.8F, 3.5F, random);
         OpenSimplexNoise noise = new OpenSimplexNoise(random.nextInt());
@@ -84,8 +88,8 @@ public class BushWithOuterFeature extends Feature<BushWithOuterFeatureConfig> {
             return info.getState();
         }).addPostProcess((info) -> {
             if (info.getState().getBlock() instanceof LeavesBlock) {
-                MHelper.shuffle(DIRECTIONS, random);
-                for (Direction dir : DIRECTIONS) {
+                MHelper.shuffle(directions, random);
+                for (Direction dir : directions) {
                     if (info.getState(dir).isAir()) {
                         final BlockPos outerPos = info.getPos().relative(dir);
                         info.setBlockPos(outerPos, outer_leaves.setValue(BlockStateProperties.FACING, dir));

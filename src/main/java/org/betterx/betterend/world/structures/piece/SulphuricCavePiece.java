@@ -253,10 +253,14 @@ public class SulphuricCavePiece extends BasePiece {
             return;
         }
 
+        // Shuffle a copy: the static array is shared by every worldgen thread, and parallel worldgen (C2ME)
+        // shuffling it in place at once duplicates some entries and loses others for good - until tube
+        // worms only faced one way (#607).
+        final Direction[] horizontal = HORIZONTAL.clone();
         for (int j = 0; j <= dist; j++) {
             setChunkBlock(chunk, mut, EndStoneBlocks.SULPHURIC_ROCK.getBlock(SlotType.SOURCE).defaultBlockState());
-            MHelper.shuffle(HORIZONTAL, random);
-            for (Direction dir : HORIZONTAL) {
+            MHelper.shuffle(horizontal, random);
+            for (Direction dir : horizontal) {
                 BlockPos p = mut.relative(dir);
                 if (random.nextBoolean() && chunk.getBlockState(p).is(Blocks.WATER)) {
                     setChunkBlock(
