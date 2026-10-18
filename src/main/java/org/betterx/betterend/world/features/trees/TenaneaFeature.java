@@ -156,6 +156,10 @@ public class TenaneaFeature extends DefaultFeature {
                                                      .setValue(BlockProperties.TRIPLE_SHAPE, TripleShape.BOTTOM);
         BlockState outer = EndWoodBlocks.TENANEA_OUTER_LEAVES.defaultBlockState();
 
+        // Shuffle a copy: the static array is shared by every worldgen thread, and parallel worldgen (C2ME)
+        // shuffling it in place at once duplicates some entries and loses others for good - until outer
+        // leaves only grew on one side of every tree (#607).
+        final Direction[] directions = DIRECTIONS.clone();
         List<BlockPos> support = Lists.newArrayList();
         sphere.addPostProcess((info) -> {
             if (random.nextInt(6) == 0 && info.getStateDown().isAir()) {
@@ -172,8 +176,8 @@ public class TenaneaFeature extends DefaultFeature {
                 info.setState(EndWoodBlocks.TENANEA.getBark().defaultBlockState());
             }
 
-            MHelper.shuffle(DIRECTIONS, random);
-            for (Direction d : DIRECTIONS) {
+            MHelper.shuffle(directions, random);
+            for (Direction d : directions) {
                 if (info.getState(d).isAir()) {
                     final BlockPos outerPos = info.getPos().relative(d);
                     info.setBlockPos(outerPos, outer.setValue(FurBlock.FACING, d));

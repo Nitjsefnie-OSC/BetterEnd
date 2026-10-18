@@ -203,6 +203,11 @@ public class GeyserFeature extends DefaultFeature {
             mut.setY(mut.getY() + 1);
         }
 
+        // Shuffle a copy: the static array is shared by every worldgen thread, and parallel worldgen (C2ME)
+        // shuffling it in place at once duplicates some entries and loses others for good - until tube
+        // worms only faced one way (#607).
+        final Direction[] horizontal = HORIZONTAL.clone();
+
         // The two vent-cluster loops below jitter mut around pos with an unbounded gaussian offset
         // (rare tails reach well past the 3x3 chunks a feature may touch) and then read/write freely -
         // unlike the SDF sculpting above, nothing here was clamped to the write zone. distRaw/dist are
@@ -224,8 +229,8 @@ public class GeyserFeature extends DefaultFeature {
                                                                   .is(EndStoneBlocks.HYDROTHERMAL_VENT)) {
                     for (int j = 0; j <= dist; j++) {
                         BlocksHelper.setWithoutUpdate(world, mut, EndStoneBlocks.SULPHURIC_ROCK.getBlock(SlotType.SOURCE));
-                        MHelper.shuffle(HORIZONTAL, random);
-                        for (Direction dir : HORIZONTAL) {
+                        MHelper.shuffle(horizontal, random);
+                        for (Direction dir : horizontal) {
                             // mut's x/z is already zone-clamped, but a further 1-block relative(dir)
                             // peek can still step past the zone right at its edge - clamp this too.
                             BlockPos p = new BlockPos(

@@ -14,6 +14,7 @@ import de.ambertation.wover.tag.api.event.context.TagBootstrapContext;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.DyeColor;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockBehaviour;
@@ -104,6 +105,11 @@ public class ColoredMaterial implements MaterialManager.Material {
         }
         String id = BuiltInRegistries.BLOCK.getKey(source).getPath();
         colors.forEach((color, name) -> {
+            final ItemLike dye = dyes.get(color);
+            if (dye == null || dye.asItem() == Items.AIR) {
+                BetterEnd.LOGGER.warn("Skipping colored variant {} of {}: no dye item found", name, id);
+                return;
+            }
             String blockName = id + "_" + name;
             DefaultBlockDefinition<Block> definition = EndBlocks.defineBlock(blockName, constructor)
                                                                  .replacePropertiesWithCopy(source)
@@ -136,13 +142,13 @@ public class ColoredMaterial implements MaterialManager.Material {
                                      .outputCount(8)
                                      .shape("###", "#D#", "###")
                                      .addMaterial('#', source)
-                                     .addMaterial('D', dyes.get(color))
+                                     .addMaterial('D', dye)
                                      .build(context);
                     } else {
                         RecipeBuilder.crafting(BetterEnd.C.mk(blockName), block)
                                      .shapeless()
                                      .addMaterial('#', source)
-                                     .addMaterial('D', dyes.get(color))
+                                     .addMaterial('D', dye)
                                      .build(context);
                     }
                 });
@@ -160,8 +166,21 @@ public class ColoredMaterial implements MaterialManager.Material {
         return colors.get(color);
     }
 
+    /**
+     * The 16 vanilla dye colors. Mods like Dye Depot append their own constants to {@link DyeColor}, so
+     * {@code DyeColor.values()} must not be used here: those colors have no vanilla dye item, and they may share a
+     * map color with a vanilla one, which replaced that vanilla variant (its block, recipe and loot table went
+     * missing) and registered blocks for colors we have no textures, recipes or translations for.
+     */
+    private static final DyeColor[] VANILLA_COLORS = {
+            DyeColor.WHITE, DyeColor.ORANGE, DyeColor.MAGENTA, DyeColor.LIGHT_BLUE,
+            DyeColor.YELLOW, DyeColor.LIME, DyeColor.PINK, DyeColor.GRAY,
+            DyeColor.LIGHT_GRAY, DyeColor.CYAN, DyeColor.PURPLE, DyeColor.BLUE,
+            DyeColor.BROWN, DyeColor.GREEN, DyeColor.RED, DyeColor.BLACK
+    };
+
     static {
-        for (DyeColor color : DyeColor.values()) {
+        for (DyeColor color : VANILLA_COLORS) {
             int colorRGB = color.getMapColor().col;
             COLORS.put(colorRGB, color.getName());
             DYES.put(colorRGB, BuiltInRegistries.ITEM.getValue(Identifier.withDefaultNamespace(color.getName() + "_dye")));
