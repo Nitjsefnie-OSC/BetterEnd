@@ -2,7 +2,7 @@
     "name": "주입 의식",
     "icon": "betterend:infusion_pedestal",
     "read_by_default": true,
-    "category": "rituals",
+    "category": "betterend:rituals",
     "pages": [
         {
             "type": "text",

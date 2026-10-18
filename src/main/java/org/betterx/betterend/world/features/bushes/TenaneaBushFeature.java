@@ -65,6 +65,10 @@ public class TenaneaBushFeature extends DefaultFeature {
         sphere = new SDFSubtraction().setSourceA(sphere)
                                      .setSourceB(new SDFTranslate().setTranslate(0, -radius, 0).setSource(sphere));
         sphere.setReplaceFunction(REPLACE);
+        // Shuffle a copy: the static array is shared by every worldgen thread, and parallel worldgen (C2ME)
+        // shuffling it in place at once duplicates some entries and loses others for good - until outer
+        // leaves only grew on one side of every tree (#607).
+        final Direction[] directions = DIRECTIONS.clone();
         List<BlockPos> support = Lists.newArrayList();
         List<BlockPos> outerLeaves = Lists.newArrayList();
         sphere.addPostProcess((info) -> {
@@ -76,8 +80,8 @@ public class TenaneaBushFeature extends DefaultFeature {
                         support.add(d);
                     }
 
-                    MHelper.shuffle(DIRECTIONS, random);
-                    for (Direction d : DIRECTIONS) {
+                    MHelper.shuffle(directions, random);
+                    for (Direction d : directions) {
                         if (info.getState(d).isAir()) {
                             final BlockPos outerPos = info.getPos().relative(d);
                             info.setBlockPos(
