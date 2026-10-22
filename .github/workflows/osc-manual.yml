@@ -47,6 +47,15 @@ jobs:
           distribution: temurin
           java-version: "25"
 
+      # The build resolves BCLib/WunderLib/WorldWeaver from sibling checkouts
+      # (allowLocalLibUse); none of their current versions are published to any
+      # maven, so without these the run fails dependency resolution.
+      - name: Check out sibling libraries
+        run: |
+          for repo in BCLib WunderLib WorldWeaver; do
+            git clone --quiet --depth 1 --branch release/26.3 "https://github.com/quiqueck/$repo.git" "../$repo"
+          done
+
       - name: Run datagen
         run: ./gradlew runDatagenClient --no-daemon
 
